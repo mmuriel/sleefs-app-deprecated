@@ -1,0 +1,162 @@
+1. PO Items, PurchaseOrderItem::whereRaw("idpo='".$poDb->id."'")->get();
+
+[
+    {
+        "id": 21079,
+        "idpo": 706,
+        "sku": "32805134928",
+        "shid": "5beb329a35932",
+        "quantity": 20,
+        "quantity_received": 20,
+        "name": "Custom Kit ",
+        "idmd5": "6a351db279605906fbe2a5d63dca6b3f",
+        "created_at": "2018-11-13 20:27:25",
+        "updated_at": "2018-11-13 22:42:17",
+        "product_type": "nd",
+        "qty_pending": 0
+    },
+    {
+        "id": 21080,
+        "idpo": 706,
+        "sku": "SL-CUST-SV",
+        "shid": "5beb329a359e6",
+        "quantity": 100,
+        "quantity_received": 12,
+        "name": "Custom Shiver ",
+        "idmd5": "0d4de6959ded7f44f1af7750c4851572",
+        "created_at": "2018-11-13 20:27:25",
+        "updated_at": "2018-11-13 22:42:17",
+        "product_type": "",
+        "qty_pending": 88
+    },
+    {
+        "id": 21081,
+        "idpo": 706,
+        "sku": "CUSTOM-WNBG",
+        "shid": "5beb329a35a97",
+        "quantity": 25,
+        "quantity_received": 0,
+        "name": "Custom woven bags",
+        "idmd5": "6dc0ca9894b49888de5ce73832e924f6",
+        "created_at": "2018-11-13 20:27:25",
+        "updated_at": "2018-11-13 20:27:25",
+        "product_type": "nd",
+        "qty_pending": 25
+    }
+]
+
+
+2. PO raw:
+
+{
+    "test": "0",
+    "purchase_order": {
+        "status": "pending",
+        "line_items": [
+            {
+                "sku": "32805134928",
+                "id": "5beb329a35932",
+                "quantity_received": 20
+            },
+            {
+                "sku": "SL-CUST-SV",
+                "id": "5beb329a359e6",
+                "quantity_received": 12
+            },
+            {
+                "sku": "CUSTOM-WNBG",
+                "id": "5beb329a35a97",
+                "quantity_received": 0
+            }
+        ],
+        "po_id": 1236
+    }
+}
+
+
+3. PO Extended:
+
+{
+    "Message": "success",
+    "code": "200",
+    "po": {
+        "results": {
+            "shipping_name": null,
+            "shipping_method": null,
+            "payment_method": "credit",
+            "tax": 0,
+            "vendor_id": 18389,
+            "po_id": 1236,
+            "shipping_carrier": null,
+            "items": [
+                {
+                    "sku": "32805134928",
+                    "created_at": "2018-11-13 20:22:49",
+                    "sell_ahead": 0,
+                    "price": "0.00",
+                    "fulfillment_status": "pending",
+                    "vendor_sku": "",
+                    "product_name": "Custom Kit ",
+                    "quantity_received": 20,
+                    "quantity": 20
+                },
+                {
+                    "sku": "SL-CUST-SV",
+                    "created_at": "2018-11-13 20:22:49",
+                    "sell_ahead": 0,
+                    "price": "0.00",
+                    "fulfillment_status": "pending",
+                    "vendor_sku": "",
+                    "product_name": "Custom Shiver ",
+                    "quantity_received": 12,
+                    "quantity": 100
+                },
+                {
+                    "sku": "CUSTOM-WNBG",
+                    "created_at": "2018-11-13 20:22:49",
+                    "sell_ahead": 0,
+                    "price": "0.38",
+                    "fulfillment_status": "pending",
+                    "vendor_sku": "",
+                    "product_name": "Custom woven bags",
+                    "quantity_received": 0,
+                    "quantity": 25
+                }
+            ],
+            "discount": "0.00",
+            "warehouse_country": null,
+            "vendor_address2": "",
+            "vendor_address1": "",
+            "packing_note": null,
+            "warehouse_zip": null,
+            "warehouse_name": null,
+            "subtotal": "9.5",
+            "warehouse_phone": null,
+            "shipping_price": "0.00",
+            "vendor_email": "",
+            "payment_due_by": "unlimited",
+            "po_date": "2018-11-13 00:00:00",
+            "total_price": "9.5",
+            "warehouse_state": null,
+            "vendor_city": "",
+            "po_number": "JAIME TEST",
+            "description": null,
+            "warehouse_city": null,
+            "updated_shop_with_data": 1,
+            "warehouse_email": null,
+            "vendor_phone": "",
+            "warehouse": "Primary",
+            "vendor_state": "",
+            "tracking_number": "",
+            "vendor_account_number": "",
+            "warehouse_address2": null,
+            "warehouse_address1": null,
+            "fulfillment_status": "pending",
+            "vendor_zip": "",
+            "po_note": "",
+            "vendor_name": "Sleefs",
+            "created_at": "2018-11-13 20:22:49",
+            "vendor_country": ""
+        }
+    }
+}

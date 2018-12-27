@@ -1,0 +1,571 @@
+object(stdClass)#187 (3) {
+  ["Message"]=>
+  string(7) "success"
+  ["code"]=>
+  string(3) "200"
+  ["po"]=>
+  object(stdClass)#205 (1) {
+    ["results"]=>
+    object(stdClass)#188 (42) {
+      ["shipping_name"]=>
+      NULL
+      ["shipping_method"]=>
+      NULL
+      ["payment_method"]=>
+      string(6) "credit"
+      ["tax"]=>
+      float(0)
+      ["vendor_id"]=>
+      int(18385)
+      ["po_id"]=>
+      int(515)
+      ["shipping_carrier"]=>
+      NULL
+      ["items"]=>
+      array(15) {
+        [0]=>
+        object(stdClass)#191 (9) {
+          ["sku"]=>
+          string(15) "SL-USA-BLK-CL-L"
+          ["created_at"]=>
+          string(19) "2017-10-09 18:52:51"
+          ["sell_ahead"]=>
+          int(0)
+          ["price"]=>
+          string(4) "6.90"
+          ["fulfillment_status"]=>
+          string(6) "closed"
+          ["vendor_sku"]=>
+          string(0) ""
+          ["product_name"]=>
+          string(79) "USA America Flag / Black Compression Tights / Leggings L / Red/White/Blue/Black"
+          ["quantity_received"]=>
+          int(5)
+          ["quantity"]=>
+          int(5)
+        }
+        [1]=>
+        object(stdClass)#190 (9) {
+          ["sku"]=>
+          string(16) "SL-USA-BLK-CL-XL"
+          ["created_at"]=>
+          string(19) "2017-10-09 18:52:51"
+          ["sell_ahead"]=>
+          int(0)
+          ["price"]=>
+          string(4) "6.90"
+          ["fulfillment_status"]=>
+          string(6) "closed"
+          ["vendor_sku"]=>
+          string(0) ""
+          ["product_name"]=>
+          string(80) "USA America Flag / Black Compression Tights / Leggings XL / Red/White/Blue/Black"
+          ["quantity_received"]=>
+          int(3)
+          ["quantity"]=>
+          int(3)
+        }
+        [2]=>
+        object(stdClass)#192 (9) {
+          ["sku"]=>
+          string(17) "SL-USA-BLK-CL-XXL"
+          ["created_at"]=>
+          string(19) "2017-10-09 18:52:51"
+          ["sell_ahead"]=>
+          int(0)
+          ["price"]=>
+          string(4) "6.90"
+          ["fulfillment_status"]=>
+          string(6) "closed"
+          ["vendor_sku"]=>
+          string(0) ""
+          ["product_name"]=>
+          string(81) "USA America Flag / Black Compression Tights / Leggings XXL / Red/White/Blue/Black"
+          ["quantity_received"]=>
+          int(2)
+          ["quantity"]=>
+          int(2)
+        }
+        [3]=>
+        object(stdClass)#193 (9) {
+          ["sku"]=>
+          string(15) "SL-CLS-USA-SH-S"
+          ["created_at"]=>
+          string(19) "2017-10-09 18:55:55"
+          ["sell_ahead"]=>
+          int(0)
+          ["price"]=>
+          string(4) "7.20"
+          ["fulfillment_status"]=>
+          string(6) "closed"
+          ["vendor_sku"]=>
+          string(0) ""
+          ["product_name"]=>
+          string(51) "Classic USA American Flag shorts S / Red/White/Blue"
+          ["quantity_received"]=>
+          int(2)
+          ["quantity"]=>
+          int(2)
+        }
+        [4]=>
+        object(stdClass)#194 (9) {
+          ["sku"]=>
+          string(15) "SL-CLS-USA-SH-M"
+          ["created_at"]=>
+          string(19) "2017-10-09 18:56:01"
+          ["sell_ahead"]=>
+          int(0)
+          ["price"]=>
+          string(4) "7.20"
+          ["fulfillment_status"]=>
+          string(6) "closed"
+          ["vendor_sku"]=>
+          string(0) ""
+          ["product_name"]=>
+          string(51) "Classic USA American Flag shorts M / Red/White/Blue"
+          ["quantity_received"]=>
+          int(4)
+          ["quantity"]=>
+          int(4)
+        }
+        [5]=>
+        object(stdClass)#195 (9) {
+          ["sku"]=>
+          string(15) "SL-CLS-USA-SH-L"
+          ["created_at"]=>
+          string(19) "2017-10-09 18:56:06"
+          ["sell_ahead"]=>
+          int(0)
+          ["price"]=>
+          string(4) "7.20"
+          ["fulfillment_status"]=>
+          string(6) "closed"
+          ["vendor_sku"]=>
+          string(0) ""
+          ["product_name"]=>
+          string(51) "Classic USA American Flag shorts L / Red/White/Blue"
+          ["quantity_received"]=>
+          int(11)
+          ["quantity"]=>
+          int(11)
+        }
+        [6]=>
+        object(stdClass)#196 (9) {
+          ["sku"]=>
+          string(16) "SL-CLS-USA-SH-XL"
+          ["created_at"]=>
+          string(19) "2017-10-09 18:56:13"
+          ["sell_ahead"]=>
+          int(0)
+          ["price"]=>
+          string(4) "7.20"
+          ["fulfillment_status"]=>
+          string(6) "closed"
+          ["vendor_sku"]=>
+          string(0) ""
+          ["product_name"]=>
+          string(52) "Classic USA American Flag shorts XL / Red/White/Blue"
+          ["quantity_received"]=>
+          int(10)
+          ["quantity"]=>
+          int(10)
+        }
+        [7]=>
+        object(stdClass)#197 (9) {
+          ["sku"]=>
+          string(17) "SL-CLS-USA-SH-XXL"
+          ["created_at"]=>
+          string(19) "2017-10-09 18:56:27"
+          ["sell_ahead"]=>
+          int(0)
+          ["price"]=>
+          string(4) "7.20"
+          ["fulfillment_status"]=>
+          string(6) "closed"
+          ["vendor_sku"]=>
+          string(0) ""
+          ["product_name"]=>
+          string(53) "Classic USA American Flag shorts XXL / Red/White/Blue"
+          ["quantity_received"]=>
+          int(7)
+          ["quantity"]=>
+          int(7)
+        }
+        [8]=>
+        object(stdClass)#198 (9) {
+          ["sku"]=>
+          string(11) "SL-USA-SH-S"
+          ["created_at"]=>
+          string(19) "2017-10-09 19:00:36"
+          ["sell_ahead"]=>
+          int(0)
+          ["price"]=>
+          string(4) "7.20"
+          ["fulfillment_status"]=>
+          string(6) "closed"
+          ["vendor_sku"]=>
+          string(0) ""
+          ["product_name"]=>
+          string(43) "USA American flag shorts S / Red/White/Blue"
+          ["quantity_received"]=>
+          int(2)
+          ["quantity"]=>
+          int(2)
+        }
+        [9]=>
+        object(stdClass)#199 (9) {
+          ["sku"]=>
+          string(11) "SL-USA-SH-M"
+          ["created_at"]=>
+          string(19) "2017-10-09 19:00:44"
+          ["sell_ahead"]=>
+          int(0)
+          ["price"]=>
+          string(4) "7.20"
+          ["fulfillment_status"]=>
+          string(6) "closed"
+          ["vendor_sku"]=>
+          string(0) ""
+          ["product_name"]=>
+          string(43) "USA American flag shorts M / Red/White/Blue"
+          ["quantity_received"]=>
+          int(5)
+          ["quantity"]=>
+          int(5)
+        }
+        [10]=>
+        object(stdClass)#200 (9) {
+          ["sku"]=>
+          string(11) "SL-USA-SH-L"
+          ["created_at"]=>
+          string(19) "2017-10-09 19:00:49"
+          ["sell_ahead"]=>
+          int(0)
+          ["price"]=>
+          string(4) "7.20"
+          ["fulfillment_status"]=>
+          string(6) "closed"
+          ["vendor_sku"]=>
+          string(0) ""
+          ["product_name"]=>
+          string(43) "USA American flag shorts L / Red/White/Blue"
+          ["quantity_received"]=>
+          int(7)
+          ["quantity"]=>
+          int(7)
+        }
+        [11]=>
+        object(stdClass)#201 (9) {
+          ["sku"]=>
+          string(12) "SL-USA-SH-XL"
+          ["created_at"]=>
+          string(19) "2017-10-09 19:01:00"
+          ["sell_ahead"]=>
+          int(0)
+          ["price"]=>
+          string(4) "7.20"
+          ["fulfillment_status"]=>
+          string(6) "closed"
+          ["vendor_sku"]=>
+          string(0) ""
+          ["product_name"]=>
+          string(44) "USA American flag shorts XL / Red/White/Blue"
+          ["quantity_received"]=>
+          int(2)
+          ["quantity"]=>
+          int(2)
+        }
+        [12]=>
+        object(stdClass)#202 (9) {
+          ["sku"]=>
+          string(13) "SL-USA-SH-XXL"
+          ["created_at"]=>
+          string(19) "2017-10-09 19:01:08"
+          ["sell_ahead"]=>
+          int(0)
+          ["price"]=>
+          string(4) "7.20"
+          ["fulfillment_status"]=>
+          string(6) "closed"
+          ["vendor_sku"]=>
+          string(0) ""
+          ["product_name"]=>
+          string(45) "USA American flag shorts XXL / Red/White/Blue"
+          ["quantity_received"]=>
+          int(6)
+          ["quantity"]=>
+          int(6)
+        }
+        [13]=>
+        object(stdClass)#203 (9) {
+          ["sku"]=>
+          string(15) "SL-USA-SBD-SH-M"
+          ["created_at"]=>
+          string(19) "2017-10-09 19:02:37"
+          ["sell_ahead"]=>
+          int(0)
+          ["price"]=>
+          string(4) "7.20"
+          ["fulfillment_status"]=>
+          string(6) "closed"
+          ["vendor_sku"]=>
+          string(0) ""
+          ["product_name"]=>
+          string(25) "Tactical Shorts M / Black"
+          ["quantity_received"]=>
+          int(3)
+          ["quantity"]=>
+          int(3)
+        }
+        [14]=>
+        object(stdClass)#204 (9) {
+          ["sku"]=>
+          string(15) "SL-USA-SBD-SH-L"
+          ["created_at"]=>
+          string(19) "2017-10-09 19:02:47"
+          ["sell_ahead"]=>
+          int(0)
+          ["price"]=>
+          string(4) "7.20"
+          ["fulfillment_status"]=>
+          string(6) "closed"
+          ["vendor_sku"]=>
+          string(0) ""
+          ["product_name"]=>
+          string(25) "Tactical Shorts L / Black"
+          ["quantity_received"]=>
+          int(4)
+          ["quantity"]=>
+          int(4)
+        }
+      }
+      ["discount"]=>
+      string(4) "0.00"
+      ["warehouse_country"]=>
+      NULL
+      ["vendor_address2"]=>
+      string(0) ""
+      ["vendor_address1"]=>
+      string(0) ""
+      ["packing_note"]=>
+      NULL
+      ["warehouse_zip"]=>
+      NULL
+      ["warehouse_name"]=>
+      NULL
+      ["subtotal"]=>
+      string(5) "522.6"
+      ["warehouse_phone"]=>
+      NULL
+      ["shipping_price"]=>
+      string(4) "0.00"
+      ["vendor_email"]=>
+      string(3) "xxx"
+      ["payment_due_by"]=>
+      string(5) "net30"
+      ["po_date"]=>
+      string(19) "2017-10-30 00:00:00"
+      ["total_price"]=>
+      string(5) "522.6"
+      ["warehouse_state"]=>
+      NULL
+      ["vendor_city"]=>
+      string(0) ""
+      ["po_number"]=>
+      string(25) "1710-05 Brett Stern Order"
+      ["description"]=>
+      NULL
+      ["warehouse_city"]=>
+      NULL
+      ["updated_shop_with_data"]=>
+      int(1)
+      ["warehouse_email"]=>
+      NULL
+      ["vendor_phone"]=>
+      string(0) ""
+      ["warehouse"]=>
+      string(7) "Primary"
+      ["vendor_state"]=>
+      string(0) ""
+      ["tracking_number"]=>
+      string(0) ""
+      ["vendor_account_number"]=>
+      string(0) ""
+      ["warehouse_address2"]=>
+      NULL
+      ["warehouse_address1"]=>
+      NULL
+      ["fulfillment_status"]=>
+      string(6) "closed"
+      ["vendor_zip"]=>
+      string(0) ""
+      ["po_note"]=>
+      string(0) ""
+      ["vendor_name"]=>
+      string(17) "DX Sporting Goods"
+      ["created_at"]=>
+      string(19) "2017-10-09 18:52:51"
+      ["vendor_country"]=>
+      string(0) ""
+    }
+  }
+}
+
+
+
+
+===============
+
+
+
+
+object(stdClass)#162 (2) {
+  ["test"]=>
+  string(1) "0"
+  ["purchase_order"]=>
+  object(stdClass)#156 (3) {
+    ["status"]=>
+    string(7) "pending"
+    ["line_items"]=>
+    array(15) {
+      [0]=>
+      object(stdClass)#171 (3) {
+        ["sku"]=>
+        string(15) "SL-USA-BLK-CL-L"
+        ["id"]=>
+        string(13) "59dbc5830f969"
+        ["quantity_received"]=>
+        int(0)
+      }
+      [1]=>
+      object(stdClass)#172 (3) {
+        ["sku"]=>
+        string(16) "SL-USA-BLK-CL-XL"
+        ["id"]=>
+        string(13) "59dbc5830fa20"
+        ["quantity_received"]=>
+        int(0)
+      }
+      [2]=>
+      object(stdClass)#173 (3) {
+        ["sku"]=>
+        string(17) "SL-USA-BLK-CL-XXL"
+        ["id"]=>
+        string(13) "59dbc5830fad4"
+        ["quantity_received"]=>
+        int(0)
+      }
+      [3]=>
+      object(stdClass)#174 (3) {
+        ["sku"]=>
+        string(15) "SL-CLS-USA-SH-S"
+        ["id"]=>
+        string(13) "59dbc63b9ee69"
+        ["quantity_received"]=>
+        int(0)
+      }
+      [4]=>
+      object(stdClass)#175 (3) {
+        ["sku"]=>
+        string(15) "SL-CLS-USA-SH-M"
+        ["id"]=>
+        string(13) "59dbc6417e96e"
+        ["quantity_received"]=>
+        int(0)
+      }
+      [5]=>
+      object(stdClass)#176 (3) {
+        ["sku"]=>
+        string(15) "SL-CLS-USA-SH-L"
+        ["id"]=>
+        string(13) "59dbc646317d0"
+        ["quantity_received"]=>
+        int(11)
+      }
+      [6]=>
+      object(stdClass)#177 (3) {
+        ["sku"]=>
+        string(16) "SL-CLS-USA-SH-XL"
+        ["id"]=>
+        string(13) "59dbc64d2e833"
+        ["quantity_received"]=>
+        int(0)
+      }
+      [7]=>
+      object(stdClass)#178 (3) {
+        ["sku"]=>
+        string(17) "SL-CLS-USA-SH-XXL"
+        ["id"]=>
+        string(13) "59dbc65badc31"
+        ["quantity_received"]=>
+        int(0)
+      }
+      [8]=>
+      object(stdClass)#179 (3) {
+        ["sku"]=>
+        string(11) "SL-USA-SH-S"
+        ["id"]=>
+        string(13) "59dbc754ccb70"
+        ["quantity_received"]=>
+        int(0)
+      }
+      [9]=>
+      object(stdClass)#180 (3) {
+        ["sku"]=>
+        string(11) "SL-USA-SH-M"
+        ["id"]=>
+        string(13) "59dbc75c514b7"
+        ["quantity_received"]=>
+        int(0)
+      }
+      [10]=>
+      object(stdClass)#181 (3) {
+        ["sku"]=>
+        string(11) "SL-USA-SH-L"
+        ["id"]=>
+        string(13) "59dbc76110ae3"
+        ["quantity_received"]=>
+        int(0)
+      }
+      [11]=>
+      object(stdClass)#182 (3) {
+        ["sku"]=>
+        string(12) "SL-USA-SH-XL"
+        ["id"]=>
+        string(13) "59dbc76c15a5c"
+        ["quantity_received"]=>
+        int(0)
+      }
+      [12]=>
+      object(stdClass)#183 (3) {
+        ["sku"]=>
+        string(13) "SL-USA-SH-XXL"
+        ["id"]=>
+        string(13) "59dbc77407ee4"
+        ["quantity_received"]=>
+        int(0)
+      }
+      [13]=>
+      object(stdClass)#184 (3) {
+        ["sku"]=>
+        string(15) "SL-USA-SBD-SH-M"
+        ["id"]=>
+        string(13) "59dbc7cd3c737"
+        ["quantity_received"]=>
+        int(0)
+      }
+      [14]=>
+      object(stdClass)#185 (3) {
+        ["sku"]=>
+        string(15) "SL-USA-SBD-SH-L"
+        ["id"]=>
+        string(13) "59dbc7d7b1733"
+        ["quantity_received"]=>
+        int(0)
+      }
+    }
+    ["po_id"]=>
+    int(515)
+  }
+}
+{"code":200,"Message":"Success"}

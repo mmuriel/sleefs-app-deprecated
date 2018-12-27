@@ -1,0 +1,5 @@
+# Use PHPedge as default
+AddHandler application/x-httpd-php-edge .php
+<IfModule mod_suphp.c>
+    suPHP_ConfigPath /opt/phpedge/lib
+</IfModule>
