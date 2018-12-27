@@ -13,7 +13,11 @@ Homestead.yaml
 npm-debug.log
 yarn-error.log
 .env
+.env-prd
 comandos.txt
 app.log
 php_errors.log
+/.phpintel
+/.phpintel/*
+error_log
 
