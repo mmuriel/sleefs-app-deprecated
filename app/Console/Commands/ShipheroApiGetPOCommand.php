@@ -41,7 +41,8 @@ class ShipheroApiGetPOCommand extends Command
     public function handle()
     {
         //
-        Shiphero::setKey('8c072f53ec41629ee14c35dd313a684514453f31');
+        //Shiphero::setKey('8c072f53ec41629ee14c35dd313a684514453f31');
+        Shiphero::setKey(env('SHIPHERO_APIKEY'));
         $po = Shiphero::getPO(167);
         var_dump($po);
         echo "\n====================\n";
@@ -49,6 +50,6 @@ class ShipheroApiGetPOCommand extends Command
         $clogger = new \Sleefs\Helpers\CustomLogger("sleefs.log");
         $clogger->writeToLog (json_encode($po),"INFO");
 
-        echo "Hola mundo comandos en laravel 5.4\n";
+        //echo "Hola mundo comandos en laravel 5.4\n";
     }
 }

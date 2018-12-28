@@ -18,6 +18,7 @@ class Kernel extends ConsoleKernel
         Commands\GoogleSpreadSheetApiCommand::Class,
         Commands\ShopifyGetProducts::Class,
         Commands\SyncerPoItemWarehousePostion::Class,
+        Commands\InventoryReport::Class,
     ];
 
     /**

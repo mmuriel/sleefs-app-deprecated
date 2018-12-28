@@ -11,6 +11,9 @@
 				<a href="<?php echo e(env("APP_URL")); ?>/pos">POs</a>
 			</li>
 			<li>
+				<a href="<?php echo e(env("APP_URL")); ?>/inventoryreport">Inventory Reports</a>
+			</li>
+			<li>
 				<a href="<?php echo e(route('logout')); ?>" id="logout-link">
                                             Logout
 				</a>

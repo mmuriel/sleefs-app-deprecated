@@ -44,7 +44,7 @@ class ShipheroDailyInventoryReport {
         // 2.1. El tipo de producto por cada sku
         // 2.2. La cantidad ordenada de productos por SKU (ordenes abiertas)
 
-
+        $ctrlQty = 1;
         foreach ($inMemoryProducts as $key=>$item){
             $tmpProduct = new Product();
             $shopifyProductGetter = new ProductGetterBySku();
@@ -66,6 +66,12 @@ class ShipheroDailyInventoryReport {
                         ->select('sh_purchaseorder_items.quantity')
                         ->whereRaw("(sh_purchaseorders.fulfillment_status != 'closed' and sh_purchaseorders.fulfillment_status != 'canceled') and sh_purchaseorder_items.sku='".$key."' ")
                         ->get();
+
+            
+
+            echo $ctrlQty.". Procesando para ".$key."\n";
+            $ctrlQty++;
+
 
             $totalInOrder = 0;
             if ($poItemsQty->count() > 0){
