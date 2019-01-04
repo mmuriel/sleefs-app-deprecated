@@ -69,7 +69,7 @@ class ShipheroDailyInventoryReport {
 
             
 
-            echo $ctrlQty.". Procesando para ".$key."\n";
+            //echo $ctrlQty.". Procesando para ".$key."\n";
             $ctrlQty++;
 
 
