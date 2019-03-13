@@ -21,6 +21,9 @@ use Sleefs\Helpers\Shopify\ProductPublishValidatorByImage;
 use Sleefs\Helpers\ShopifyAPI\Shopify;
 use Sleefs\Helpers\ShopifyAPI\RemoteProductGetterBySku;
 
+
+use Sleefs\Helpers\Shopify\ProductTaggerForNewResTag;
+
 class ShopifyProductPublisherTest extends TestCase {
 
 
@@ -134,8 +137,8 @@ class ShopifyProductPublisherTest extends TestCase {
     	// Testing for a "not ready to publish" product, Product #1
     	//============================================================
     	$localProduct1 = new \Sleefs\Models\Shopify\Product();
-    	$localProduct1 = $productGetter->getProduct('SL-10EJIRD-AS-Y',$localProduct1);
-    	$this->assertEquals('1558599696496',$localProduct1->idsp);
+    	$localProduct1 = $productGetter->getProduct('SL-ACE--FLBLK-JS-XXS',$localProduct1);
+    	$this->assertEquals('9547409418',$localProduct1->idsp);
     	$options1 = 'handle='.$localProduct1->handle.'&fields=id,handle,published_at,images';
 
     	$remoteRaw1 = $shopifyApi->getAllProducts($options1);
@@ -189,6 +192,149 @@ class ShopifyProductPublisherTest extends TestCase {
 
     }
 
+
+
+    public function testTagProductWithNEWTag(){
+
+    	$shopifyApi = new Shopify('6d79f49e6c91cb45eb5e37270f527afa','f6c18f765183ef32b76ebf9824dd8311','sleefs-preorder.myshopify.com/admin/');
+    	$rawProduct = new \stdClass();
+    	$rawProduct->id = 255606456350;
+    	$rawProduct->title = "Blue Mask Thin Blue Line Compression Tights / Leggings (PRE-ORDER)*";
+    	$rawProduct->vendor = "SLEEFS";
+    	//$rawProduct->created_at = "2017-10-24T11:41:44-04:00";
+    	$rawProduct->created_at = date("Y-m-d",strtotime("-15 days"))."T00:01:44-04:00";
+    	$rawProduct->handle = "blue-mask-thin-blue-line-compression-tights-leggings";
+    	$rawProduct->tags = "alltights, BlackColor, BlueColor, Mask, Police, testing, Thin Blue Line, thinblueline, tights, Warrior";
+    	$rawProduct->product_type = "Tights";
+    	$rawProduct->updated_at = "2018-03-25T23:07:16-04:00";
+    	$rawProduct->template_suffix = null;
+    	//$rawProduct->published_at = "2017-10-24T11:44:54-04:00";
+    	$rawProduct->published_at = null;
+    	
+    	$options = new \stdClass();
+    	$tagger = new ProductTaggerForNewResTag();
+
+    	$tag = $tagger->defineTag ($rawProduct);
+    	$rawProduct = $tagger->tagProduct($rawProduct,$shopifyApi,$options);
+    	$this->assertRegExp("/^NEW[0-9]{6,6}/",$tag);
+    	$this->assertRegExp("/(NEW[0-9]{6,6})/",$rawProduct->tags);
+    	//echo "\nTag Line #1: ".$rawProduct->tags."\n";
+    	//$tagger->tagProduct($rawProduct,$shopifyApi,$options);
+
+    }
+
+
+
+
+    public function testTagProductWithRESTag(){
+
+    	$shopifyApi = new Shopify('6d79f49e6c91cb45eb5e37270f527afa','f6c18f765183ef32b76ebf9824dd8311','sleefs-preorder.myshopify.com/admin/');
+    	$rawProduct = new \stdClass();
+    	$rawProduct->id = 255605014558;
+    	$rawProduct->title = "Blessed Black Compression Tights / Leggings (PRE-ORDER)*";
+    	$rawProduct->vendor = "SLEEFS";
+    	$rawProduct->created_at = "2017-10-24T11:41:44-04:00";
+    	$rawProduct->handle = "blessed-black-compression-tights-leggings";
+    	$rawProduct->tags = "alltights, BlackColor, blessed, Blessing, blessings, testing, tights, WhiteColor";
+    	$rawProduct->product_type = "Tights";
+    	$rawProduct->updated_at = "2018-03-25T23:07:16-04:00";
+    	$rawProduct->template_suffix = null;
+    	//$rawProduct->published_at = "2017-10-24T11:44:54-04:00";
+    	$rawProduct->published_at = null;
+    
+    	$options = new \stdClass();
+    	$tagger = new ProductTaggerForNewResTag();
+
+    	$tag = $tagger->defineTag ($rawProduct);
+    	$rawProduct = $tagger->tagProduct($rawProduct,$shopifyApi,$options);
+    	$this->assertRegExp("/^RES[0-9]{6,6}/",$tag);
+    	$this->assertRegExp("/(RES[0-9]{6,6})/",$rawProduct->tags);
+    	//echo "\nTag Line #2: ".$rawProduct->tags."\n";
+    	//$tagger->tagProduct($rawProduct,$shopifyApi,$options);
+
+
+    	
+    	$tagLine = $rawProduct->tags;
+    	$tagLine = preg_replace("/(\ {0,1}NEW[0-9]{6,6}\,{0,1})/","",$tagLine);
+        $tagLine = preg_replace("/(\ {0,1}RES[0-9]{6,6}\,{0,1})/","",$tagLine);
+    	$shopifyApi->updateProduct($rawProduct->id,array('product'=>array(
+            'tags'=>$tagLine)));
+		
+    }
+
+
+
+
+	public function testTagProductNewToResTag(){
+
+    	$shopifyApi = new Shopify('6d79f49e6c91cb45eb5e37270f527afa','f6c18f765183ef32b76ebf9824dd8311','sleefs-preorder.myshopify.com/admin/');
+    	$rawProduct = $shopifyApi->getSingleProduct(255606456350);
+    	$this->assertRegExp("/NEW([0-9]{6,6})/",$rawProduct->product->tags);
+    	/*
+    	$rawProduct = new \stdClass();
+    	$rawProduct->id = 255605014558;
+    	$rawProduct->title = "Blessed Black Compression Tights / Leggings (PRE-ORDER)*";
+    	$rawProduct->vendor = "SLEEFS";
+    	$rawProduct->created_at = "2017-10-24T11:41:44-04:00";
+    	$rawProduct->handle = "blessed-black-compression-tights-leggings";
+    	$rawProduct->tags = "alltights, BlackColor, blessed, Blessing, blessings, testing, tights, WhiteColor";
+    	$rawProduct->product_type = "Tights";
+    	$rawProduct->updated_at = "2018-03-25T23:07:16-04:00";
+    	$rawProduct->template_suffix = null;
+    	//$rawProduct->published_at = "2017-10-24T11:44:54-04:00";
+    	$rawProduct->published_at = null;
+    	//=====================================
+    	*/
+    	$options = new \stdClass();
+    	$tagger = new ProductTaggerForNewResTag();
+
+    	$tag = $tagger->defineTag ($rawProduct->product);
+    	$rawProduct = $tagger->tagProduct($rawProduct->product,$shopifyApi,$options);
+    	$this->assertRegExp("/^RES[0-9]{6,6}/",$tag);
+    	$this->assertRegExp("/(RES[0-9]{6,6})/",$rawProduct->tags);
+    	//echo "\nTag Line #3: ".$rawProduct->tags."\n";
+    	//$tagger->tagProduct($rawProduct,$shopifyApi,$options);
+
+
+    	
+    	//Retornando el producto al estado natural:
+    	$tagLine = $rawProduct->tags;
+    	$tagLine = preg_replace("/(\ {0,1}NEW[0-9]{6,6}\,{0,1})/","",$tagLine);
+        $tagLine = preg_replace("/(\ {0,1}RES[0-9]{6,6}\,{0,1})/","",$tagLine);
+    	$shopifyApi->updateProduct($rawProduct->id,array('product'=>array(
+            'tags'=>$tagLine)));
+		
+    }
+
+
+
+
+    public function testTagProductErrorTry(){
+
+    	$shopifyApi = new Shopify('6d79f49e6c91cb45eb5e37270f527afa','f6c18f765183ef32b76ebf9824dd8311','sleefs-preorder.myshopify.com/admin/');
+    	$rawProduct = new \stdClass();
+    	$rawProduct->id = 155605014558;//This is a not valid product, this ID doesn't exists
+    	$rawProduct->title = "Blessed Black Compression Tights / Leggings (PRE-ORDER)*";
+    	$rawProduct->vendor = "SLEEFS";
+    	$rawProduct->created_at = "2017-10-24T11:41:44-04:00";
+    	$rawProduct->handle = "blessed-black-compression-tights-leggings";
+    	$rawProduct->tags = "alltights, BlackColor, blessed, Blessing, blessings, testing, tights, WhiteColor";
+    	$rawProduct->product_type = "Tights";
+    	$rawProduct->updated_at = "2018-03-25T23:07:16-04:00";
+    	$rawProduct->template_suffix = null;
+    	$rawProduct->published_at = null;
+    
+    	$options = new \stdClass();
+    	$tagger = new ProductTaggerForNewResTag();
+
+    	$tag = $tagger->defineTag ($rawProduct);
+    	$rawProduct = $tagger->tagProduct($rawProduct,$shopifyApi,$options);
+    	//print_r($rawProduct);
+    	$this->assertFalse($rawProduct);
+    	//echo "\nTag Line #2: ".$rawProduct->tags."\n";
+    	//$tagger->tagProduct($rawProduct,$shopifyApi,$options)
+		
+    }
 
 
 
@@ -249,6 +395,24 @@ class ShopifyProductPublisherTest extends TestCase {
 		$this->variants[1]->idproduct = $this->products[1]->id;
 		$this->variants[1]->price = 5.0;
 		$this->variants[1]->save();
+
+
+		//Product #3
+		array_push($this->products,new Product());
+		$this->products[2]->idsp = 9547409418;
+		$this->products[2]->title = 'Aces Floral black quick-dry jersey';
+		$this->products[2]->vendor = 'Sleefs';
+		$this->products[2]->product_type = 'Jersey';
+		$this->products[2]->handle = 'ace-floral-black-quick-dry-jersey';
+		$this->products[2]->save();
+
+		array_push($this->variants,new Variant());
+		$this->variants[2]->idsp = 20093518421;
+		$this->variants[2]->sku = 'SL-ACE--FLBLK-JS-XXS';
+		$this->variants[2]->title = 'Black/withe';
+		$this->variants[2]->idproduct = $this->products[2]->id;
+		$this->variants[2]->price = 25.0;
+		$this->variants[2]->save();
 
 		/*
 		array_push($this->variants,new Variant());

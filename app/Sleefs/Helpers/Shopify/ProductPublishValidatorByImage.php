@@ -2,7 +2,7 @@
 namespace Sleefs\Helpers\Shopify;
 
 use \Sleefs\Helpers\Misc\Response;
-use \Sleefs\Helpers\ShopifyAPI\IProductPublishValidator;
+use \Sleefs\Helpers\ShopifyAPI\Interfaces\IProductPublishValidator;
 
 class ProductPublishValidatorByImage implements IProductPublishValidator  {
 
@@ -11,7 +11,7 @@ class ProductPublishValidatorByImage implements IProductPublishValidator  {
     *   This method validates if the passed (as argument) object, has images attribute and it is not published yet
     *   @param stdClass $rawProduct, 
     *
-    *   @return boolean, the product is ready to be published or to not be published
+    *   @return \Sleefs\Helpers\Misc\Response, the product is ready to be published or not to be published
     *
     */
 

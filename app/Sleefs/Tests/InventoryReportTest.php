@@ -72,12 +72,46 @@ class InventoryReportTest extends TestCase {
  	}
 
 
+ 	public function testGetAllOrderedQtyByProductType(){
+
+ 		//1. Define los SKUs para el product type: 3/4 Tights
+ 		/*
+ 		$skus = $variants = array('SL-BBLC-WH-KCL-YS','SL-BBLC-WH-KCL-YM','SL-BBLC-WH-KCL-YL','SL-BB-RIP-B-KCL-YS','SL-BB-RIP-B-KCL-YM','SL-BB-RIP-B-KCL-YL','SL-BSTMST-BLU-KCL-YS','SL-BSTMST-BLU-KCL-YM','SL-BSTMST-BLU-KCL-YL','SL-BLKFIRE-BO-KCL-YS','SL-BLKFIRE-BO-KCL-YM','SL-BLKFIRE-BO-KCL-YL','SL-BLK-KCL-YS','SL-BLK-KCL-YM','SL-BLK-KCL-YL','SL-BLKRAIN-B-KCL-YS','SL-BLKRAIN-B-KCL-YM','SL-BLKRAIN-B-KCL-YL','SL-ELEC-YELL-KCL-YS','SL-ELEC-YELL-KCL-YM','SL-ELEC-YELL-KCL-YL','SL-BLK-GLD-ICA-KCL-YS','SL-BLK-GLD-ICA-KCL-YM','SL-BLK-GLD-ICA-KCL-YL','SL-ICA-WHT-GLD-KCL-YS','SL-ICA-WHT-GLD-KCL-YM','SL-ICA-WHT-GLD-KCL-YL','SL-NEB-BBP-KCL-YS','SL-NEB-BBP-KCL-YM','SL-NEB-BBP-KCL-YL','SL-BB-OLD-KCL-YS','SL-BB-OLD-KCL-YM','SL-BB-OLD-KCL-YL','SL-RDLIGHT-R-KCL-YS','SL-RDLIGHT-R-KCL-YM','SL-RDLIGHT-R-KCL-YL','SL-SPI-RED-KCL-YS','SL-SPI-RED-KCL-YM','SL-SPI-RED-KCL-YL','SL-RIP-BR-BW-KCL-YS','SL-RIP-BR-BW-KCL-YM','SL-RIP-BR-BW-KCL-YL','SL-RYL-KCL-YS','SL-RYL-KCL-YL','SL-SAV-BLU-KCL-YS','SL-SAV-BLU-KCL-YM','SL-SAV-BLU-KCL-YL','SL-TATCT-BG-KCL-YS','SL-TATCT-BG-KCL-YM','SL-TATCT-BG-KCL-YL','SL-TRY-BBW-KCL-YS','SL-TRY-BBW-KCL-YM','SL-TRY-BBW-KCL-YL','SL-TRY-RBW-KCL-YS','SL-TRY-RBW-KCL-YM','SL-TRY-RBW-KCL-YL','SL-TRY-USA-KCL-YS','SL-TRY-USA-KCL-YM','SL-TRY-USA-KCL-YL','SL-WHT-KCL-YS','SL-WHT-KCL-YM','SL-WHT-KCL-YL','SL-LION-WHT-KCL-YS','SL-LION-WHT-KCL-YM','SL-LION-WHT-KCL-YL','SL-OCWA-KCL-YS','SL-OCWA-KCL-YM','SL-OCWA-KCL-YL','SL-RUB-KCL-YS','SL-RUB-KCL-YM','SL-RUB-KCL-YL','SL-RBUFTBL-KCL-YS','SL-RBUFTBL-KCL-YM','SL-RBUFTBL-KCL-YL','SL-PSMK-KCL-YS','SL-PSMK-KCL-YM','SL-PSMK-KCL-YL','SL-FYBK-KCL-YS','SL-FYBK-KCL-YM','SL-FYBK-KCL-YL','SL-TIGMSK-KCL-YS','SL-TIGMSK-KCL-YM','SL-TIGMSK-KCL-YL','SL-TIGR-KCL-YS','SL-TIGR-KCL-YM','SL-TIGR-KCL-YL','SL-COROBB-KCL-YS','SL-COROBB-KCL-YM','SL-COROBB-KCL-YL','SL-CORBNY-KCL-YS','SL-CORBNY-KCL-YM','SL-CORBNY-KCL-YL','SL-TBLNCOR-KCL-YS','SL-TBLNCOR-KCL-YM','SL-TBLNCOR-KCL-YL','SL-CORBST-KCL-YS','SL-CORBST-KCL-YM','SL-CORBST-KCL-YL','SL-ANIMRD-KCL-YS','SL-ANIMRD-KCL-YM','SL-ANIMRD-KCL-YL','SL-VIBENAT-KCL-YS','SL-VIBENAT-KCL-YM','SL-VIBENAT-KCL-YL','SL-RDSCTCT-KCL-YS','SL-RDSCTCT-KCL-YM','SL-RDSCTCT-KCL-YL','SL-SAV2GRA-KCL-YS','SL-SAV2GRA-KCL-YM','SL-SAV2GRA-KCL-YL','SL-SHKMSK-KCL-YS','SL-SHKMSK-KCL-YM','SL-SHKMSK-KCL-YL','SL-DIGCAM-KCL-YS','SL-DIGCAM-KCL-YM','SL-DIGCAM-KCL-YL','SL-DIGCARBST-KCL-YS','SL-DIGCARBST-KCL-YM','SL-DIGCARBST-KCL-YL','SL-DIGULPR-KCL-YS','SL-DIGULPR-KCL-YM','SL-DIGULPR-KCL-YL','SL-DOMBKOP-KCL-YS','SL-DOMBKOP-KCL-YM','SL-DOMBKOP-KCL-YL','SL-RIPBYL-KCL-YS','SL-RIPBYL-KCL-YM','SL-RIPBYL-KCL-YL','SL-CORMHW-KCL-YS','SL-CORMHW-KCL-YM','SL-CORMHW-KCL-YL','SL-GRESMM-KCL-YS','SL-GRESMM-KCL-YM','SL-GRESMM-KCL-YL','SL-GRESMM-KCL-YS','SL-GRESMM-KCL-YM','SL-GRESMM-KCL-YL','SL-USAMFG-KCL-YS','SL-USAMFG-KCL-YM','SL-USAMFG-KCL-YL','SL-BLJICC-KCL-YS','SL-BLJICC-KCL-YM','SL-BLJICC-KCL-YL','SL-ICAMER-KCL-YS','SL-ICAMER-KCL-YM','SL-ICAMER-KCL-YL','SL-HTNOX-KCL-YS','SL-HTNOX-KCL-YM','SL-HTNOX-KCL-YL','SL-NAVSTRS-KCL-YS','SL-NAVSTRS-KCL-YM','SL-NAVSTRS-KCL-YL','SL-NEONG-KCL-YS','SL-NEONG-KCL-YM','SL-NEONG-KCL-YL','SL-GLDMARFY-KCL-YS','SL-GLDMARFY-KCL-YM','SL-GLDMARFY-KCL-YL','SL-GOARD-KCL-YS','SL-GOARD-KCL-YM','SL-GOARD-KCL-YL','SL-BIOMER-KCL-YS','SL-BIOMER-KCL-YM','SL-BIOMER-KCL-YL','SL-MONYBJM-KCL-YS','SL-MONYBJM-KCL-YM','SL-MONYBJM-KCL-YL','SL-GOABL-KCL-YS','SL-GOABL-KCL-YM','SL-GOABL-KCL-YL','SL-GOAWT-KCL-YS','SL-GOAWT-KCL-YM','SL-GOAWT-KCL-YL','SL-GOAWT-KCL-YS','SL-GOAWT-KCL-YM','SL-GOAWT-KCL-YL','SL-GOANV-KCL-YS','SL-GOANV-KCL-YM','SL-GOANV-KCL-YL','SL-GOANV-KCL-YS','SL-GOANV-KCL-YM','SL-GOANV-KCL-YL','SL-CBLT-KCL-YS','SL-CBLT-KCL-YM','SL-CBLT-KCL-YL','SL-GALGXY-KCL-YS','SL-GALGXY-KCL-YM','SL-GALGXY-KCL-YL','SL-BBPDTR-KCL-YS','SL-BBPDTR-KCL-YM','SL-BBPDTR-KCL-YL','SL-SPLTRD-KCL-YS','SL-SPLTRD-KCL-YM','SL-SPLTRD-KCL-YL','SL-TCTUSFBB-KCL-YS','SL-TCTUSFBB-KCL-YM','SL-TCTUSFBB-KCL-YL','SL-10EJIRD-KCL-YS','SL-10EJIRD-KCL-YM','SL-10EJIRD-KCL-YL','SL-10EJICK-KCL-YS','SL-10EJICK-KCL-YM','SL-10EJICK-KCL-YL','SL-SKLBKWH-KCL-YS','SL-SKLBKWH-KCL-YM','SL-SKLBKWH-KCL-YL','SL-SNPDSRC-KCL-YS','SL-SNPDSRC-KCL-YM','SL-SNPDSRC-KCL-YL','SL-PZZS-KCL-YS','SL-PZZS-KCL-YM','SL-PZZS-KCL-YL','SL-PLYBLK-KCL-YS','SL-PLYBLK-KCL-YM','SL-PLYBLK-KCL-YL','SL-ORGCRD-KCL-YS','SL-ORGCRD-KCL-YM','SL-ORGCRD-KCL-YL','SL-USAMCFBG-KCL-YS','SL-USAMCFBG-KCL-YM','SL-USAMCFBG-KCL-YL','SL-USAMCFBG-KCL-YS','SL-USAMCFBG-KCL-YM','SL-USAMCFBG-KCL-YL','SL-STLTCT-KCL-YS','SL-STLTCT-KCL-YM','SL-STLTCT-KCL-YL','SL-CRSVPBKY-KCL-YS','SL-CRSVPBKY-KCL-YM','SL-CRSVPBKY-KCL-YL','SL-CRSGBKRD-KCL-YS','SL-CRSGBKRD-KCL-YM','SL-CRSGBKRD-KCL-YL','SL-CRSVRBW-KCL-YS','SL-CRSVRBW-KCL-YM','SL-CRSVRBW-KCL-YL','SL-GRNSMLM-KCL-YS','SL-GRNSMLM-KCL-YM','SL-GRNSMLM-KCL-YL','SL-GRLLMS-KCL-YS','SL-GRLLMS-KCL-YM','SL-GRLLMS-KCL-YL','SL-INSPBLK-KCL-YS','SL-INSPBLK-KCL-YM','SL-INSPBLK-KCL-YL','SL-OCNWRG-KCL-YS','SL-OCNWRG-KCL-YM','SL-OCNWRG-KCL-YL','SL-HBDBNT-KCL-YS','SL-HBDBNT-KCL-YM','SL-HBDBNT-KCL-YL','SL-ASNBK-KCL-YS','SL-ASNBK-KCL-YM','SL-ASNBK-KCL-YL','SL-ASNRD-KCL-YS','SL-ASNRD-KCL-YM','SL-ASNRD-KCL-YL','SL-ASNBL-KCL-YS','SL-ASNBL-KCL-YM','SL-ASNBL-KCL-YL','SL-ASNBL-KCL-YS','SL-ASNBL-KCL-YM','SL-ASNBL-KCL-YL','SL-ASNPP-KCL-YS','SL-ASNPP-KCL-YM','SL-ASNPP-KCL-YL','SL-FRSOG-KCL-YS','SL-FRSOG-KCL-YM','SL-FRSOG-KCL-YL','SL-SNKSKB-KCL-YS','SL-SNKSKB-KCL-YM','SL-SNKSKB-KCL-YL','SL-SVGAME-KCL-YS','SL-SVGAME-KCL-YM','SL-SVGAME-KCL-YL','SL-ICGICA-KCL-YS','SL-ICGICA-KCL-YM','SL-ICGICA-KCL-YL','SL-ICGMCH-KCL-YS','SL-ICGMCH-KCL-YM','SL-ICGMCH-KCL-YL','SL-ICGSTC-KCL-YS','SL-ICGSTC-KCL-YM','SL-ICGSTC-KCL-YL','SL-ICGMLT-KCL-YS','SL-ICGMLT-KCL-YM','SL-ICGMLT-KCL-YL','SL-RPPWLF-KCL-YS','SL-RPPWLF-KCL-YM','SL-RPPWLF-KCL-YL','SL-OCNWRR-KCL-YS','SL-OCNWRR-KCL-YM','SL-OCNWRR-KCL-YL','SL-SKU000-KCL-YS','SL-SKU000-KCL-YM','SL-SKU000-KCL-YL','SL-HOT-PNK-CL-YL','SL-HOT-PNK-CL-S','SL-HOT-PNK-CL-M','SL-HOT-PNK-CL-L','SL-HOT-PNK-CL-XL','SL-HOT-PNK-CL-XXL','SL-HOT-PNK-CL-XXXL','SL-HOT-PNK-CL-YS','SL-HOT-PNK-CL-YM','SL-DUCKS-KCL-YS','SL-DUCKS-KCL-YM','SL-DUCKS-KCL-YL','SL-FIBO-KCL-YS','SL-FIBO-KCL-YM','SL-FIBO-KCL-YL','SL-WAUSFL-KCL-YS','SL-WAUSFL-KCL-YM','SL-WAUSFL-KCL-YL','SL-BRRENAUSFL-KCL-YS','SL-BRRENAUSFL-KCL-YM','SL-BRRENAUSFL-KCL-YL','SL-BOOM-KCL-YS','SL-BOOM-KCL-YM','SL-BOOM-KCL-YL','SL-KEOUBLYE-KCL-YS','SL-KEOUBLYE-KCL-YM','SL-KEOUBLYE-KCL-YL','SL-GOTOWACA-KCL-YS','SL-GOTOWACA-KCL-YM','SL-GOTOWACA-KCL-YL','SL-EMFA-KCL-YS','SL-EMFA-KCL-YM','SL-EMFA-KCL-YL','SL-DINO2-KCL-YS','SL-DINO2-KCL-YM','SL-DINO2-KCL-YL','SL-GRTU-KCL-YS','SL-GRTU-KCL-YM','SL-GRTU-KCL-YL','SL-UNBL-KCL-YS','SL-UNBL-KCL-YM','SL-UNBL-KCL-YL','SL-MAND-KCL-YS','SL-MAND-KCL-YM','SL-MAND-KCL-YL','SL-MOSIYERE-KCL-YS','SL-MOSIYERE-KCL-YM','SL-MOSIYERE-KCL-YL','SL-STWH-KCL-YS','SL-STWH-KCL-YM','SL-STWH-KCL-YL','SL-PASP-KCL-YS','SL-PASP-KCL-YM','SL-PASP-KCL-YL','SL-GOHERE-KCL-YS','SL-GOHERE-KCL-YM','SL-GOHERE-KCL-YL','SL-WTP-KCL-YS','SL-WTP-KCL-YM','SL-WTP-KCL-YL','SL-SVGCHYPP-KCL-YS','SL-SVGCHYPP-KCL-YM','SL-SVGCHYPP-KCL-YL','SL-SVGCHOBL-KCL-YS','SL-SVGCHOBL-KCL-YM','SL-SVGCHOBL-KCL-YL','SL-SVGCHBG-KCL-YS','SL-SVGCHBG-KCL-YM','SL-SVGCHBG-KCL-YL','SL-BDROS-KCL-YS','SL-BDROS-KCL-YM','SL-BDROS-KCL-YL','SL-GDFSTR-KCL-YS','SL-GDFSTR-KCL-YM','SL-GDFSTR-KCL-YL','SL-HAHAWHBL-KCL-YS','SL-HAHAWHBL-KCL-YM','SL-HAHAWHBL-KCL-YL','SL-SKANSN-KCL-YS','SL-SKANSN-KCL-YM','SL-SKANSN-KCL-YL','SL-HYBLBL-KCL-YS','SL-HYBLBL-KCL-YM','SL-HYBLBL-KCL-YL','SL-PIDO-KCL-YS','SL-PIDO-KCL-YM','SL-PIDO-KCL-YL','SL-VIBLJ-KCL-YS','SL-VIBLJ-KCL-YM','SL-VIBLJ-KCL-YL','SL-LIONST-KCL-YS','SL-LIONST-KCL-YM','SL-LIONST-KCL-YL','SL-CLDBSTFG-KCL-YS','SL-CLDBSTFG-KCL-YM','SL-CLDBSTFG-KCL-YL','SL-10EJICK-KCL-YM');
+
+ 		//2. Itera por todos los skus para determinar la cantidd de productos ordenados
+ 		$totalOrdered = 0;
+ 		for ($i=0;$i < count($skus);$i++){
+
+ 			echo "Probando para: ".$skus[$i]."\n";
+ 			
+
+ 		 	$orderItemsByProductType =  \DB::table('sh_purchaseorder_items')
+                        ->leftJoin('sh_purchaseorders','sh_purchaseorder_items.idpo','=','sh_purchaseorders.id')
+                        ->select('sh_purchaseorder_items.*')
+                        ->whereRaw("(sh_purchaseorders.fulfillment_status != 'closed' and sh_purchaseorders.fulfillment_status != 'canceled') and sh_purchaseorder_items.sku='".$skus[$i]."' ")
+                        ->get();
+ 		 	if ($orderItemsByProductType->count() > 0){
+ 		 		foreach ($orderItemsByProductType as $orderItem){
+ 		 			$totalOrdered += ($orderItem->qty_pending);
+ 		 		}
+ 		 		print_r($orderItemsByProductType);
+ 		 	}
+
+ 		 	echo "\n\n--------------------------\nTotal ordenado: ".$totalOrdered."\n";
+ 		}
+		*/
+ 		$this->assertTrue(true);
+
+ 	}
+
+
  	public function testCreateInventoryReport(){
         $reportCreator = new ShipheroDailyInventoryReport();
         $report = $reportCreator->createReport(['apikey'=>env('SHIPHERO_APIKEY'),'qtyperpage'=>1000]);
 
+        //print_r($report->inventoryReportItems);
         $this->assertEquals(2,$report->inventoryReportItems->count());
-        $this->assertEquals(24,$report->inventoryReportItems->get(1)->total_on_order);
+        $this->assertEquals(0,$report->inventoryReportItems->get(1)->total_on_order);
  	}
 
 
@@ -97,11 +131,15 @@ class InventoryReportTest extends TestCase {
     private function prepareForTests()
     {
 
+    	Shiphero::setKey(env('SHIPHERO_APIKEY'));
+
+
+    	
      	\Artisan::call('migrate');
-     	Shiphero::setKey(env('SHIPHERO_APIKEY'));
+     	
 
 
-     	/* Adding data to database */
+     	// Adding data to database
      	//Product #1
      	array_push($this->products,new Product());
 		$this->products[0]->idsp = 890987645;
@@ -212,7 +250,7 @@ class InventoryReportTest extends TestCase {
 		$this->variants[6]->save();
 
 
-		/* Adding POs */
+		// Adding POs 
 
 		//PO #1
 		array_push($this->pos, new PurchaseOrder());
@@ -228,6 +266,7 @@ class InventoryReportTest extends TestCase {
 		$this->items[0]->shid = '59dbc5830f969';
 		$this->items[0]->quantity = 5;
 		$this->items[0]->quantity_received = 0;
+		$this->items[0]->qty_pending = 5;
 		$this->items[0]->name = '100 Emoji Black Tights for Kids / YM / Black';
 		$this->items[0]->idmd5 = md5('SL-10EJICK-KCL-YM'.'-'.'515');
 		$this->items[0]->save();
@@ -238,6 +277,7 @@ class InventoryReportTest extends TestCase {
 		$this->items[1]->shid = '59dbc5830fa20';
 		$this->items[1]->quantity = 3;
 		$this->items[1]->quantity_received = 3;
+		$this->items[1]->qty_pending = 0;
 		$this->items[1]->name = 'Ripped Bear arm sleeve / Y / Black/White';
 		$this->items[1]->idmd5 = md5('SL-ANIM-BEAR-Y-1'.'-'.'515');
 		$this->items[1]->save();
@@ -257,6 +297,7 @@ class InventoryReportTest extends TestCase {
 		$this->items[2]->shid = '69d3c5830f969';
 		$this->items[2]->quantity = 12;
 		$this->items[2]->quantity_received = 3;
+		$this->items[2]->qty_pending = 9;
 		$this->items[2]->name = '100 Emoji Black Tights for Kids / YM / Black';
 		$this->items[2]->idmd5 = md5('SL-10EJICK-KCL-YM'.'-'.'516');
 		$this->items[2]->save();
@@ -267,6 +308,7 @@ class InventoryReportTest extends TestCase {
 		$this->items[3]->shid = '62c35a8302a86';
 		$this->items[3]->quantity = 21;
 		$this->items[3]->quantity_received = 21;
+		$this->items[3]->qty_pending = 0;
 		$this->items[3]->name = 'Aerial blue and navy arm sleeve / Y / Blue/navy';
 		$this->items[3]->idmd5 = md5('SL-AERIB-KS-YL'.'-'.'516');
 		$this->items[3]->save();
@@ -277,6 +319,7 @@ class InventoryReportTest extends TestCase {
 		$this->items[4]->shid = '1aa8217bd792f';
 		$this->items[4]->quantity = 23;
 		$this->items[4]->quantity_received = 20;
+		$this->items[4]->qty_pending = 3;
 		$this->items[4]->name = 'SL-REDHAT';
 		$this->items[4]->idmd5 = md5('SL-REDHAT'.'-'.'516');
 		$this->items[4]->save();
@@ -287,10 +330,12 @@ class InventoryReportTest extends TestCase {
 		$this->items[5]->shid = '3149adc003ed9';
 		$this->items[5]->quantity = 5;
 		$this->items[5]->quantity_received = 0;
+		$this->items[5]->qty_pending = 5;
 		$this->items[5]->name = 'Ripped Bear arm sleeve / L / Black/White';
 		$this->items[5]->idmd5 = md5('SL-ANIM-BEAR-L-1'.'-'.'516');
 		$this->items[5]->save();
-
+		
+		
 
 		//---------------------------------------------------------------
 		//Real data testing

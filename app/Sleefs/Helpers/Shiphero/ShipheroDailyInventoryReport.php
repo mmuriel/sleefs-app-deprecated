@@ -63,7 +63,7 @@ class ShipheroDailyInventoryReport {
             }
             $poItemsQty =  \DB::table('sh_purchaseorder_items')
                         ->leftJoin('sh_purchaseorders','sh_purchaseorder_items.idpo','=','sh_purchaseorders.id')
-                        ->select('sh_purchaseorder_items.quantity')
+                        ->select('sh_purchaseorder_items.qty_pending')
                         ->whereRaw("(sh_purchaseorders.fulfillment_status != 'closed' and sh_purchaseorders.fulfillment_status != 'canceled') and sh_purchaseorder_items.sku='".$key."' ")
                         ->get();
 
@@ -77,7 +77,7 @@ class ShipheroDailyInventoryReport {
             if ($poItemsQty->count() > 0){
                 //Si hay elementos ordenados
                 foreach ($poItemsQty as $rawOrderItem){
-                    $totalInOrder = $totalInOrder + ((int) $rawOrderItem->quantity);
+                    $totalInOrder = $totalInOrder + ((int) $rawOrderItem->qty_pending);
                 }
 
             }

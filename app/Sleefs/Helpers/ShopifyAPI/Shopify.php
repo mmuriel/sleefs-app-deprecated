@@ -127,16 +127,43 @@ class Shopify {
         return ($contents);
     }
 
-
     public function updateProductInventory ($productId,$variants){
-
         $data= array();
         $data['product'] = array('id' => $productId, 'variants' => $variants);
         $url = $this->url . "products/{$productId}.json";
         $contents = Curl::urlPUT($url,$data);
         return ($contents);
-
     }
+
+
+
+
+    /**
+    * $data must be an associative array as this structure (it is not necessary to apply same fields):
+    * 
+    * $data = array('product'=>array(
+    *       'id' => xxxxxxxxxxx,
+    *       'title' => 'Products title',
+    *       'hanlde' => 'products-title',
+    *       .
+    *       .
+    *       .
+    *   )
+    * )
+    */
+
+
+
+    public function updateProduct ($productId,$data){
+        $url = $this->url . "products/{$productId}.json";
+        $contents = Curl::urlPUT($url,$data);
+        return json_decode($contents);
+    }
+
+
+
+
+
 
     public function getCustomer($id) {
         $url = $this->url . "/customers/{$id}.json";

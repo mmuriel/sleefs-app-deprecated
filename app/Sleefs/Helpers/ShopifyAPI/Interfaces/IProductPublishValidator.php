@@ -1,5 +1,5 @@
 <?php
-namespace Sleefs\Helpers\ShopifyAPI;
+namespace Sleefs\Helpers\ShopifyAPI\Interfaces;
 interface IProductPublishValidator  {
     /**
     *
