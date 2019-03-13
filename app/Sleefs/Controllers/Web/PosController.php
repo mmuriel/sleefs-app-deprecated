@@ -8,6 +8,7 @@ use App\User;
 
 use \Sleefs\Models\Shiphero\PurchaseOrder;
 use \Sleefs\Views\Shiphero\PurchaseOrderItemListView;
+use Sleefs\Helpers\Shopify\ImageUrlBySizeGenerator;
 use \mdeschermeier\shiphero\Shiphero;
 
 class PosController extends BaseController{
@@ -110,10 +111,14 @@ class PosController extends BaseController{
 		}
 		else{
 
+
+
+
 			$po->items = $po->items->map(function($updateObj,$key){
 
+				$urlImageGenerator = new ImageUrlBySizeGenerator();
 				$poItemListView = new PurchaseOrderItemListView($updateObj);
-				$updateObj->poItemListView = $poItemListView->render();
+				$updateObj->poItemListView = $poItemListView->render($urlImageGenerator);
 				return $updateObj;
 
 			});

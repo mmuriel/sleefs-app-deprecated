@@ -1,6 +1,7 @@
 <?php
 namespace Sleefs\Views\Shiphero;
 use \Sleefs\Models\Shiphero\PurchaseOrderItem;
+use \Sleefs\Helpers\Shopify\ImageUrlBySizeGenerator;
 
 class PurchaseOrderItemListView {
 
@@ -26,7 +27,7 @@ class PurchaseOrderItemListView {
 
 
 
-	public function render(){
+	public function render(\Sleefs\Helpers\Shopify\ImageUrlBySizeGenerator $urlImageGenerator){
 
 		
 		$imageObject = \DB::table('product_images')
@@ -38,6 +39,7 @@ class PurchaseOrderItemListView {
 		if (count($imageObject)>0){
 			//var_dump($imageObject);
 			$imageUrl = $imageObject->get(0)->url;
+			$imageUrl = $urlImageGenerator->createImgUrlWithSizeParam($imageUrl,150,150);
 			$styleObj = "width: 150px;";
 		}
 		else{
