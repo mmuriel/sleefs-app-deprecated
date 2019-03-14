@@ -25,6 +25,8 @@ class InventoryReportTest extends TestCase {
     private $variants = array();
     private $pos = array();
 	private $items = array();
+	private $inventoryReports = array();
+	private $inventoryReportsItems = array();
 
 	public function setUp()
     {
@@ -112,6 +114,40 @@ class InventoryReportTest extends TestCase {
         //print_r($report->inventoryReportItems);
         $this->assertEquals(2,$report->inventoryReportItems->count());
         $this->assertEquals(0,$report->inventoryReportItems->get(1)->total_on_order);
+ 	}
+
+
+ 	public function testOrderingInventoryReportByInventoryQty(){
+
+ 		$invReport = InventoryReport::find(1);
+ 		//print_r($invReport->inventoryReportItems);
+
+
+ 		/*
+ 		echo "\nInventory Report antes de ordenamiento: \n";
+ 		foreach($invReport->inventoryReportItems as $invReportItem){
+
+ 			echo $invReportItem->label.": ".$invReportItem->total_inventory."\n";
+
+ 		}
+ 		*/
+
+ 		$this->assertEquals(128,$invReport->inventoryReportItems->get(0)->total_inventory);
+
+ 		//Ordenando los items del Invetory Report por cantidad del inventario
+ 		$invReport->inventoryReportItems = $invReport->inventoryReportItems()->orderBy('total_inventory')->get();
+
+
+ 		$this->assertEquals(2,$invReport->inventoryReportItems->get(0)->total_inventory);
+ 		/*
+ 		echo "\n\nInventory Report despues de ordenamiento: \n";
+ 		foreach($invReport->inventoryReportItems as $invReportItem){
+
+ 			echo $invReportItem->label.": ".$invReportItem->total_inventory."\n";
+
+ 		}
+ 		*/
+
  	}
 
 
@@ -338,8 +374,74 @@ class InventoryReportTest extends TestCase {
 		
 
 		//---------------------------------------------------------------
-		//Real data testing
+		//Inventory Report Data
 		//---------------------------------------------------------------
+
+		array_push($this->inventoryReports, new \Sleefs\Models\Shiphero\InventoryReport());
+		$this->inventoryReports[0]->save();
+
+		array_push($this->inventoryReportsItems, new InventoryReportItem());
+		$this->inventoryReportsItems[0]->idreporte = $this->inventoryReports[0]->id;
+		$this->inventoryReportsItems[0]->label = 'Sleeve';
+		$this->inventoryReportsItems[0]->total_inventory = 128;
+		$this->inventoryReportsItems[0]->total_on_order = 35;
+		$this->inventoryReportsItems[0]->save();
+
+		array_push($this->inventoryReportsItems, new InventoryReportItem());
+		$this->inventoryReportsItems[1]->idreporte = $this->inventoryReports[0]->id;
+		$this->inventoryReportsItems[1]->label = 'Spats';
+		$this->inventoryReportsItems[1]->total_inventory = 34;
+		$this->inventoryReportsItems[1]->total_on_order = 0;
+		$this->inventoryReportsItems[1]->save();
+
+		array_push($this->inventoryReportsItems, new InventoryReportItem());
+		$this->inventoryReportsItems[2]->idreporte = $this->inventoryReports[0]->id;
+		$this->inventoryReportsItems[2]->label = 'Kids Tights';
+		$this->inventoryReportsItems[2]->total_inventory = 298;
+		$this->inventoryReportsItems[2]->total_on_order = 191;
+		$this->inventoryReportsItems[2]->save();
+
+		array_push($this->inventoryReportsItems, new InventoryReportItem());
+		$this->inventoryReportsItems[3]->idreporte = $this->inventoryReports[0]->id;
+		$this->inventoryReportsItems[3]->label = 'Jersey';
+		$this->inventoryReportsItems[3]->total_inventory = 78;
+		$this->inventoryReportsItems[3]->total_on_order = 0;
+		$this->inventoryReportsItems[3]->save();
+
+		array_push($this->inventoryReportsItems, new InventoryReportItem());
+		$this->inventoryReportsItems[4]->idreporte = $this->inventoryReports[0]->id;
+		$this->inventoryReportsItems[4]->label = 'Tights';
+		$this->inventoryReportsItems[4]->total_inventory = 2;
+		$this->inventoryReportsItems[4]->total_on_order = 15;
+		$this->inventoryReportsItems[4]->save();
+
+
+		array_push($this->inventoryReportsItems, new InventoryReportItem());
+		$this->inventoryReportsItems[5]->idreporte = $this->inventoryReports[0]->id;
+		$this->inventoryReportsItems[5]->label = 'Yoga Pants';
+		$this->inventoryReportsItems[5]->total_inventory = 19;
+		$this->inventoryReportsItems[5]->total_on_order = 5;
+		$this->inventoryReportsItems[5]->save();
+
+
+		array_push($this->inventoryReportsItems, new InventoryReportItem());
+		$this->inventoryReportsItems[6]->idreporte = $this->inventoryReports[0]->id;
+		$this->inventoryReportsItems[6]->label = 'Kids Tights';
+		$this->inventoryReportsItems[6]->total_inventory = 5690;
+		$this->inventoryReportsItems[6]->total_on_order = 560;
+		$this->inventoryReportsItems[6]->save();
+
+
+		array_push($this->inventoryReportsItems, new InventoryReportItem());
+		$this->inventoryReportsItems[7]->idreporte = $this->inventoryReports[0]->id;
+		$this->inventoryReportsItems[7]->label = 'Hoodie';
+		$this->inventoryReportsItems[7]->total_inventory = 45;
+		$this->inventoryReportsItems[7]->total_on_order = 0;
+		$this->inventoryReportsItems[7]->save();
+
+
+
+
 
     }
 

@@ -95,6 +95,10 @@ class InventoryReportController extends BaseController{
 		}
 		else{
 
+
+			//Ordena por cantidad total de inventario los items
+			$inventoryReport->inventoryReportItems = $inventoryReport->inventoryReportItems()->orderBy('total_inventory')->get();
+			//Agrega a cada item del inventario un objeto tipo InventoryReportItemListView para renderizar el reporte
 			$inventoryReport->inventoryReportItems = $inventoryReport->inventoryReportItems->map(function($irItem,$key){
 
 				$irItemListView = new InventoryReportItemListView($irItem);
