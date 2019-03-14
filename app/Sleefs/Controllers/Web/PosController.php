@@ -113,7 +113,7 @@ class PosController extends BaseController{
 
 
 
-
+			$po->items = $po->items()->orderBy('name')->get();
 			$po->items = $po->items->map(function($updateObj,$key){
 
 				$urlImageGenerator = new ImageUrlBySizeGenerator();

@@ -34,8 +34,12 @@
                     <td>{{ date("Y-m-d H:i:s") }}</td>
                 </tr>
                 <tr>
-                    <td>PO Number</td>
+                    <td>PO ID</td>
                     <td>{{ $po->po_id }}</td>
+                </tr>
+                <tr>
+                    <td>PO Number</td>
+                    <td>{{ $po->po_number }}</td>
                 </tr>
                 <tr>
                     <td>PO Created Date</td>
