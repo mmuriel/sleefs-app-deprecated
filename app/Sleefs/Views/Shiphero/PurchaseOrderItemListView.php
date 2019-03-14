@@ -54,7 +54,7 @@ class PurchaseOrderItemListView {
                                     <td>'.$this->poItem->sku.'</td>
                                     <td>'.$this->poItem->quantity.'</td>
                                     <td>'.money_format('%i',$this->poItem->price).'</td>
-                                    <td>$'.money_format('%i',($this->poItem->price * $this->poItem->quantity)).'</td>
+                                    <td>'.money_format('%i',($this->poItem->price * $this->poItem->quantity)).'</td>
                                     <td>
                                     	<img src="'.$imageUrl.'" style="'.$styleObj.'"/>
                                     </td>

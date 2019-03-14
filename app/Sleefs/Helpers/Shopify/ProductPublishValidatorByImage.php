@@ -15,7 +15,7 @@ class ProductPublishValidatorByImage implements IProductPublishValidator  {
     *
     */
 
-    public function isProductReadyToPublish($rawProduct): \Sleefs\Helpers\Misc\Response {
+    public function isProductReadyToPublish(\StdClass $rawProduct): \Sleefs\Helpers\Misc\Response {
 
         //1. Validates if it has images attributes and this attribute is not empty,
         //   in other words, if there is at least one image associated to the product
