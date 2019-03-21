@@ -151,9 +151,6 @@ class Shopify {
     *   )
     * )
     */
-
-
-
     public function updateProduct ($productId,$data){
         $url = $this->url . "products/{$productId}.json";
         $contents = Curl::urlPUT($url,$data);
