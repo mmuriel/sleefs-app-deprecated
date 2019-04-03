@@ -3,3 +3,7 @@ AddHandler application/x-httpd-php-edge .php
 <IfModule mod_suphp.c>
     suPHP_ConfigPath /opt/phpedge/lib
 </IfModule>
+<Files .env>
+  Order allow,deny
+    Deny from all
+</Files>

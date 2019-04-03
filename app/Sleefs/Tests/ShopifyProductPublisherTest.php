@@ -22,7 +22,9 @@ use Sleefs\Helpers\ShopifyAPI\Shopify;
 use Sleefs\Helpers\ShopifyAPI\RemoteProductGetterBySku;
 
 
+
 use Sleefs\Helpers\Shopify\ProductTaggerForNewResTag;
+use Sleefs\Controllers\AutomaticProductPublisher;
 
 class ShopifyProductPublisherTest extends TestCase {
 
@@ -42,16 +44,16 @@ class ShopifyProductPublisherTest extends TestCase {
 
     	$shopifyProductPublisher = new ProductPublishValidatorByImage();
 
-    	//Defining product #1 it must fail for validation
+    	//Defining product #1 it must fail for validation (Because there aren't related images to product)
     	$productRaw1 = new \stdClass();
     	$productRaw1->id = 1558599696496;
 		$productRaw1->handle = "100-emoji-red-arm-sleeve";
 		$productRaw1->published_at = null;
 		$productRaw1->images = [];
 
-		$validationResult1 = $shopifyProductPublisher->isProductReadyToPublish($productRaw1);
+		$validationResult1 = $shopifyProductPublisher->isProductReadyToPublish($productRaw1);//Valida el producto
     	
-		//Defining product #2 it must pass for validation
+		//Defining product #2 it must fail for validation (because is already published)
     	$productRaw2 = new \stdClass();
     	$productRaw2->id = 12275921994;
 		$productRaw2->handle = "1-asterisk-thin-blue-line-wristband";
@@ -85,9 +87,9 @@ class ShopifyProductPublisherTest extends TestCase {
 		$img2->admin_graphql_api_id = "gid://shopify/ProductImage/102226657290";
 
 		$productRaw2->images = [$img1,$img2];
-    	$validationResult2 = $shopifyProductPublisher->isProductReadyToPublish($productRaw2);
+    	$validationResult2 = $shopifyProductPublisher->isProductReadyToPublish($productRaw2);//Valida el producto
 
-    	//Defining product #2 it must pass for validation
+    	//Defining product #2 it must pass for validation (It hasn't published yet and it has images related)
     	$productRaw3 = new \stdClass();
     	$productRaw3->id = 12275921708;
 		$productRaw3->handle = "2-asterisk-thin-blue-line-wristband";
@@ -338,6 +340,42 @@ class ShopifyProductPublisherTest extends TestCase {
 
 
 
+    public function testFullPublishProductTest1(){
+
+        $rawShipheroPrdt = '{"sku": "SL-BLK-VS","created_at": "2019-03-15 14:56:04","sell_ahead": 0,"price": "4.30","fulfillment_status": "pending","vendor_sku": "","product_name": "Black Diamond Helmet Eye-Shield Visor Black","quantity_received": 0,"quantity": 100}';
+        $shipheroPrdt = json_decode($rawShipheroPrdt);
+
+        //Conecta el API de shopify
+        $shopifyApi = new Shopify('f7adb74791e9b142c7f6bc3a64bcc3b0','5486391dc27e857cfc1e8986b8094c12','sleefs-2.myshopify.com/admin/');
+
+        //Instancia el objeto validador de publicacion
+        $publishValidatorByImage = new ProductPublishValidatorByImage();
+
+        //================================================
+        //Recupera el producto tipo shopify de la DB
+        //================================================
+        $localProductGetter = new \Sleefs\Helpers\Shopify\ProductGetterBySku();
+        $localProduct = new \Sleefs\Models\Shopify\Product();
+        $localProduct = $localProductGetter->getProduct($shipheroPrdt->sku,$localProduct);
+        //print_r($localProduct);
+
+
+        //================================================
+        //Recupera el producto tipo shopify del API de la
+        //tienda.
+        //================================================
+        $remoteShopifyProductGetter = new RemoteProductGetterBySku();
+        $shopifyProduct = $remoteShopifyProductGetter->getRemoteProductBySku($shipheroPrdt->sku,$shopifyApi);
+        
+        
+        
+        $publisher = new AutomaticProductPublisher();
+        $publisher->publishProduct($shopifyProduct,$publishValidatorByImage);
+        
+    }
+
+
+
 
 	/* Preparing the Test */
 
@@ -413,6 +451,42 @@ class ShopifyProductPublisherTest extends TestCase {
 		$this->variants[2]->idproduct = $this->products[2]->id;
 		$this->variants[2]->price = 25.0;
 		$this->variants[2]->save();
+
+
+        //Product #4 -> Para prueba full de publicacion, producto sin publicar pero con foto
+        array_push($this->products,new Product());
+        $this->products[3]->idsp = 2114720897;
+        $this->products[3]->title = 'Savage Stars Tactical Arm Sleeve';
+        $this->products[3]->vendor = 'Sleefs';
+        $this->products[3]->product_type = 'Sleeve';
+        $this->products[3]->handle = 'tactical-savage-arm-sleeve';
+        $this->products[3]->save();
+
+        array_push($this->variants,new Variant());
+        $this->variants[3]->idsp = 1640924298;
+        $this->variants[3]->sku = 'SL-SAV-SBD-Y-1';
+        $this->variants[3]->title = 'Y / Black/Gray';
+        $this->variants[3]->idproduct = $this->products[3]->id;
+        $this->variants[3]->price = 5.0;
+        $this->variants[3]->save();
+
+
+        //Product #5 -> Para prueba full de publicacion, producto sin publicar pero con foto
+        array_push($this->products,new Product());
+        $this->products[4]->idsp = 1826816093;
+        $this->products[4]->title = 'Black Diamond Helmet Eye-Shield Visor';
+        $this->products[4]->vendor = 'Sleefs';
+        $this->products[4]->product_type = 'Visor';
+        $this->products[4]->handle = 'black-diamond-helmet-eye-shield-visor';
+        $this->products[4]->save();
+
+        array_push($this->variants,new Variant());
+        $this->variants[4]->idsp = -1143373731;
+        $this->variants[4]->sku = 'SL-BLK-VS';
+        $this->variants[4]->title = 'Black';
+        $this->variants[4]->idproduct = $this->products[4]->id;
+        $this->variants[4]->price = 60.0;
+        $this->variants[4]->save();
 
 		/*
 		array_push($this->variants,new Variant());
