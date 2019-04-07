@@ -6,6 +6,7 @@
 /storage/*.key
 /storage/logs/
 /storage/framework/*
+/storage/pager.txt
 /vendor
 /.idea
 /.vagrant
@@ -22,4 +23,5 @@ php_errors.log
 /.phpintel
 /.phpintel/*
 error_log
+
 

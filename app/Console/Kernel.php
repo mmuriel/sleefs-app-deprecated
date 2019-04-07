@@ -19,6 +19,7 @@ class Kernel extends ConsoleKernel
         Commands\ShopifyGetProducts::Class,
         Commands\SyncerPoItemWarehousePostion::Class,
         Commands\InventoryReport::Class,
+        Commands\ShopifyProductIDAdjuster::Class,
     ];
 
     /**
