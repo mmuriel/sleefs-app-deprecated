@@ -96,7 +96,7 @@ class ShopifyProductIDAdjuster extends Command
 
                     //Primero borra cualquier producto que pueda generar una colision de 
                     //de IDs shopify duplicados
-                    $resDelete = Product::where('idsp','=',$remotePrdt1->id)->delete();
+                    $resDelete = Product::whereRaw(" idsp='".$remotePrdt1->id."' && id != '".$localProduct->id."' ")->delete();
 
 
 
@@ -113,7 +113,7 @@ class ShopifyProductIDAdjuster extends Command
 
                     //Primero borra cualquier producto que pueda generar una colision de 
                     //de IDs shopify duplicados
-                    $resDelete = Product::where('idsp','=',$remotePrdt2->id)->delete();
+                    $resDelete = Product::whereRaw(" idsp='".$remotePrdt2->id."' && id != '".$localProduct->id."' ")->delete();
 
 
                     echo "\n\n\n---\n[+] ".$remotePrdt2->handle."(Local ID: ".$localProduct->id.")\n";
