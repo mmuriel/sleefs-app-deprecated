@@ -156,6 +156,8 @@ class ShopifyProductIDAdjuster extends Command
             //1. Variantes:
             foreach($remoteShopifyPrdt->variants as $remoteVariant){
 
+                //1. Elimina los posibles IDs duplicados:
+                $resDelete = Variant::where('idsp','=',$remoteVariant->id)->delete();
                 echo "Registrando la nueva variante para: ".$remoteVariant->title." (".$remoteVariant->sku.")\n";
                 $newVariant = new Variant();
                 $newVariant->idsp = $remoteVariant->id;
@@ -171,6 +173,7 @@ class ShopifyProductIDAdjuster extends Command
             foreach($remoteShopifyPrdt->images as $remoteImg){
 
                 echo "Registrando la nueva imagen para: ".$remoteImg->src." (".$remoteImg->id.")\n";
+                $resDelete = ProductImage::where('idsp','=',$remoteImg->id)->delete();
                 $newImage = new ProductImage();
                 $newImage->idsp = $remoteImg->id;
                 $newImage->position = $remoteImg->position;
