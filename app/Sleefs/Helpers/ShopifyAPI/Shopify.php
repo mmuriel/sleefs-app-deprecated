@@ -29,6 +29,11 @@ class Shopify {
 
     public function getSingleOrder($id) {
 
+        if (preg_match("/^shpfy_/",$id)){
+            $id = preg_replace("/^shpfy_/","",$id);
+        }
+
+
         $url = $this->url . "orders/{$id}.json";
         $contents = Curl::urlGet($url);
         return json_decode($contents);
@@ -59,6 +64,10 @@ class Shopify {
 
     public function getAllProductsByCollection($id) {
 
+        if (preg_match("/^shpfy_/",$id)){
+            $id = preg_replace("/^shpfy_/","",$id);
+        }
+
         $url = $this->url . "products.json?collection_id={$id}";
         $contents = Curl::urlGet($url);
         return json_decode($contents);
@@ -85,30 +94,56 @@ class Shopify {
 
     public function getSingleProduct($id) {
 
+        if (preg_match("/^shpfy_/",$id)){
+            $id = preg_replace("/^shpfy_/","",$id);
+        }
         $url = $this->url . "products/{$id}.json";
         $contents = Curl::urlGet($url);
         return json_decode($contents);
     }
 
     public function getAllImagesProduct($id) {
+
+        if (preg_match("/^shpfy_/",$id)){
+            $id = preg_replace("/^shpfy_/","",$id);
+        }
+
         $url = $this->url . "products/{$id}/images.json";
         $contents = Curl::urlGet($url);
         return json_decode($contents);
     }
 
     public function getSingleImageProduct($id_product, $id_image) {
+        
+        if (preg_match("/^shpfy_/",$id_product)){
+            $id_product = preg_replace("/^shpfy_/","",$id_product);
+        }
+
+        if (preg_match("/^shpfy_/",$id_image)){
+            $id_image = preg_replace("/^shpfy_/","",$id_image);
+        }
+
         $url = $this->url . "products/{$id_product}/images/{$id_image}.json";
         $contents = Curl::urlGet($url);
         return json_decode($contents);
     }
 
     public function getSingleProductVariant($id_variant) {
+
+        if (preg_match("/^shpfy_/",$id_variant)){
+            $id_variant = preg_replace("/^shpfy_/","",$id_variant);
+        }
+
         $url = $this->url . "/variants/{$id_variant}.json";
         $contents = Curl::urlGet($url);
         return json_decode($contents);
     }
 
     public function getAllProductVariants($id_product) {
+
+        if (preg_match("/^shpfy_/",$id_product)){
+            $id_product = preg_replace("/^shpfy_/","",$id_product);
+        }
         $url = $this->url . "/products/{$id_product}/variants.json";
         $contents = Curl::urlGet($url);
         return json_decode($contents);
@@ -121,6 +156,11 @@ class Shopify {
     }
 
     public function setNoteOrder($id, $note) {
+
+
+        if (preg_match("/^shpfy_/",$id)){
+            $id = preg_replace("/^shpfy_/","",$id);
+        }
         $data['order'] = array('id' => $id, 'note' => $note);
         $url = $this->url . "orders/{$id}.json";
         $contents = Curl::urlPUT($url, $data);
@@ -128,6 +168,10 @@ class Shopify {
     }
 
     public function updateProductInventory ($productId,$variants){
+
+        if (preg_match("/^shpfy_/",$productId)){
+            $productId = preg_replace("/^shpfy_/","",$productId);
+        }
         $data= array();
         $data['product'] = array('id' => $productId, 'variants' => $variants);
         $url = $this->url . "products/{$productId}.json";
@@ -152,6 +196,9 @@ class Shopify {
     * )
     */
     public function updateProduct ($productId,$data){
+        if (preg_match("/^shpfy_/",$productId)){
+            $productId = preg_replace("/^shpfy_/","",$productId);
+        }
         $url = $this->url . "products/{$productId}.json";
         $contents = Curl::urlPUT($url,$data);
         return json_decode($contents);
@@ -163,12 +210,19 @@ class Shopify {
 
 
     public function getCustomer($id) {
+        if (preg_match("/^shpfy_/",$id)){
+            $id = preg_replace("/^shpfy_/","",$id);
+        }
         $url = $this->url . "/customers/{$id}.json";
         $contents = Curl::urlGet($url);
         return json_decode($contents);
     }
 
     public function createTransaction($id,$amount) {
+
+        if (preg_match("/^shpfy_/",$id)){
+            $id = preg_replace("/^shpfy_/","",$id);
+        }
 
         $data['transaction'] = array('amount' => $amount,"kind"=>"capture");
         $url = $this->url . "orders/{$id}/transactions.json";

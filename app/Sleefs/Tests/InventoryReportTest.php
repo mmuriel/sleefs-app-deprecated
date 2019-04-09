@@ -178,7 +178,7 @@ class InventoryReportTest extends TestCase {
      	// Adding data to database
      	//Product #1
      	array_push($this->products,new Product());
-		$this->products[0]->idsp = 890987645;
+		$this->products[0]->idsp = "shpfy_890987645";
 		$this->products[0]->title = '100 Emoji Black Tights for Kids';
 		$this->products[0]->vendor = 'Sleefs';
 		$this->products[0]->product_type = 'Kids Tights';
@@ -186,7 +186,7 @@ class InventoryReportTest extends TestCase {
 		$this->products[0]->save();
 
 		array_push($this->variants,new Variant());
-		$this->variants[0]->idsp = 5678890951;
+		$this->variants[0]->idsp = "shpfy_5678890951";
 		$this->variants[0]->sku = 'SL-10EJICK-KCL-YM';
 		$this->variants[0]->title = 'YM / Black';
 		$this->variants[0]->idproduct = $this->products[0]->id;
@@ -195,7 +195,7 @@ class InventoryReportTest extends TestCase {
 
 		//Product #2
 		array_push($this->products,new Product());
-		$this->products[1]->idsp = 890987646;
+		$this->products[1]->idsp = "shpfy_890987646";
 		$this->products[1]->title = 'Aerial blue and navy arm sleeve';
 		$this->products[1]->vendor = 'Sleefs';
 		$this->products[1]->product_type = 'Sleeve';
@@ -203,7 +203,7 @@ class InventoryReportTest extends TestCase {
 		$this->products[1]->save();
 
 		array_push($this->variants,new Variant());
-		$this->variants[1]->idsp = 56788909561;
+		$this->variants[1]->idsp = "shpfy_56788909561";
 		$this->variants[1]->sku = 'SL-AERIB-KS-YL';
 		$this->variants[1]->title = 'Y / Blue/navy';
 		$this->variants[1]->idproduct = $this->products[1]->id;
@@ -211,7 +211,7 @@ class InventoryReportTest extends TestCase {
 		$this->variants[1]->save();
 
 		array_push($this->variants,new Variant());
-		$this->variants[2]->idsp = 5678890962;
+		$this->variants[2]->idsp = "shpfy_5678890962";
 		$this->variants[2]->sku = 'SL-ARL-BLU-NVY-XL-1';
 		$this->variants[2]->title = 'XL / Blue/navy';
 		$this->variants[2]->idproduct = $this->products[1]->id;
@@ -221,7 +221,7 @@ class InventoryReportTest extends TestCase {
 
 		//Product #3
 		array_push($this->products,new Product());
-		$this->products[2]->idsp = 890987647;
+		$this->products[2]->idsp = "shpfy_890987647";
 		$this->products[2]->title = 'Ripped Bear arm sleeve';
 		$this->products[2]->vendor = 'Sleefs';
 		$this->products[2]->product_type = 'Sleeve';
@@ -229,7 +229,7 @@ class InventoryReportTest extends TestCase {
 		$this->products[2]->save();
 
 		array_push($this->variants,new Variant());
-		$this->variants[3]->idsp = 56788909571;
+		$this->variants[3]->idsp = "shpfy_56788909571";
 		$this->variants[3]->sku = 'SL-ANIM-BEAR-Y-1';
 		$this->variants[3]->title = 'Y / Black/White';
 		$this->variants[3]->idproduct = $this->products[2]->id;
@@ -237,7 +237,7 @@ class InventoryReportTest extends TestCase {
 		$this->variants[3]->save();
 
 		array_push($this->variants,new Variant());
-		$this->variants[4]->idsp = 56788909572;
+		$this->variants[4]->idsp = "shpfy_56788909572";
 		$this->variants[4]->sku = 'SL-ANIM-BEAR-XS-1';
 		$this->variants[4]->title = 'XS / Black/White';
 		$this->variants[4]->idproduct = $this->products[2]->id;
@@ -245,7 +245,7 @@ class InventoryReportTest extends TestCase {
 		$this->variants[4]->save();
 
 		array_push($this->variants,new Variant());
-		$this->variants[5]->idsp = 56788909573;
+		$this->variants[5]->idsp = "shpfy_56788909573";
 		$this->variants[5]->sku = 'SL-ANIM-BEAR-S-M-1';
 		$this->variants[5]->title = 'S/M / Black/White';
 		$this->variants[5]->idproduct = $this->products[2]->id;
@@ -253,7 +253,7 @@ class InventoryReportTest extends TestCase {
 		$this->variants[5]->save();
 
 		array_push($this->variants,new Variant());
-		$this->variants[6]->idsp = 56788909574;
+		$this->variants[6]->idsp = "shpfy_56788909574";
 		$this->variants[6]->sku = 'SL-ANIM-BEAR-L-1';
 		$this->variants[6]->title = 'L / Black/White';
 		$this->variants[6]->idproduct = $this->products[2]->id;
@@ -261,7 +261,7 @@ class InventoryReportTest extends TestCase {
 		$this->variants[6]->save();
 
 		array_push($this->variants,new Variant());
-		$this->variants[7]->idsp = 56788909575;
+		$this->variants[7]->idsp = "shpfy_56788909575";
 		$this->variants[7]->sku = 'SL-ANIM-BEAR-XL-1';
 		$this->variants[7]->title = 'XL / Black/White';
 		$this->variants[7]->idproduct = $this->products[2]->id;
@@ -270,7 +270,7 @@ class InventoryReportTest extends TestCase {
 
 		//Product #4
 		array_push($this->products,new Product());
-		$this->products[3]->idsp = 890987648;
+		$this->products[3]->idsp = "shpfy_890987648";
 		$this->products[3]->title = 'Red Hat';
 		$this->products[3]->vendor = 'Sleefs';
 		$this->products[3]->product_type = 'Hat';
@@ -278,7 +278,7 @@ class InventoryReportTest extends TestCase {
 		$this->products[3]->save();
 
 		array_push($this->variants,new Variant());
-		$this->variants[6]->idsp = 56788909581;
+		$this->variants[6]->idsp = "shpfy_56788909581";
 		$this->variants[6]->sku = 'SL-REDHAT';
 		$this->variants[6]->title = 'Red Hat';
 		$this->variants[6]->idproduct = $this->products[3]->id;

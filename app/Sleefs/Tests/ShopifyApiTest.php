@@ -20,7 +20,7 @@ class ShopifyApiTest extends TestCase {
         $this->prepareForTests();
 
         $this->prd = new Product();
-		$this->prd->idsp = 890987645;
+		$this->prd->idsp = "shpfy_890987645";
 		$this->prd->title = 'Colombian Sleeve Yellow';
 		$this->prd->vendor = 'Sleefs';
 		$this->prd->product_type = 'Sleeve';
@@ -28,7 +28,7 @@ class ShopifyApiTest extends TestCase {
 		$this->prd->save();
 
 		$this->var1 = new Variant();
-		$this->var1->idsp = 5678890951;
+		$this->var1->idsp = "shpfy_5678890951";
 		$this->var1->sku = 'SL-COL-Y-L';
 		$this->var1->title = 'Large';
 		$this->var1->idproduct = $this->prd->id;
@@ -36,7 +36,7 @@ class ShopifyApiTest extends TestCase {
 		$this->var1->save();
 
 		$this->var2 = new Variant();
-		$this->var2->idsp = 5678890952;
+		$this->var2->idsp = "shpfy_5678890952";
 		$this->var2->sku = 'SL-COL-Y-XL';
 		$this->var2->title = 'XL';
 		$this->var2->idproduct = $this->prd->id;
@@ -48,8 +48,8 @@ class ShopifyApiTest extends TestCase {
 	public function testInmemoryDatabaseAddingRecords(){		
 
 		/* Testing saved items to database */
-		$this->assertDatabaseHas('products',['idsp' => '890987645','title' => 'Colombian Sleeve Yellow']);
-		$this->assertDatabaseHas('variants',['idsp' => '5678890951','idsp' => '5678890952']);
+		$this->assertDatabaseHas('products',['idsp' => 'shpfy_890987645','title' => 'Colombian Sleeve Yellow']);
+		$this->assertDatabaseHas('variants',['idsp' => 'shpfy_5678890951','idsp' => 'shpfy_5678890952']);
 
 		
 	}

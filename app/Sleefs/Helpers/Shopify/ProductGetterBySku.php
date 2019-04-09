@@ -24,7 +24,10 @@ class ProductGetterBySku {
             $product->handle = $productRaw->handle;
             $product->created_at = $productRaw->created_at;
             $product->updated_at = $productRaw->updated_at;
-            $product->idsp = $productRaw->idsp;
+            if (!preg_match("/^shpfy_/",$productRaw->idsp))
+                $product->idsp = "shpfy_".$productRaw->idsp;
+            else
+                $product->idsp = $productRaw->idsp;
             $product->title = $productRaw->title;
             return $product;
         }

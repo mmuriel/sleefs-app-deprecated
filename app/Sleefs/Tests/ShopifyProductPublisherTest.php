@@ -140,7 +140,7 @@ class ShopifyProductPublisherTest extends TestCase {
     	//============================================================
     	$localProduct1 = new \Sleefs\Models\Shopify\Product();
     	$localProduct1 = $productGetter->getProduct('SL-ACE--FLBLK-JS-XXS',$localProduct1);
-    	$this->assertEquals('9547409418',$localProduct1->idsp);
+    	$this->assertEquals('shpfy_9547409418',$localProduct1->idsp);
     	$options1 = 'handle='.$localProduct1->handle.'&fields=id,handle,published_at,images';
 
     	$remoteRaw1 = $shopifyApi->getAllProducts($options1);
@@ -158,7 +158,7 @@ class ShopifyProductPublisherTest extends TestCase {
     	//============================================================
     	$localProduct2 = new \Sleefs\Models\Shopify\Product();
     	$localProduct2 = $productGetter->getProduct('SL-100-BLK-GLD-WB',$localProduct2);
-    	$this->assertEquals('5747890311',$localProduct2->idsp);
+    	$this->assertEquals('shpfy_5747890311',$localProduct2->idsp);
     	$options2 = 'handle='.$localProduct2->handle.'&fields=id,handle,published_at,images';
 
     	$remoteRaw2 = $shopifyApi->getAllProducts($options2);
@@ -401,7 +401,7 @@ class ShopifyProductPublisherTest extends TestCase {
      	// Adding data to database 
      	//Product #1
      	array_push($this->products,new Product());
-		$this->products[0]->idsp = 1558599696496;
+		$this->products[0]->idsp = 'shpfy_1558599696496';
 		$this->products[0]->title = '100 Emoji Red Arm Sleeve';
 		$this->products[0]->vendor = 'Sleefs';
 		$this->products[0]->product_type = 'Sleeve';
@@ -409,7 +409,7 @@ class ShopifyProductPublisherTest extends TestCase {
 		$this->products[0]->save();
 
 		array_push($this->variants,new Variant());
-		$this->variants[0]->idsp = 15258428440688;
+		$this->variants[0]->idsp = 'shpfy_15258428440688';
 		$this->variants[0]->sku = 'SL-10EJIRD-AS-Y';
 		$this->variants[0]->title = 'Y / Red';
 		$this->variants[0]->idproduct = $this->products[0]->id;
@@ -419,7 +419,7 @@ class ShopifyProductPublisherTest extends TestCase {
 		
 		//Product #2
 		array_push($this->products,new Product());
-		$this->products[1]->idsp = 5747890311;
+		$this->products[1]->idsp = 'shpfy_5747890311';
 		$this->products[1]->title = '100 Emoji Motivational Wristband';
 		$this->products[1]->vendor = 'Sleefs';
 		$this->products[1]->product_type = 'Wristband';
@@ -427,7 +427,7 @@ class ShopifyProductPublisherTest extends TestCase {
 		$this->products[1]->save();
 
 		array_push($this->variants,new Variant());
-		$this->variants[1]->idsp = 46556328714;
+		$this->variants[1]->idsp = 'shpfy_46556328714';
 		$this->variants[1]->sku = 'SL-100-BLK-GLD-WB';
 		$this->variants[1]->title = 'Black/gold';
 		$this->variants[1]->idproduct = $this->products[1]->id;
@@ -437,7 +437,7 @@ class ShopifyProductPublisherTest extends TestCase {
 
 		//Product #3
 		array_push($this->products,new Product());
-		$this->products[2]->idsp = 9547409418;
+		$this->products[2]->idsp = 'shpfy_9547409418';
 		$this->products[2]->title = 'Aces Floral black quick-dry jersey';
 		$this->products[2]->vendor = 'Sleefs';
 		$this->products[2]->product_type = 'Jersey';
@@ -445,7 +445,7 @@ class ShopifyProductPublisherTest extends TestCase {
 		$this->products[2]->save();
 
 		array_push($this->variants,new Variant());
-		$this->variants[2]->idsp = 20093518421;
+		$this->variants[2]->idsp = 'shpfy_20093518421';
 		$this->variants[2]->sku = 'SL-ACE--FLBLK-JS-XXS';
 		$this->variants[2]->title = 'Black/withe';
 		$this->variants[2]->idproduct = $this->products[2]->id;
@@ -455,7 +455,7 @@ class ShopifyProductPublisherTest extends TestCase {
 
         //Product #4 -> Para prueba full de publicacion, producto sin publicar pero con foto
         array_push($this->products,new Product());
-        $this->products[3]->idsp = 2114720897;
+        $this->products[3]->idsp = 'shpfy_2114720897';
         $this->products[3]->title = 'Savage Stars Tactical Arm Sleeve';
         $this->products[3]->vendor = 'Sleefs';
         $this->products[3]->product_type = 'Sleeve';
@@ -463,7 +463,7 @@ class ShopifyProductPublisherTest extends TestCase {
         $this->products[3]->save();
 
         array_push($this->variants,new Variant());
-        $this->variants[3]->idsp = 1640924298;
+        $this->variants[3]->idsp = 'shpfy_1640924298';
         $this->variants[3]->sku = 'SL-SAV-SBD-Y-1';
         $this->variants[3]->title = 'Y / Black/Gray';
         $this->variants[3]->idproduct = $this->products[3]->id;
@@ -473,7 +473,7 @@ class ShopifyProductPublisherTest extends TestCase {
 
         //Product #5 -> Para prueba full de publicacion, producto sin publicar pero con foto
         array_push($this->products,new Product());
-        $this->products[4]->idsp = 1826816093;
+        $this->products[4]->idsp = 'shpfy_1826816093';
         $this->products[4]->title = 'Black Diamond Helmet Eye-Shield Visor';
         $this->products[4]->vendor = 'Sleefs';
         $this->products[4]->product_type = 'Visor';
@@ -481,7 +481,7 @@ class ShopifyProductPublisherTest extends TestCase {
         $this->products[4]->save();
 
         array_push($this->variants,new Variant());
-        $this->variants[4]->idsp = -1143373731;
+        $this->variants[4]->idsp = 'shpfy_1143373731';
         $this->variants[4]->sku = 'SL-BLK-VS';
         $this->variants[4]->title = 'Black';
         $this->variants[4]->idproduct = $this->products[4]->id;

@@ -61,6 +61,33 @@ class ShopifyProductIDAdjuster extends Command
         }
 
         $offsetIndex = ($page*$qty)-$qty;
+
+        //===========================================================================================
+
+
+        $shopify = new Shopify(env('SHPFY_APIKEY'),env('SHPFY_APIPWD'),env('SHPFY_BASEURL'));
+        $shopifyQueryForProductsOptions = 'fields=id,vendor,product_type,created_at,title,sku,handle,images,variants&limit='.$qty.'&page='.$page;
+        $remoteProducts = $shopify->getAllProducts($shopifyQueryForProductsOptions);
+
+
+        foreach ($remoteProducts->products as $remoteProduct){
+
+            echo "\nRegistrando nuevo producto para ".$remoteProduct->title."\n";
+            $newLocalProduct = new Product();
+            $newLocalProduct->idsp = 'shpfy_'.$remoteProduct->id;
+            $newLocalProduct->title = $remoteProduct->title;
+            $newLocalProduct->vendor = $remoteProduct->vendor;
+            $newLocalProduct->product_type = $remoteProduct->product_type;
+            $newLocalProduct->handle = $remoteProduct->handle;
+            $newLocalProduct->save();
+            $this->adjustLocalShopifyProduct ($newLocalProduct,$remoteProduct);
+            echo "\n------------------------------------------------------\n";
+        }
+
+
+        //===========================================================================================        
+
+        /*
         //Recupera los productos locales a analizar
         $localProducts = Product::whereRaw(" 1 ")->orderBy('id')->offset($page)->limit(($qty))->get();
         $totalLocalProducts = $localProducts->count();
@@ -78,10 +105,10 @@ class ShopifyProductIDAdjuster extends Command
         $remoteProducts = $shopify->getAllProducts($shopifyQueryForProductsOptions);
         $totalRemoteProducts = count($remoteProducts->products);
 
-        /*
-        echo "Total remote products: ".$totalRemoteProducts."\n";
-        return 1;
-        */
+        
+        //echo "Total remote products: ".$totalRemoteProducts."\n";
+        //return 1;
+        
         echo "\n\n\nComparando registros\n\n";
         //print_r($remoteProducts->products);
         
@@ -162,7 +189,7 @@ class ShopifyProductIDAdjuster extends Command
             }
         }
 
-
+        */
         $this->saveProcessedPage($page);
     }
 
@@ -171,6 +198,7 @@ class ShopifyProductIDAdjuster extends Command
     private function adjustLocalShopifyProduct ($localShopifyPrdt,$remoteShopifyPrdt=null){
 
         //echo "\n\nLas siguientes son las imágenes relacionadas con el producto: ".$localShopifyPrdt->handle."\n";
+        /*
         foreach ($localShopifyPrdt->images as $image){
 
             echo $image->url."\n";
@@ -184,6 +212,8 @@ class ShopifyProductIDAdjuster extends Command
             echo "Borrando... ".$variant->delete()."\n";
         }
         //echo "\n\n";
+        */
+
 
         if ($remoteShopifyPrdt!=null){
 
@@ -192,8 +222,8 @@ class ShopifyProductIDAdjuster extends Command
             foreach($remoteShopifyPrdt->variants as $remoteVariant){
 
                 //1. Elimina los posibles IDs duplicados:
-                $resDelete = Variant::where('idsp','=',"shpfy_".$remoteVariant->id)->delete();
-                //echo "Registrando la nueva variante para: ".$remoteVariant->title." (".$remoteVariant->sku.")\n";
+                //$resDelete = Variant::where('idsp','=',"shpfy_".$remoteVariant->id)->delete();
+                echo "Registrando la nueva variante para: ".$remoteVariant->title." (".$remoteVariant->sku.")\n";
                 $newVariant = new Variant();
                 $newVariant->idsp = "shpfy_".$remoteVariant->id;
                 $newVariant->sku = trim($remoteVariant->sku);
@@ -207,8 +237,8 @@ class ShopifyProductIDAdjuster extends Command
             //2. Imagenes:
             foreach($remoteShopifyPrdt->images as $remoteImg){
 
-                //echo "Registrando la nueva imagen para: shpfy_".$remoteImg->src." (".$remoteImg->id.")\n";
-                $resDelete = ProductImage::where('idsp','=',"shpfy_".$remoteImg->id)->delete();
+                echo "Registrando la nueva imagen para: shpfy_".$remoteImg->src." (".$remoteImg->id.")\n";
+                //$resDelete = ProductImage::where('idsp','=',"shpfy_".$remoteImg->id)->delete();
                 $newImage = new ProductImage();
                 $newImage->idsp = "shpfy_".$remoteImg->id;
                 $newImage->position = $remoteImg->position;
