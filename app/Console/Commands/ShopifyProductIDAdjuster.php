@@ -96,7 +96,7 @@ class ShopifyProductIDAdjuster extends Command
 
                     //Primero borra cualquier producto que pueda generar una colision de 
                     //de IDs shopify duplicados
-                    $resDelete = Product::whereRaw(" idsp='".$remotePrdt1->id."' && id != '".$localProduct->id."' ")->delete();
+                    $resDelete = Product::whereRaw(" idsp='(shpfy_".$remotePrdt1->id."' && id != '".$localProduct->id."' ")->delete();
 
 
 
@@ -104,7 +104,7 @@ class ShopifyProductIDAdjuster extends Command
                     echo "[+] Lo encontró por abajo\n";
                     echo "=================================\n\n";
                     $ctrlDescubierto = true;
-                    $localProduct->idsp = $remotePrdt1->id;
+                    $localProduct->idsp = "shpfy_".$remotePrdt1->id;
                     $localProduct->save();
                     $this->adjustLocalShopifyProduct($localProduct,$remotePrdt1);
                     break;
@@ -113,14 +113,14 @@ class ShopifyProductIDAdjuster extends Command
 
                     //Primero borra cualquier producto que pueda generar una colision de 
                     //de IDs shopify duplicados
-                    $resDelete = Product::whereRaw(" idsp='".$remotePrdt2->id."' && id != '".$localProduct->id."' ")->delete();
+                    $resDelete = Product::whereRaw(" idsp='shpfy_".$remotePrdt2->id."' && id != '".$localProduct->id."' ")->delete();
 
 
                     echo "\n\n\n---\n[+] ".$remotePrdt2->handle."(Local ID: ".$localProduct->id.")\n";
                     echo "[+] Lo encontró por arriba\n";
                     echo "=================================\n\n";
                     $ctrlDescubierto = true;
-                    $localProduct->idsp = $remotePrdt2->id;
+                    $localProduct->idsp = "shpfy_".$remotePrdt2->id;
                     $localProduct->save();
                     $this->adjustLocalShopifyProduct($localProduct,$remotePrdt2);
                     break;
@@ -168,10 +168,10 @@ class ShopifyProductIDAdjuster extends Command
             foreach($remoteShopifyPrdt->variants as $remoteVariant){
 
                 //1. Elimina los posibles IDs duplicados:
-                $resDelete = Variant::where('idsp','=',$remoteVariant->id)->delete();
+                $resDelete = Variant::where('idsp','=',"shpfy_".$remoteVariant->id)->delete();
                 echo "Registrando la nueva variante para: ".$remoteVariant->title." (".$remoteVariant->sku.")\n";
                 $newVariant = new Variant();
-                $newVariant->idsp = $remoteVariant->id;
+                $newVariant->idsp = "shpfy_".$remoteVariant->id;
                 $newVariant->sku = trim($remoteVariant->sku);
                 $newVariant->title = $remoteVariant->title;
                 $newVariant->idproduct = $localShopifyPrdt->id;
@@ -183,10 +183,10 @@ class ShopifyProductIDAdjuster extends Command
             //2. Imagenes:
             foreach($remoteShopifyPrdt->images as $remoteImg){
 
-                echo "Registrando la nueva imagen para: ".$remoteImg->src." (".$remoteImg->id.")\n";
-                $resDelete = ProductImage::where('idsp','=',$remoteImg->id)->delete();
+                echo "Registrando la nueva imagen para: shpfy_".$remoteImg->src." (".$remoteImg->id.")\n";
+                $resDelete = ProductImage::where('idsp','=',"shpfy_".$remoteImg->id)->delete();
                 $newImage = new ProductImage();
-                $newImage->idsp = $remoteImg->id;
+                $newImage->idsp = "shpfy_".$remoteImg->id;
                 $newImage->position = $remoteImg->position;
                 $newImage->url = $remoteImg->src;
                 $newImage->idproducto = $localShopifyPrdt->id;
