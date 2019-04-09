@@ -62,7 +62,7 @@ class ShopifyProductIDAdjuster extends Command
 
         $offsetIndex = ($page*$qty)-$qty;
         //Recupera los productos locales a analizar
-        $localProducts = Product::whereRaw(" 1 ")->orderBy('id')->offset($offsetIndex)->limit(($qty))->get();
+        $localProducts = Product::whereRaw(" 1 ")->orderBy('id')->offset($page)->limit(($qty))->get();
         $totalLocalProducts = $localProducts->count();
 
         //Recupera los datos remotos de los productos desde shopify
