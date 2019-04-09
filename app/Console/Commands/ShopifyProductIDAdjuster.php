@@ -104,9 +104,21 @@ class ShopifyProductIDAdjuster extends Command
                     echo "[+] Lo encontró por abajo\n";
                     echo "=================================\n\n";
                     $ctrlDescubierto = true;
-                    $localProduct->idsp = "shpfy_".$remotePrdt1->id;
-                    $localProduct->save();
-                    $this->adjustLocalShopifyProduct($localProduct,$remotePrdt1);
+                    try{
+                        
+                        $localProduct->idsp = "shpfy_".$remotePrdt1->id;
+                        $localProduct->save();
+                        $this->adjustLocalShopifyProduct($localProduct,$remotePrdt1);
+                    }
+                    catch (\Exception $e){
+
+                        echo "+++++++++++++++++++++++++++++++++++++++++++++\n";
+                        echo "+++++++++++++++++++++++++++++++++++++++++++++\n";
+                        echo "Error salvando de nuevo el producto, lo más\n";
+                        echo "probable que exista el idsp ya registrado\n";
+                        echo "+++++++++++++++++++++++++++++++++++++++++++++\n";
+                        echo "+++++++++++++++++++++++++++++++++++++++++++++\n";
+                    }
                     break;
                 }
                 if ($localProduct->handle == $remotePrdt2->handle){
@@ -120,9 +132,21 @@ class ShopifyProductIDAdjuster extends Command
                     echo "[+] Lo encontró por arriba\n";
                     echo "=================================\n\n";
                     $ctrlDescubierto = true;
-                    $localProduct->idsp = "shpfy_".$remotePrdt2->id;
-                    $localProduct->save();
-                    $this->adjustLocalShopifyProduct($localProduct,$remotePrdt2);
+                    try{
+
+                        $localProduct->idsp = "shpfy_".$remotePrdt2->id;
+                        $localProduct->save();
+                        $this->adjustLocalShopifyProduct($localProduct,$remotePrdt2);
+                    }
+                    catch (\Exception $e){
+
+                        echo "+++++++++++++++++++++++++++++++++++++++++++++\n";
+                        echo "+++++++++++++++++++++++++++++++++++++++++++++\n";
+                        echo "Error salvando de nuevo el producto, lo más\n";
+                        echo "probable que exista el idsp ya registrado\n";
+                        echo "+++++++++++++++++++++++++++++++++++++++++++++\n";
+                        echo "+++++++++++++++++++++++++++++++++++++++++++++\n";
+                    }
                     break;
                 }
                 $j = ($totalRemoteProducts - $i) - 1;
