@@ -96,13 +96,13 @@ class ShopifyProductIDAdjuster extends Command
 
                     //Primero borra cualquier producto que pueda generar una colision de 
                     //de IDs shopify duplicados
-                    $resDelete = Product::whereRaw(" idsp='(shpfy_".$remotePrdt1->id."' && id != '".$localProduct->id."' ")->delete();
+                    $resDelete = Product::whereRaw(" idsp='shpfy_".$remotePrdt1->id."' && id != '".$localProduct->id."' ")->delete();
 
 
 
-                    echo "\n\n\n---\n[+] ".$remotePrdt1->handle."(Local ID: ".$localProduct->id.")\n";
-                    echo "[+] Lo encontró por abajo\n";
-                    echo "=================================\n\n";
+                    //echo "\n\n\n---\n[+] ".$remotePrdt1->handle."(Local ID: ".$localProduct->id.")\n";
+                    //echo "[+] Lo encontró por abajo\n";
+                    //echo "=================================\n\n";
                     $ctrlDescubierto = true;
                     try{
                         
@@ -128,9 +128,9 @@ class ShopifyProductIDAdjuster extends Command
                     $resDelete = Product::whereRaw(" idsp='shpfy_".$remotePrdt2->id."' && id != '".$localProduct->id."' ")->delete();
 
 
-                    echo "\n\n\n---\n[+] ".$remotePrdt2->handle."(Local ID: ".$localProduct->id.")\n";
-                    echo "[+] Lo encontró por arriba\n";
-                    echo "=================================\n\n";
+                    //echo "\n\n\n---\n[+] ".$remotePrdt2->handle."(Local ID: ".$localProduct->id.")\n";
+                    //echo "[+] Lo encontró por arriba\n";
+                    //echo "=================================\n\n";
                     $ctrlDescubierto = true;
                     try{
 
@@ -170,20 +170,20 @@ class ShopifyProductIDAdjuster extends Command
 
     private function adjustLocalShopifyProduct ($localShopifyPrdt,$remoteShopifyPrdt=null){
 
-        echo "\n\nLas siguientes son las imágenes relacionadas con el producto: ".$localShopifyPrdt->handle."\n";
+        //echo "\n\nLas siguientes son las imágenes relacionadas con el producto: ".$localShopifyPrdt->handle."\n";
         foreach ($localShopifyPrdt->images as $image){
 
             echo $image->url."\n";
             echo "Borrando... ".$image->delete()."\n";
         }
-        echo "\n\n";
-        echo "\n\nLas siguientes son las variantes relacionadas con el producto: ".$localShopifyPrdt->handle."\n";
+        //echo "\n\n";
+        //echo "\n\nLas siguientes son las variantes relacionadas con el producto: ".$localShopifyPrdt->handle."\n";
         foreach ($localShopifyPrdt->variants as $variant){
 
             echo $variant->title."\n";
             echo "Borrando... ".$variant->delete()."\n";
         }
-        echo "\n\n";
+        //echo "\n\n";
 
         if ($remoteShopifyPrdt!=null){
 
@@ -193,7 +193,7 @@ class ShopifyProductIDAdjuster extends Command
 
                 //1. Elimina los posibles IDs duplicados:
                 $resDelete = Variant::where('idsp','=',"shpfy_".$remoteVariant->id)->delete();
-                echo "Registrando la nueva variante para: ".$remoteVariant->title." (".$remoteVariant->sku.")\n";
+                //echo "Registrando la nueva variante para: ".$remoteVariant->title." (".$remoteVariant->sku.")\n";
                 $newVariant = new Variant();
                 $newVariant->idsp = "shpfy_".$remoteVariant->id;
                 $newVariant->sku = trim($remoteVariant->sku);
@@ -207,7 +207,7 @@ class ShopifyProductIDAdjuster extends Command
             //2. Imagenes:
             foreach($remoteShopifyPrdt->images as $remoteImg){
 
-                echo "Registrando la nueva imagen para: shpfy_".$remoteImg->src." (".$remoteImg->id.")\n";
+                //echo "Registrando la nueva imagen para: shpfy_".$remoteImg->src." (".$remoteImg->id.")\n";
                 $resDelete = ProductImage::where('idsp','=',"shpfy_".$remoteImg->id)->delete();
                 $newImage = new ProductImage();
                 $newImage->idsp = "shpfy_".$remoteImg->id;
