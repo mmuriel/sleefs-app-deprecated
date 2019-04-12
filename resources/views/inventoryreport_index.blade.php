@@ -76,7 +76,7 @@
               _token: _token,
             });
 
-            fetch('/inventoryreport', {
+            fetch({{ env('APP_URL') }}'/inventoryreport', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/x-www-form-urlencoded; charset=UTF-8',
