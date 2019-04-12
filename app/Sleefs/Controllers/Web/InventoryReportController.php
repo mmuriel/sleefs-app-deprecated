@@ -85,17 +85,12 @@ class InventoryReportController extends BaseController{
 
 	function showInventoryReport(Request $request,$irid){
 
-
-
-
 		$inventoryReport = InventoryReport::find($irid);
 		
 		if ($inventoryReport == null){
 			return ("There is no inventory report identified by ".$poid);
 		}
 		else{
-
-
 			//Ordena por cantidad total de inventario los items
 			$inventoryReport->inventoryReportItems = $inventoryReport->inventoryReportItems()->orderBy('total_inventory')->get();
 			//Agrega a cada item del inventario un objeto tipo InventoryReportItemListView para renderizar el reporte
@@ -104,15 +99,15 @@ class InventoryReportController extends BaseController{
 				$irItemListView = new InventoryReportItemListView($irItem);
 				$irItem->irItemListView = $irItemListView->render();
 				return $irItem;
-
 			});
-
-
-			return view("inventoryreport_details",['inventory_report'=>$inventoryReport]);
-			
+			return view("inventoryreport_details",['inventory_report'=>$inventoryReport]);	
 		}
-		
+	}
 
+
+	function createReport(Request $request){
+		exec("".env('PHP_PATH')." /home/admin/app/artisan inventoryreport:create > /dev/null 2>&1 & echo $!");
+		return response()->json(["code"=>200,"Message" => "Good!"]);
 	}
 
 

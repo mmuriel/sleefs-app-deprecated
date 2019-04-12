@@ -33,3 +33,5 @@ Route::get('/pos/{poid}', "\Sleefs\Controllers\Web\ShowPosController@showPo");
 Route::post('/report', "\Sleefs\Controllers\Web\WebController@report");
 Route::get('/inventoryreport',"\Sleefs\Controllers\Web\InventoryReportController@index");
 Route::get('/inventoryreport/{irid}',"\Sleefs\Controllers\Web\InventoryReportController@showInventoryReport");
+Route::post('/inventoryreport',"\Sleefs\Controllers\Web\InventoryReportController@createReport");
+

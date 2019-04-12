@@ -20,6 +20,7 @@ class Kernel extends ConsoleKernel
         Commands\SyncerPoItemWarehousePostion::Class,
         Commands\InventoryReport::Class,
         Commands\ShopifyProductIDAdjuster::Class,
+        Commands\SleefsTestCreateInventoryReport::Class,
     ];
 
     /**

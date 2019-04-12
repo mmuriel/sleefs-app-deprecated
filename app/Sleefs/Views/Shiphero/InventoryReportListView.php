@@ -32,7 +32,7 @@ class InventoryReportListView {
 								<tr>
                                     <td>
                                     	<a href="'.env("APP_URL").'/inventoryreport/'.$this->report->id.'" target="_blank">
-                                    	'.substr($this->report->created_at,0,10).'
+                                    	'.substr($this->report->created_at,0,16).'
                                     	</a>
                                     </td>
                                 </tr>';
