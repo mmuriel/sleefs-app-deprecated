@@ -151,7 +151,8 @@ class AutomaticProductPublisher {
             $mail->SetFrom("mauricio.muriel@sientifica.com", 'Mauricio Muriel');
             $mail->Subject = "A product in store doesn't have a related image";
             $mail->Body    = $text;
-            $mail->AddAddress("mauricio.muriel@calitek.net", "Mauricio Muriel");
+            //$mail->AddAddress("mauricio.muriel@calitek.net", "Mauricio Muriel");
+            $mail->AddAddress("jschuster@sleefs.com", "Jaime Schuster");
             $mail->Send();
             $response->value = true;
         }

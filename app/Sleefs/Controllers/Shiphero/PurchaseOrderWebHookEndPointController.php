@@ -578,14 +578,21 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
             $remoteShopifyProductGetter = new RemoteProductGetterBySku();
             $publisher = new AutomaticProductPublisher();
             
+
+            $actualIdProduct = '';
             foreach($poextended->po->results->items as $shItem){
                 $localProductGetter = new ProductGetterBySku();
                 $localProduct = new Product();
                 $localProduct = $localProductGetter->getProduct($shItem->sku,$localProduct);
                 $shopifyProduct = $remoteShopifyProductGetter->getRemoteProductBySku($shItem->sku,$shopifyApi);
+
                 if ($shopifyProduct){
-                    $clogger->writeToLog ("Publicando el producto: ".json_encode($shopifyProduct),"INFO");
-                    $publisher->publishProduct($shopifyProduct,$publishValidatorByImage,$shopifyApi,$tagger,$findifyApi);
+
+                    if ($shopifyProduct->id != $actualIdProduct){
+                        $clogger->writeToLog ("Publicando el producto: ".json_encode($shopifyProduct),"INFO");
+                        $publisher->publishProduct($shopifyProduct,$publishValidatorByImage,$shopifyApi,$tagger,$findifyApi);
+                        $actualIdProduct = $shopifyProduct->id;
+                    }
                 }
             }
         } 
