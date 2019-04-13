@@ -140,7 +140,7 @@ class AutomaticProductPublisher {
             $text             = "The product ".$textEmail." doesn't have a related image";
             $mail             = new PHPMailer();
             $mail->isSMTP();
-            $mail->SMTPDebug  = 1; // debugging: 1 = errors and messages, 2 = messages only
+            $mail->SMTPDebug  = false; // debugging: 1 = errors and messages, 2 = messages only
             $mail->SMTPAuth   = true; // authentication enabled
             $mail->SMTPSecure = getenv('MAIL_ENCRYPTION'); // secure transfer enabled REQUIRED for Gmail
             $mail->Host       = getenv('MAIL_HOST');
