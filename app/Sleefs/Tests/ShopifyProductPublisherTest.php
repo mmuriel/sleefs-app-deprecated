@@ -6,6 +6,7 @@ use Illuminate\Foundation\Testing\TestCase ;
 use Illuminate\Contracts\Console\Kernel;
 
 use \mdeschermeier\shiphero\Shiphero;
+use Sleefs\Controllers\AutomaticProductPublisher;
 use Sleefs\Helpers\Shiphero\SkuRawCollection;
 use Sleefs\Helpers\Shiphero\ShipheroAllProductsGetter;
 use Sleefs\Models\Shopify\Variant;
@@ -18,13 +19,12 @@ use Sleefs\Helpers\Shopify\ProductGetterBySku;
 use Sleefs\Helpers\Shopify\QtyOrderedBySkuGetter;
 use Sleefs\Helpers\Shiphero\ShipheroDailyInventoryReport;
 use Sleefs\Helpers\Shopify\ProductPublishValidatorByImage;
+use Sleefs\Helpers\Shopify\ProductTaggerForNewResTag;
 use Sleefs\Helpers\ShopifyAPI\Shopify;
 use Sleefs\Helpers\ShopifyAPI\RemoteProductGetterBySku;
+use Sleefs\Helpers\FindifyAPI\Findify;
 
 
-
-use Sleefs\Helpers\Shopify\ProductTaggerForNewResTag;
-use Sleefs\Controllers\AutomaticProductPublisher;
 
 class ShopifyProductPublisherTest extends TestCase {
 
@@ -44,7 +44,7 @@ class ShopifyProductPublisherTest extends TestCase {
 
     	$shopifyProductPublisher = new ProductPublishValidatorByImage();
 
-    	//Defining product #1 it must fail for validation (Because there aren't related images to product)
+    	//Defining product #1 it must fail for validation (Because it hasn't related images)
     	$productRaw1 = new \stdClass();
     	$productRaw1->id = 1558599696496;
 		$productRaw1->handle = "100-emoji-red-arm-sleeve";
@@ -198,8 +198,10 @@ class ShopifyProductPublisherTest extends TestCase {
 
     public function testTagProductWithNEWTag(){
 
-    	$shopifyApi = new Shopify('6d79f49e6c91cb45eb5e37270f527afa','f6c18f765183ef32b76ebf9824dd8311','sleefs-preorder.myshopify.com/admin/');
+    	//$shopifyApi = new Shopify('6d79f49e6c91cb45eb5e37270f527afa','f6c18f765183ef32b76ebf9824dd8311','sleefs-preorder.myshopify.com/admin/');
+        $shopifyApi = new Shopify('f7adb74791e9b142c7f6bc3a64bcc3b0','5486391dc27e857cfc1e8986b8094c12','sleefs-2.myshopify.com/admin/');
     	$rawProduct = new \stdClass();
+        /*
     	$rawProduct->id = 255606456350;
     	$rawProduct->title = "Blue Mask Thin Blue Line Compression Tights / Leggings (PRE-ORDER)*";
     	$rawProduct->vendor = "SLEEFS";
@@ -212,7 +214,22 @@ class ShopifyProductPublisherTest extends TestCase {
     	$rawProduct->template_suffix = null;
     	//$rawProduct->published_at = "2017-10-24T11:44:54-04:00";
     	$rawProduct->published_at = null;
-    	
+    	*/
+
+        $rawProduct->id = 1986958360669;
+        $rawProduct->title = "Against All Odds Red Headband";
+        $rawProduct->vendor = "SLEEFS";
+        //$rawProduct->created_at = "2017-10-24T11:41:44-04:00";
+        $rawProduct->created_at = date("Y-m-d",strtotime("-15 days"))."T00:01:44-04:00";
+        $rawProduct->handle = "against-all-odds-red-headband";
+        $rawProduct->tags = "headwear, RedColor";
+        $rawProduct->product_type = "Wide Headband";
+        $rawProduct->updated_at = "2018-04-25T23:07:16-04:00";
+        $rawProduct->template_suffix = null;
+        //$rawProduct->published_at = "2017-10-24T11:44:54-04:00";
+        $rawProduct->published_at = null;
+
+
     	$options = new \stdClass();
     	$tagger = new ProductTaggerForNewResTag();
 
@@ -220,8 +237,7 @@ class ShopifyProductPublisherTest extends TestCase {
     	$rawProduct = $tagger->tagProduct($rawProduct,$shopifyApi,$options);
     	$this->assertRegExp("/^NEW[0-9]{6,6}/",$tag);
     	$this->assertRegExp("/(NEW[0-9]{6,6})/",$rawProduct->tags);
-    	//echo "\nTag Line #1: ".$rawProduct->tags."\n";
-    	//$tagger->tagProduct($rawProduct,$shopifyApi,$options);
+    	$tagger->tagProduct($rawProduct,$shopifyApi,$options);
 
     }
 
@@ -230,8 +246,10 @@ class ShopifyProductPublisherTest extends TestCase {
 
     public function testTagProductWithRESTag(){
 
-    	$shopifyApi = new Shopify('6d79f49e6c91cb45eb5e37270f527afa','f6c18f765183ef32b76ebf9824dd8311','sleefs-preorder.myshopify.com/admin/');
+    	//$shopifyApi = new Shopify('6d79f49e6c91cb45eb5e37270f527afa','f6c18f765183ef32b76ebf9824dd8311','sleefs-preorder.myshopify.com/admin/');
+        $shopifyApi = new Shopify('f7adb74791e9b142c7f6bc3a64bcc3b0','5486391dc27e857cfc1e8986b8094c12','sleefs-2.myshopify.com/admin/');
     	$rawProduct = new \stdClass();
+        /*
     	$rawProduct->id = 255605014558;
     	$rawProduct->title = "Blessed Black Compression Tights / Leggings (PRE-ORDER)*";
     	$rawProduct->vendor = "SLEEFS";
@@ -243,6 +261,21 @@ class ShopifyProductPublisherTest extends TestCase {
     	$rawProduct->template_suffix = null;
     	//$rawProduct->published_at = "2017-10-24T11:44:54-04:00";
     	$rawProduct->published_at = null;
+        */
+
+
+        $rawProduct->id = 1986958360669;
+        $rawProduct->title = "Against All Odds Red Headband";
+        $rawProduct->vendor = "SLEEFS";
+        //$rawProduct->created_at = "2017-10-24T11:41:44-04:00";
+        $rawProduct->created_at = date("Y-m-d",strtotime("-4 months"))."T00:01:44-04:00";
+        $rawProduct->handle = "against-all-odds-red-headband";
+        $rawProduct->tags = "headwear, RedColor";
+        $rawProduct->product_type = "Wide Headband";
+        $rawProduct->updated_at = "2018-04-25T23:07:16-04:00";
+        $rawProduct->template_suffix = null;
+        //$rawProduct->published_at = "2017-10-24T11:44:54-04:00";
+        $rawProduct->published_at = null;
     
     	$options = new \stdClass();
     	$tagger = new ProductTaggerForNewResTag();
@@ -259,61 +292,15 @@ class ShopifyProductPublisherTest extends TestCase {
     	$tagLine = $rawProduct->tags;
     	$tagLine = preg_replace("/(\ {0,1}NEW[0-9]{6,6}\,{0,1})/","",$tagLine);
         $tagLine = preg_replace("/(\ {0,1}RES[0-9]{6,6}\,{0,1})/","",$tagLine);
-    	$shopifyApi->updateProduct($rawProduct->id,array('product'=>array(
-            'tags'=>$tagLine)));
+    	$shopifyApi->updateProduct($rawProduct->id,array('product'=>array('tags'=>$tagLine)));
 		
     }
-
-
-
-
-	public function testTagProductNewToResTag(){
-
-    	$shopifyApi = new Shopify('6d79f49e6c91cb45eb5e37270f527afa','f6c18f765183ef32b76ebf9824dd8311','sleefs-preorder.myshopify.com/admin/');
-    	$rawProduct = $shopifyApi->getSingleProduct(255606456350);
-    	$this->assertRegExp("/NEW([0-9]{6,6})/",$rawProduct->product->tags);
-    	/*
-    	$rawProduct = new \stdClass();
-    	$rawProduct->id = 255605014558;
-    	$rawProduct->title = "Blessed Black Compression Tights / Leggings (PRE-ORDER)*";
-    	$rawProduct->vendor = "SLEEFS";
-    	$rawProduct->created_at = "2017-10-24T11:41:44-04:00";
-    	$rawProduct->handle = "blessed-black-compression-tights-leggings";
-    	$rawProduct->tags = "alltights, BlackColor, blessed, Blessing, blessings, testing, tights, WhiteColor";
-    	$rawProduct->product_type = "Tights";
-    	$rawProduct->updated_at = "2018-03-25T23:07:16-04:00";
-    	$rawProduct->template_suffix = null;
-    	//$rawProduct->published_at = "2017-10-24T11:44:54-04:00";
-    	$rawProduct->published_at = null;
-    	//=====================================
-    	*/
-    	$options = new \stdClass();
-    	$tagger = new ProductTaggerForNewResTag();
-
-    	$tag = $tagger->defineTag ($rawProduct->product);
-    	$rawProduct = $tagger->tagProduct($rawProduct->product,$shopifyApi,$options);
-    	$this->assertRegExp("/^RES[0-9]{6,6}/",$tag);
-    	$this->assertRegExp("/(RES[0-9]{6,6})/",$rawProduct->tags);
-    	//echo "\nTag Line #3: ".$rawProduct->tags."\n";
-    	//$tagger->tagProduct($rawProduct,$shopifyApi,$options);
-
-
-    	
-    	//Retornando el producto al estado natural:
-    	$tagLine = $rawProduct->tags;
-    	$tagLine = preg_replace("/(\ {0,1}NEW[0-9]{6,6}\,{0,1})/","",$tagLine);
-        $tagLine = preg_replace("/(\ {0,1}RES[0-9]{6,6}\,{0,1})/","",$tagLine);
-    	$shopifyApi->updateProduct($rawProduct->id,array('product'=>array(
-            'tags'=>$tagLine)));
-		
-    }
-
-
 
 
     public function testTagProductErrorTry(){
 
-    	$shopifyApi = new Shopify('6d79f49e6c91cb45eb5e37270f527afa','f6c18f765183ef32b76ebf9824dd8311','sleefs-preorder.myshopify.com/admin/');
+    	//$shopifyApi = new Shopify('6d79f49e6c91cb45eb5e37270f527afa','f6c18f765183ef32b76ebf9824dd8311','sleefs-preorder.myshopify.com/admin/');
+        $shopifyApi = new Shopify('f7adb74791e9b142c7f6bc3a64bcc3b0','5486391dc27e857cfc1e8986b8094c12','sleefs-2.myshopify.com/admin/');
     	$rawProduct = new \stdClass();
     	$rawProduct->id = 155605014558;//This is a not valid product, this ID doesn't exists
     	$rawProduct->title = "Blessed Black Compression Tights / Leggings (PRE-ORDER)*";
@@ -340,7 +327,7 @@ class ShopifyProductPublisherTest extends TestCase {
 
 
 
-    public function testFullPublishProductTest1(){
+    public function testFullPublishProductTest1_NoPublica(){
 
         $rawShipheroPrdt = '{"sku": "SL-BLK-VS","created_at": "2019-03-15 14:56:04","sell_ahead": 0,"price": "4.30","fulfillment_status": "pending","vendor_sku": "","product_name": "Black Diamond Helmet Eye-Shield Visor Black","quantity_received": 0,"quantity": 100}';
         $shipheroPrdt = json_decode($rawShipheroPrdt);
@@ -350,6 +337,8 @@ class ShopifyProductPublisherTest extends TestCase {
 
         //Instancia el objeto validador de publicacion
         $publishValidatorByImage = new ProductPublishValidatorByImage();
+        $tagger = new ProductTaggerForNewResTag();
+        $findifyApi = new Findify(env('FINDIFY_ENDPOINT'));
 
         //================================================
         //Recupera el producto tipo shopify de la DB
@@ -367,13 +356,89 @@ class ShopifyProductPublisherTest extends TestCase {
         $remoteShopifyProductGetter = new RemoteProductGetterBySku();
         $shopifyProduct = $remoteShopifyProductGetter->getRemoteProductBySku($shipheroPrdt->sku,$shopifyApi);
         
-        
-        
         $publisher = new AutomaticProductPublisher();
-        $publisher->publishProduct($shopifyProduct,$publishValidatorByImage);
+        $publisher->publishProduct($shopifyProduct,$publishValidatorByImage,$shopifyApi,$tagger,$findifyApi);
         
     }
 
+
+
+    public function testFullPublishProductTest2_PublicaConModificacionFindify(){
+
+        $rawShipheroPrdt = '{"sku": "SL-REDAAO-WH","created_at": "2019-02-12T11:46:16-05:00","sell_ahead": 0,"price": "13.00","fulfillment_status": "pending","vendor_sku": "","product_name": "Against All Odds Red Headband","quantity_received": 0,"quantity": 100}';
+        $shipheroPrdt = json_decode($rawShipheroPrdt);
+
+        //Conecta el API de shopify
+        $shopifyApi = new Shopify('f7adb74791e9b142c7f6bc3a64bcc3b0','5486391dc27e857cfc1e8986b8094c12','sleefs-2.myshopify.com/admin/');
+
+        //Instancia el objeto validador de publicacion
+        $publishValidatorByImage = new ProductPublishValidatorByImage();
+        $tagger = new ProductTaggerForNewResTag();
+        $findifyApi = new Findify(env('FINDIFY_ENDPOINT'));
+
+        //================================================
+        //Recupera el producto tipo shopify de la DB
+        //================================================
+        $localProductGetter = new \Sleefs\Helpers\Shopify\ProductGetterBySku();
+        $localProduct = new \Sleefs\Models\Shopify\Product();
+        $localProduct = $localProductGetter->getProduct($shipheroPrdt->sku,$localProduct);
+        //print_r($localProduct);
+        //return 1;
+
+        //================================================
+        //Recupera el producto tipo shopify del API de la
+        //tienda.
+        //================================================
+        $remoteShopifyProductGetter = new RemoteProductGetterBySku();
+        $shopifyProduct = $remoteShopifyProductGetter->getRemoteProductBySku($shipheroPrdt->sku,$shopifyApi);
+        //print_r($shopifyProduct);
+        //return 1;
+        
+        $publisher = new AutomaticProductPublisher();
+        $response = $publisher->publishProduct($shopifyProduct,$publishValidatorByImage,$shopifyApi,$tagger,$findifyApi);
+        
+        $this->assertTrue($response->value);
+
+    }
+
+
+
+
+    public function testFullPublishProductTest3_PublicaSinModificacionFindify(){
+
+        $rawShipheroPrdt = '{"sku": "SL-100-BLK-GLD-WB","created_at": "2016-03-23T16:02:51-04:00","sell_ahead": 0,"price": "3.00","fulfillment_status": "pending","vendor_sku": "","product_name": "100 Emoji Motivational Wristband","quantity_received": 0,"quantity": 100}';
+        $shipheroPrdt = json_decode($rawShipheroPrdt);
+
+        //Conecta el API de shopify
+        $shopifyApi = new Shopify('f7adb74791e9b142c7f6bc3a64bcc3b0','5486391dc27e857cfc1e8986b8094c12','sleefs-2.myshopify.com/admin/');
+
+        //Instancia el objeto validador de publicacion
+        $publishValidatorByImage = new ProductPublishValidatorByImage();
+        $tagger = new ProductTaggerForNewResTag();
+        $findifyApi = new Findify(env('FINDIFY_ENDPOINT'));
+
+        //================================================
+        //Recupera el producto tipo shopify de la DB
+        //================================================
+        $localProductGetter = new \Sleefs\Helpers\Shopify\ProductGetterBySku();
+        $localProduct = new \Sleefs\Models\Shopify\Product();
+        $localProduct = $localProductGetter->getProduct($shipheroPrdt->sku,$localProduct);
+        //print_r($localProduct);
+        //return 1;
+
+        //================================================
+        //Recupera el producto tipo shopify del API de la
+        //tienda.
+        //================================================
+        $remoteShopifyProductGetter = new RemoteProductGetterBySku();
+        $shopifyProduct = $remoteShopifyProductGetter->getRemoteProductBySku($shipheroPrdt->sku,$shopifyApi);
+        //print_r($shopifyProduct);
+        //return 1;
+        
+        $publisher = new AutomaticProductPublisher();
+        $publisher->publishProduct($shopifyProduct,$publishValidatorByImage,$shopifyApi,$tagger,$findifyApi);
+        
+    }
 
 
 
@@ -487,6 +552,25 @@ class ShopifyProductPublisherTest extends TestCase {
         $this->variants[4]->idproduct = $this->products[4]->id;
         $this->variants[4]->price = 60.0;
         $this->variants[4]->save();
+
+
+        //Product #6 -> Para prueba full de publicacion, producto sin publicar pero con foto y nuevo (nuevo en 20190412)
+        array_push($this->products,new Product());
+        $this->products[5]->idsp = 'shpfy_1986958360669';
+        $this->products[5]->title = 'Black Diamond Helmet Eye-Shield Visor';
+        $this->products[5]->vendor = 'Sleefs';
+        $this->products[5]->product_type = 'Wide Headband';
+        $this->products[5]->handle = 'against-all-odds-red-headband';
+        $this->products[5]->save();
+
+        array_push($this->variants,new Variant());
+        $this->variants[5]->idsp = 'shpfy_19668871413853';
+        $this->variants[5]->sku = 'SL-REDAAO-WH';
+        $this->variants[5]->title = 'ONE SIZE / Red';
+        $this->variants[5]->idproduct = $this->products[5]->id;
+        $this->variants[5]->price = 13.0;
+        $this->variants[5]->save();
+
 
 		/*
 		array_push($this->variants,new Variant());

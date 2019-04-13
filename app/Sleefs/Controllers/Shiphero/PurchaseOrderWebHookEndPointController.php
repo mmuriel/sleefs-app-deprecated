@@ -21,6 +21,17 @@ use Sleefs\Models\Shiphero\PurchaseOrderItem;
 use Sleefs\Models\Shiphero\PurchaseOrderUpdate;
 use Sleefs\Models\Shiphero\PurchaseOrderUpdateItem;
 
+
+use Sleefs\Controllers\AutomaticProductPublisher;
+
+use Sleefs\Helpers\ShopifyAPI\Shopify;
+use Sleefs\Helpers\ShopifyAPI\RemoteProductGetterBySku;
+use Sleefs\Helpers\Shopify\ProductGetterBySku;  
+use Sleefs\Helpers\Shopify\ProductPublishValidatorByImage;
+use Sleefs\Helpers\Shopify\ProductTaggerForNewResTag;
+use Sleefs\Helpers\FindifyAPI\Findify;      
+
+
 Class PurchaseOrderWebHookEndPointController extends Controller {
 	
 
@@ -35,10 +46,13 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
                 1. Registro de los datos de la PO en el libro "POS" del spreadsheet
                 2. Registro de los datos de la PO en el libro "Orders" del spreadsheet
                 3. Registro en la DB local los datos de la presente actualización
-                3. Registro de los datos de la PO en el libro "Qty-ProductType" del spreadsheet y registro de la orden en la DB
+                4. Registro de los datos de la PO en el libro "Qty-ProductType" del spreadsheet y registro de la orden en la DB
+                5. Se publican los productos que no estén publicados en la tienda shopify
+                6. Se genera la respuesta al servidor de shiphero
         */
 
-        $debug = array(false,true,true,true);//Define que funciones se ejecutan y cuales no.
+        $debug = array(false,true,true,true,true);//Define que funciones se ejecutan y cuales no.
+        //$debug = array(false,false,true,true,true);//Define que funciones se ejecutan y cuales no.
 
 
 		$po = json_decode(file_get_contents('php://input'));
@@ -100,16 +114,11 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
             return response()->json(["code"=>204,"Message" => "Not available system"]);
 
         }
-        //Realiza el bloqueo del documento
-        //$resLock = $wsCtrlLocker->lockFile($spreadsheet,$index);        
         /*
 
             1. Almacena los registros el libro "Line Items" del documento en google spreadsheets
 
-        */        
-        
-
-        
+        */
 
         //===============================================================
         //===============================================================
@@ -547,9 +556,44 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
 
         //return response()->json(['ctrlUpdates'=>$ctrlUpdates,'poextended'=>$poextended,'po'=>$po]);
 
+
         /*
 
-            5.  Genera la respuesta al servidor de shiphero
+            5. Se publican los productos que no estén publicados en la tienda shopify
+
+        */
+
+
+        if ($debug[4] == true){
+
+
+
+            //print_r($po);
+            //print_r($poextended);
+
+            $shopifyApi = new Shopify(env('SHPFY_APIKEY'),env('SHPFY_APIPWD'),env('SHPFY_BASEURL'));
+            $publishValidatorByImage = new ProductPublishValidatorByImage();
+            $tagger = new ProductTaggerForNewResTag();
+            $findifyApi = new Findify(env('FINDIFY_ENDPOINT'));
+            $remoteShopifyProductGetter = new RemoteProductGetterBySku();
+            $publisher = new AutomaticProductPublisher();
+            
+            foreach($poextended->po->results->items as $shItem){
+                $localProductGetter = new ProductGetterBySku();
+                $localProduct = new Product();
+                $localProduct = $localProductGetter->getProduct($shItem->sku,$localProduct);
+                $shopifyProduct = $remoteShopifyProductGetter->getRemoteProductBySku($shItem->sku,$shopifyApi);
+                if ($shopifyProduct){
+                    $clogger->writeToLog ("Publicando el producto: ".json_encode($shopifyProduct),"INFO");
+                    $publisher->publishProduct($shopifyProduct,$publishValidatorByImage,$shopifyApi,$tagger,$findifyApi);
+                }
+            }
+        } 
+
+
+        /*
+
+            6.  Genera la respuesta al servidor de shiphero
                 y bloquea la hoja de cáculo
 
         */

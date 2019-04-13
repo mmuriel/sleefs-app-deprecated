@@ -9,7 +9,7 @@ Class  ProductTaggerForNewResTag implements IShopifyProductTagger{
     public function tagProduct(\stdClass $rawProduct,\Sleefs\Helpers\ShopifyAPI\Shopify $shopifyApi,\stdClass $options){
 
         //1. Determina el tag que debe aplicarse al producto
-        $tag = $this->defineTag($rawProduct,$shopifyApi);
+        $tag = $this->defineTag($rawProduct);
 
         //2. Limpiamos los posibles tags anteriores
         $tagLine = $rawProduct->tags;
@@ -23,6 +23,7 @@ Class  ProductTaggerForNewResTag implements IShopifyProductTagger{
         $updateOperationResponse = $shopifyApi->updateProduct($rawProduct->id,array('product'=>array(
             'tags'=>$tagLine)));
 
+        //print_r($updateOperationResponse);
         if (isset($updateOperationResponse->errors)){
             return false;
         }
