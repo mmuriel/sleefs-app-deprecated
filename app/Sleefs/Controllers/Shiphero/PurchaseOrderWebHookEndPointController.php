@@ -664,8 +664,8 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
             $mail->SetFrom("mauricio.muriel@sientifica.com", 'Mauricio Muriel');
             $mail->Subject = $subject;
             $mail->Body    = $text;
-            $mail->AddAddress("mauricio.muriel@calitek.net", "Mauricio Muriel");
-            //$mail->AddAddress("jschuster@sleefs.com", "Jaime Schuster");
+            //$mail->AddAddress("mauricio.muriel@calitek.net", "Mauricio Muriel");
+            $mail->AddAddress("jschuster@sleefs.com", "Jaime Schuster");
             $mail->Send();
             $response->value = true;
         }
