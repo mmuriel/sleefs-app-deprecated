@@ -55,8 +55,8 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
                 6. Se genera la respuesta al servidor de shiphero
         */
 
-        //$debug = array(false,true,true,true,true);//Define que funciones se ejecutan y cuales no.
-        $debug = array(false,false,true,true,true);//Define que funciones se ejecutan y cuales no.
+        $debug = array(false,true,true,true,true);//Define que funciones se ejecutan y cuales no. - Produccion
+        //$debug = array(false,false,true,true,true);//Define que funciones se ejecutan y cuales no. - Test
 
 
 		$po = json_decode(file_get_contents('php://input'));
@@ -664,8 +664,8 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
             $mail->SetFrom("mauricio.muriel@sientifica.com", 'Mauricio Muriel');
             $mail->Subject = $subject;
             $mail->Body    = $text;
-            $mail->AddAddress("mauricio.muriel@calitek.net", "Mauricio Muriel");
-            //$mail->AddAddress("jschuster@sleefs.com", "Jaime Schuster");
+            //$mail->AddAddress("mauricio.muriel@calitek.net", "Mauricio Muriel");
+            $mail->AddAddress("jschuster@sleefs.com", "Jaime Schuster");
             $mail->Send();
             $response->value = true;
         }
