@@ -29,7 +29,11 @@ use Sleefs\Helpers\ShopifyAPI\RemoteProductGetterBySku;
 use Sleefs\Helpers\Shopify\ProductGetterBySku;  
 use Sleefs\Helpers\Shopify\ProductPublishValidatorByImage;
 use Sleefs\Helpers\Shopify\ProductTaggerForNewResTag;
-use Sleefs\Helpers\FindifyAPI\Findify;      
+use Sleefs\Helpers\FindifyAPI\Findify;   
+
+
+use \Sleefs\Helpers\Misc\Response;
+use \PHPMailer\PHPMailer\PHPMailer;   
 
 
 Class PurchaseOrderWebHookEndPointController extends Controller {
@@ -51,8 +55,8 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
                 6. Se genera la respuesta al servidor de shiphero
         */
 
-        $debug = array(false,true,true,true,true);//Define que funciones se ejecutan y cuales no.
-        //$debug = array(false,false,true,true,true);//Define que funciones se ejecutan y cuales no.
+        //$debug = array(false,true,true,true,true);//Define que funciones se ejecutan y cuales no.
+        $debug = array(false,false,true,true,true);//Define que funciones se ejecutan y cuales no.
 
 
 		$po = json_decode(file_get_contents('php://input'));
@@ -570,6 +574,8 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
 
             //print_r($po);
             //print_r($poextended);
+            //return false;
+            
 
             $shopifyApi = new Shopify(env('SHPFY_APIKEY'),env('SHPFY_APIPWD'),env('SHPFY_BASEURL'));
             $publishValidatorByImage = new ProductPublishValidatorByImage();
@@ -579,25 +585,49 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
             $publisher = new AutomaticProductPublisher();
             
 
+            $htmlEmailBody = '';
+
             $actualIdProduct = '';
+            $qtyPublishedProducts = 0;
             foreach($poextended->po->results->items as $shItem){
-                $localProductGetter = new ProductGetterBySku();
-                $localProduct = new Product();
-                $localProduct = $localProductGetter->getProduct($shItem->sku,$localProduct);
-                $shopifyProduct = $remoteShopifyProductGetter->getRemoteProductBySku($shItem->sku,$shopifyApi);
-                if ($shopifyProduct->published_at==null || $shopifyProduct->published_at=='' || $shopifyProduct->published_at==' '){
+                if ($shItem->quantity_received > 0){//Solo se publican los productos que tengan ingreso al inventario
+
+                    $localProductGetter = new ProductGetterBySku();
+                    $localProduct = new Product();
+                    $localProduct = $localProductGetter->getProduct($shItem->sku,$localProduct);
+                    $shopifyProduct = $remoteShopifyProductGetter->getRemoteProductBySku($shItem->sku,$shopifyApi);
                     if ($shopifyProduct){
-                        if ($shopifyProduct->id != $actualIdProduct){
-                            $clogger->writeToLog ("Publicando el producto: ".json_encode($shopifyProduct),"INFO");
-                            $publisher->publishProduct($shopifyProduct,$publishValidatorByImage,$shopifyApi,$tagger,$findifyApi);
-                            $actualIdProduct = $shopifyProduct->id;
+                        if ($shopifyProduct->published_at==null || $shopifyProduct->published_at=='' || $shopifyProduct->published_at==' '){
+                            if ($shopifyProduct->id != $actualIdProduct){
+                                $qtyPublishedProducts++;
+                                $clogger->writeToLog ("Publicando el producto: ".json_encode($shopifyProduct),"INFO");
+                                //Publica o al menos intenta publicación
+                                $publishingResults = $publisher->publishProduct($shopifyProduct,$publishValidatorByImage,$shopifyApi,$tagger,$findifyApi);
+                                $htmlEmailBody .= "\n".$qtyPublishedProducts.". ".$shopifyProduct->title." (".$shopifyProduct->id.")<br />\n";
+                                if ($publishingResults->value == true){
+                                    //Publicó correctamente
+                                    if (preg_match("/^NEW[0-9]{6,6}|^RES[0-9]{6,6}/",$publishingResults->notes)){
+                                        $htmlEmailBody .= "El producto se ha publicado con el tag: ".$publishingResults->notes."<br /><br />\n\n";
+                                    }
+                                }
+                                else{
+                                    //No publicó
+                                    if ($publishingResults->notes == 'No images'){
+                                        $htmlEmailBody .= "This product (https://".env('SHPFY_BASEURL')."/products/".$shopifyProduct->id.") doesn't have at least one related image.<br /><br />\n\n";
+                                    }
+                                }
+                                $actualIdProduct = $shopifyProduct->id;
+                            }
                         }
                     }
                 }
             }
+            if (!($htmlEmailBody == '')){
+
+                $this->sendPublisingReport("Next are the result of publishing products of PO No.".$poextended->po->results->po_number." to sleefs.com store:<br /><br />\n\n".$htmlEmailBody,"Publishing items report for PO: ".$poextended->po->results->po_number);
+
+            }
         } 
-
-
         /*
 
             6.  Genera la respuesta al servidor de shiphero
@@ -612,6 +642,42 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
 
 
 	}
+
+
+
+
+    private function sendPublisingReport($textEmail,$subject){
+
+        $response = new Response();
+        try{
+            $text             = $textEmail."<br /><br />\n\n";
+            $mail             = new PHPMailer();
+            $mail->isSMTP();
+            $mail->SMTPDebug  = false; // debugging: 1 = errors and messages, 2 = messages only
+            $mail->SMTPAuth   = true; // authentication enabled
+            $mail->SMTPSecure = getenv('MAIL_ENCRYPTION'); // secure transfer enabled REQUIRED for Gmail
+            $mail->Host       = getenv('MAIL_HOST');
+            $mail->Port       = getenv('MAIL_PORT'); // or 587
+            $mail->IsHTML(true);
+            $mail->Username = getenv('MAIL_USERNAME');
+            $mail->Password = getenv('MAIL_PASSWORD');
+            $mail->SetFrom("mauricio.muriel@sientifica.com", 'Mauricio Muriel');
+            $mail->Subject = $subject;
+            $mail->Body    = $text;
+            $mail->AddAddress("mauricio.muriel@calitek.net", "Mauricio Muriel");
+            //$mail->AddAddress("jschuster@sleefs.com", "Jaime Schuster");
+            $mail->Send();
+            $response->value = true;
+        }
+        catch(\Exception $e){
+            $response->value = false;
+            $response->status = false;
+            $response->notes = $mail->ErrorInfo;
+            return $response;
+        }
+
+        return $response;
+    }
 	
 
 }

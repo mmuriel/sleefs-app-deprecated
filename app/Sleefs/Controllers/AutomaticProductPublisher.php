@@ -49,7 +49,7 @@ class AutomaticProductPublisher {
             //1.1.  Envia el correo de error
             if ($validationResult->notes == 'No images'){
                 $textEmail = "Product: ".$shopifyPrdt->title." (https://".env('SHPFY_BASEURL')."/products/".$shopifyPrdt->id.") doesn't have at least one related image.";
-                $this->sendNoPhotoInProductMsg($textEmail);
+                //$this->sendNoPhotoInProductMsg($textEmail);
             }
             //1.2.  Define el valor de respuesta
             $response->value = false;
@@ -80,7 +80,6 @@ class AutomaticProductPublisher {
         ));
         //4.    Si el producto es NEW, agrega el tag 
         //      a la colección "new" en findify
-
         if (preg_match("/^NEW[0-9]{2,6}/",$tag)){
 
             //$loginResult = $findifyApi->login('admin@sleefs.com','Sleefs--5931');
@@ -93,13 +92,10 @@ class AutomaticProductPublisher {
                      break;
                 }
             }
-            
-
             //======================================================================
             // Verifica si debe ingresar el nuevo tag como filtro
             // o si ya el filtro existe en la colección de findify
             //======================================================================
-            
             $ctrlAddTag = true;
             foreach($newCollection->query->filters[0]->values as $filter){
                 if (strtoupper($filter->value) == $tag){
@@ -109,7 +105,6 @@ class AutomaticProductPublisher {
             }
 
             if ($ctrlAddTag){
-
                 $newFilter = new \stdClass();
                 $newFilter->value = $tag;
                 array_push($newCollection->query->filters[0]->values,$newFilter);
@@ -117,17 +112,19 @@ class AutomaticProductPublisher {
                 $respFindiCollUpdate = $findifyApi->updateCollection($newCollection,env('FINDIFY_MERCHANT_ID'),env('FINDIFY_API_KEY'));
                 //echo "\nFindify Response\n";
                 //print_r($respFindiCollUpdate);
+                $response->value = true;
+                $response->notes = $tag;
+                return $response;
             }
             else{
-
                 //echo "No actualiza...";
+                $response->value = true;
+                $response->notes = "Ya se ha actualizado el producto en este ciclo";
+                return $response;
             }
-            
-
         }
-
         $response->value = true;
-        $response->notes = "ok";
+        $response->notes = $tag;
         return $response;
 
     }
