@@ -606,7 +606,7 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
                                 $htmlEmailBody .= "\n".$qtyPublishedProducts.". ".$shopifyProduct->title." (".$shopifyProduct->id.")<br />\n";
                                 if ($publishingResults->value == true){
                                     //Publicó correctamente
-                                    if (preg_match("/^NEW[0-9]{6,6}|^RES[0-9]{6,6}/",$publishingResults->notes)){
+                                    if (preg_match("/(^NEW[0-9]{6,6}|^RES[0-9]{6,6})/",$publishingResults->notes)){
                                         $htmlEmailBody .= "El producto se ha publicado con el tag: ".$publishingResults->notes."<br /><br />\n\n";
                                     }
                                 }
@@ -624,7 +624,7 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
             }
             if (!($htmlEmailBody == '')){
 
-                $this->sendPublisingReport("Next are the result of publishing products of PO No.".$poextended->po->results->po_number." to sleefs.com store:<br /><br />\n\n".$htmlEmailBody,"Publishing items report for PO: ".$poextended->po->results->po_number);
+                $this->sendPublisingReport("Next are the results of publishing products of PO No.".$poextended->po->results->po_number." to sleefs.com store:<br /><br />\n\n".$htmlEmailBody,"Publishing items report for PO: ".$poextended->po->results->po_number);
 
             }
         } 
@@ -664,8 +664,8 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
             $mail->SetFrom("mauricio.muriel@sientifica.com", 'Mauricio Muriel');
             $mail->Subject = $subject;
             $mail->Body    = $text;
-            //$mail->AddAddress("mauricio.muriel@calitek.net", "Mauricio Muriel");
-            $mail->AddAddress("jschuster@sleefs.com", "Jaime Schuster");
+            $mail->AddAddress("mauricio.muriel@calitek.net", "Mauricio Muriel");
+            //$mail->AddAddress("jschuster@sleefs.com", "Jaime Schuster");
             $mail->Send();
             $response->value = true;
         }
