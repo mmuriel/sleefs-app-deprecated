@@ -55,7 +55,7 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
                 6. Se genera la respuesta al servidor de shiphero
         */
 
-        $debug = array(false,true,true,true,true);//Define que funciones se ejecutan y cuales no. - Produccion
+        $debug = array(false,true,true,true,false);//Define que funciones se ejecutan y cuales no. - Produccion
         //$debug = array(false,false,true,true,true);//Define que funciones se ejecutan y cuales no. - Test
 
 
