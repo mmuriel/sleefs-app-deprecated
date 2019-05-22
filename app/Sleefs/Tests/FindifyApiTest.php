@@ -67,7 +67,7 @@ class FindifyApiTest extends TestCase {
     	//print_r($newCollection);
     	//return 1;
     	$response = $findifyApi->updateCollection($newCollection,250,250);
-    	//print_r($response);
+        $response->id = $newCollection->id;
     	$indexLastAddedItem = count($response->query->filters[0]->values);
     	$indexLastAddedItem--;
     	$this->assertEquals('MMMMTESTING',$response->query->filters[0]->values[$indexLastAddedItem]->value);

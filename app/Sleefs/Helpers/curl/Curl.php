@@ -14,7 +14,19 @@ class Curl {
             curl_setopt($c, CURLOPT_HTTPHEADER, $headers);
 
         }
+
+        if($headers != null && in_array('Custom-SSL-Verification:false',$headers)){
+            curl_setopt($c, CURLOPT_SSL_VERIFYHOST, false); 
+            curl_setopt($c, CURLOPT_SSL_VERIFYPEER, false);
+        }
+
         $contents = curl_exec($c);
+
+        if($errno = curl_errno($c)) {
+            $error_message = curl_strerror($errno);
+            //echo "cURL error ({$errno}):\n {$error_message}";
+            $contents = "cURL error ({$errno}):\n {$error_message}";
+        }
         curl_close($c);
         return utf8_encode($contents);
     }
@@ -32,6 +44,9 @@ class Curl {
 
         }
 
+
+
+
         $content = json_encode($content);
         $curl = curl_init($url);
         curl_setopt($curl, CURLOPT_HEADER, false);
@@ -40,7 +55,20 @@ class Curl {
         curl_setopt($curl, CURLOPT_POST, true);
         curl_setopt($curl, CURLOPT_POSTFIELDS, $content);
 
+        if($headers != null && in_array('Custom-SSL-Verification:false',$headers)){
+            curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false); 
+            curl_setopt($curl, CURLOPT_SSL_VERIFYPEER, false);
+        }
+
         $contents = curl_exec($curl);
+        
+        if($errno = curl_errno($curl)) {
+            $error_message = curl_strerror($errno);
+            //echo "cURL error ({$errno}):\n {$error_message}";
+            $contents = "cURL error ({$errno}):\n {$error_message}";
+        }
+
+
         $status = curl_getinfo($curl, CURLINFO_HTTP_CODE);
 
         /*
@@ -75,7 +103,21 @@ class Curl {
 
         }
 
+        if($headers != null && in_array('Custom-SSL-Verification:false',$headers)){
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false); 
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        }
+
         $contents = curl_exec($ch);
+
+
+        if($errno = curl_errno($ch)) {
+            $error_message = curl_strerror($errno);
+            //echo "cURL error ({$errno}):\n {$error_message}";
+            $contents = "cURL error ({$errno}):\n {$error_message}";
+        }
+
+
         $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
         curl_close($ch);
 
@@ -106,7 +148,21 @@ class Curl {
         }
         
 
+        if($headers != null && in_array('Custom-SSL-Verification:false',$headers)){
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false); 
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);
+        }
+
         $contents = curl_exec($ch);
+
+
+        if($errno = curl_errno($ch)) {
+            $error_message = curl_strerror($errno);
+            //echo "cURL error ({$errno}):\n {$error_message}";
+            $contents = "cURL error ({$errno}):\n {$error_message}";
+        }
+
+
         curl_close($ch);
 
         return utf8_encode($contents);
@@ -122,7 +178,23 @@ class Curl {
             curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
         }
-        return curl_exec($ch);
+
+
+        if($headers != null && in_array('Custom-SSL-Verification:false',$headers)){
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false); 
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, false);          
+        }
+
+
+        $contents = curl_exec($ch);
+        if($errno = curl_errno($ch)) {
+            $error_message = curl_strerror($errno);
+            //echo "cURL error ({$errno}):\n {$error_message}";
+            $contents = "cURL error ({$errno}):\n {$error_message}";
+        }
+
+
+        return $contents;
     }
 
 }
