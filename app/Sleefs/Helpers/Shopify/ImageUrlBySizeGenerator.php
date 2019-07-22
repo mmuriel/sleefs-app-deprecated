@@ -22,7 +22,7 @@ class ImageUrlBySizeGenerator {
 
         $strToReplaceFor = '_'.$width.'x'.$height;
 
-        $adjustedUrl = preg_replace("/\.(jpg|png|jpeg|gif)\?/",$strToReplaceFor."$0",$url);
+        $adjustedUrl = preg_replace("/\.(jpg|png|jpeg|gif)\?/i",$strToReplaceFor."$0",$url);
         return $adjustedUrl;
         
     }
