@@ -1,0 +1,92 @@
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Would you be willing to share your email address with the Electronic Frontier
+Foundation, a founding partner of the Let's Encrypt project and the non-profit
+organization that develops Certbot? We'd like to send you email about our work
+encrypting the web, EFF news, campaigns, and ways to support digital freedom.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+(Y)es/(N)o: N
+No names were found in your configuration files. Please enter in your domain
+name(s) (comma and/or space separated)  (Enter 'c' to cancel): sleefs-2.sientifica.com
+Obtaining a new certificate
+Performing the following challenges:
+http-01 challenge for sleefs-2.sientifica.com
+Cleaning up challenges
+Unable to find a virtual host listening on port 80 which is currently needed for Certbot to prove to the CA that you control your domain. Please add a virtual host for port 80.
+
+IMPORTANT NOTES:
+ - Your account credentials have been saved in your Certbot
+   configuration directory at /etc/letsencrypt. You should make a
+   secure backup of this folder now. This configuration directory will
+   also contain certificates and private keys obtained by Certbot so
+   making regular backups of this folder is ideal
+
+
+
+
+
+<VirtualHost *:80>
+    DocumentRoot "/var/www/html"
+    ServerName sleefs-2.sientifica.com
+
+    # Other directives here
+</VirtualHost>
+
+<VirtualHost *:80>
+    DocumentRoot "/var/www/phpMiA"
+    ServerName phpMiA-sleefs-2.sientifica.com
+
+    # Other directives here
+</VirtualHost>
+
+
+
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Congratulations! You have successfully enabled https://sleefs-2.sientifica.com
+
+You should test your configuration at:
+https://www.ssllabs.com/ssltest/analyze.html?d=sleefs-2.sientifica.com
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+IMPORTANT NOTES:
+ - Congratulations! Your certificate and chain have been saved at:
+   /etc/letsencrypt/live/sleefs-2.sientifica.com/fullchain.pem
+   Your key file has been saved at:
+   /etc/letsencrypt/live/sleefs-2.sientifica.com/privkey.pem
+   Your cert will expire on 2019-08-22. To obtain a new or tweaked
+   version of this certificate in the future, simply run certbot again
+   with the "certonly" option. To non-interactively renew *all* of
+   your certificates, run "certbot renew"
+ - If you like Certbot, please consider supporting our work by:
+
+   Donating to ISRG / Let's Encrypt:   https://letsencrypt.org/donate
+   Donating to EFF:                    https://eff.org/donate-le
+
+
+
+
+
+Congratulations! You have successfully enabled
+https://phpmia-sleefs-2.sientifica.com
+
+You should test your configuration at:
+https://www.ssllabs.com/ssltest/analyze.html?d=phpmia-sleefs-2.sientifica.com
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+IMPORTANT NOTES:
+ - Congratulations! Your certificate and chain have been saved at:
+   /etc/letsencrypt/live/phpmia-sleefs-2.sientifica.com/fullchain.pem
+   Your key file has been saved at:
+   /etc/letsencrypt/live/phpmia-sleefs-2.sientifica.com/privkey.pem
+   Your cert will expire on 2019-08-22. To obtain a new or tweaked
+   version of this certificate in the future, simply run certbot again
+   with the "certonly" option. To non-interactively renew *all* of
+   your certificates, run "certbot renew"
+ - If you like Certbot, please consider supporting our work by:
+
+   Donating to ISRG / Let's Encrypt:   https://letsencrypt.org/donate
+   Donating to EFF:                    https://eff.org/donate-le
+
+
+
+

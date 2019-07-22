@@ -1,0 +1,97 @@
+[root@sleefs sleefs]# certbot --apache -d sleefs-collections.sientifica.com
+Saving debug log to /var/log/letsencrypt/letsencrypt.log
+Plugins selected: Authenticator apache, Installer apache
+Starting new HTTPS connection (1): acme-v02.api.letsencrypt.org
+Obtaining a new certificate
+Performing the following challenges:
+http-01 challenge for sleefs-collections.sientifica.com
+Waiting for verification...
+Cleaning up challenges
+Resetting dropped connection: acme-v02.api.letsencrypt.org
+
+We were unable to find a vhost with a ServerName or Address of sleefs-collections.sientifica.com.
+Which virtual host would you like to choose?
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+1: ssl.conf                       |                       | HTTPS | Enabled
+2: vhost-le-ssl.conf              | sleefs-2.sientifica.c | HTTPS | Enabled
+3: vhost-le-ssl.conf              | Multiple Names        | HTTPS | Enabled
+4: vhost.conf                     | sleefs-2.sientifica.c |       | Enabled
+5: vhost.conf                     | phpMiA-sleefs-2.sient |       | Enabled
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Select the appropriate number [1-5] then [enter] (press 'c' to cancel): 4
+The selected vhost would conflict with other HTTPS VirtualHosts within Apache. Please select another vhost or add ServerNames to your configuration.
+VirtualHost not able to be selected.
+
+IMPORTANT NOTES:
+ - Unable to install the certificate
+ - Congratulations! Your certificate and chain have been saved at:
+   /etc/letsencrypt/live/sleefs-collections.sientifica.com/fullchain.pem
+   Your key file has been saved at:
+   /etc/letsencrypt/live/sleefs-collections.sientifica.com/privkey.pem
+   Your cert will expire on 2019-09-10. To obtain a new or tweaked
+   version of this certificate in the future, simply run certbot again
+   with the "certonly" option. To non-interactively renew *all* of
+   your certificates, run "certbot renew"
+[root@sleefs sleefs]# 
+
+[root@sleefs conf.d]# certbot --apache -d sleefs-collections.sientifica.com
+Saving debug log to /var/log/letsencrypt/letsencrypt.log
+Plugins selected: Authenticator apache, Installer apache
+Starting new HTTPS connection (1): acme-v02.api.letsencrypt.org
+Cert not yet due for renewal
+
+You have an existing certificate that has exactly the same domains or certificate name you requested and isn't close to expiry.
+(ref: /etc/letsencrypt/renewal/sleefs-collections.sientifica.com.conf)
+
+What would you like to do?
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+1: Attempt to reinstall this existing certificate
+2: Renew & replace the cert (limit ~5 per 7 days)
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Select the appropriate number [1-2] then [enter] (press 'c' to cancel): 1
+Keeping the existing certificate
+
+We were unable to find a vhost with a ServerName or Address of sleefs-collections.sientifica.com.
+Which virtual host would you like to choose?
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+1: ssl.conf                       |                       | HTTPS | Enabled
+2: vhost-le-ssl.conf              | sleefs-2.sientifica.c | HTTPS | Enabled
+3: vhost-le-ssl.conf              | Multiple Names        | HTTPS | Enabled
+4: vhost.conf                     | sleefs-2.sientifica.c |       | Enabled
+5: vhost.conf                     | phpMiA-sleefs-2.sient |       | Enabled
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Select the appropriate number [1-5] then [enter] (press 'c' to cancel): 3
+Deploying Certificate to VirtualHost /etc/httpd/conf.d/vhost-le-ssl.conf
+
+Please choose whether or not to redirect HTTP traffic to HTTPS, removing HTTP access.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+1: No redirect - Make no further changes to the webserver configuration.
+2: Redirect - Make all requests redirect to secure HTTPS access. Choose this for
+new sites, or if you're confident your site works on HTTPS. You can undo this
+change by editing your web server's configuration.
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Select the appropriate number [1-2] then [enter] (press 'c' to cancel): 1
+
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+Congratulations! You have successfully enabled
+https://sleefs-collections.sientifica.com
+
+You should test your configuration at:
+https://www.ssllabs.com/ssltest/analyze.html?d=sleefs-collections.sientifica.com
+- - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
+
+IMPORTANT NOTES:
+ - Congratulations! Your certificate and chain have been saved at:
+   /etc/letsencrypt/live/sleefs-collections.sientifica.com/fullchain.pem
+   Your key file has been saved at:
+   /etc/letsencrypt/live/sleefs-collections.sientifica.com/privkey.pem
+   Your cert will expire on 2019-09-10. To obtain a new or tweaked
+   version of this certificate in the future, simply run certbot again
+   with the "certonly" option. To non-interactively renew *all* of
+   your certificates, run "certbot renew"
+ - If you like Certbot, please consider supporting our work by:
+
+   Donating to ISRG / Let's Encrypt:   https://letsencrypt.org/donate
+   Donating to EFF:                    https://eff.org/donate-le
+
+[root@sleefs conf.d]# 
