@@ -37,6 +37,17 @@ class ProductUpdateController extends Controller {
 			$product->save();
         }
 
+	/*
+            Elimina primero todas las imágenes asociadas al producto, para evitar mantener imágenes
+            ya no válidas o existentes
+        */
+
+        ProductImage::where('idproducto','=',$product->id)->delete();
+
+        /*
+            Registra las imágenes
+        */
+
 
         if (isset($prd->images) && count($prd->images) > 0){
 
