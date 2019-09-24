@@ -1,0 +1,11 @@
+sleefs.log.INFO: Procesando PO: 
+
+{"test":"0","purchase_order":{"status":"closed","line_items":[{"sku":"CUSTOM-SP","id":"5d5ad2ab6fd38","quantity_received":15},{"sku":"CUSTOM-SL-1","id":"5d5ad2ab6fd7a","quantity_received":18}],"po_id":1674}} [] []
+
+
+
+
+
+sleefs.log.INFO: Con PO Extendida: 
+
+{"Message":"success","code":"200","po":{"results":{"shipping_name":null,"shipping_method":null,"payment_method":"credit","tax":0,"vendor_id":0,"po_id":1674,"shipping_carrier":null,"items":[{"sku":"CUSTOM-SP","created_at":"2019-08-19 16:47:39","sell_ahead":0,"price":"2.50","fulfillment_status":"closed","vendor_sku":"CUSTOM-SP","product_name":"Custom Spats","quantity_received":15,"quantity":15},{"sku":"CUSTOM-SL-1","created_at":"2019-08-19 16:47:39","sell_ahead":0,"price":"1.00","fulfillment_status":"closed","vendor_sku":"","product_name":"Custom Arm Sleeves (Single)","quantity_received":18,"quantity":18}],"discount":"0.00","warehouse_country":null,"vendor_address2":"","vendor_address1":"","packing_note":null,"warehouse_zip":null,"warehouse_name":null,"subtotal":"55.5","warehouse_phone":null,"shipping_price":"0.00","vendor_email":"xxx","payment_due_by":"net30","po_date":"2019-09-02 00:00:00","total_price":"55.5","warehouse_state":null,"vendor_city":"","po_number":"1908-35 SW1744","description":null,"warehouse_city":null,"updated_shop_with_data":0,"warehouse_email":null,"vendor_phone":"","warehouse":"Primary","vendor_state":"","tracking_number":"","vendor_account_number":"","warehouse_address2":null,"warehouse_address1":null,"fulfillment_status":"closed","vendor_zip":"","po_note":"","vendor_name":"DX Sporting Goods","created_at":"2019-08-19 16:47:39","vendor_country":""}}} [] []

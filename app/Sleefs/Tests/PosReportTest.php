@@ -8,6 +8,7 @@ use Sleefs\Helpers\Shopify\ImageUrlBySizeGenerator;
 
 use Sleefs\Models\Shiphero\PurchaseOrder;
 use Sleefs\Models\Shiphero\PurchaseOrderItem;
+use Sleefs\Helpers\Shiphero\POQtyTotalizer;
 
 use \mdeschermeier\shiphero\Shiphero;
 
@@ -18,10 +19,6 @@ class PosReportTest extends TestCase {
 
 	public function setUp()
     {
-        parent::setUp();
-        $this->prepareForTests();
-
-
         parent::setUp();
         $this->prepareForTests();
 
@@ -122,6 +119,18 @@ class PosReportTest extends TestCase {
 		}
 
 		
+	}
+
+
+	public function testGetTotalReceivedItemsByPo(){
+
+		$totalizer = new POQtyTotalizer();
+		$total = $totalizer->getTotalItems($this->po->id,'total');
+		$received = $totalizer->getTotalItems($this->po->id,'received');
+
+		$this->assertEquals(124,$total);
+		$this->assertEquals(74,$received);
+
 	}
 
 

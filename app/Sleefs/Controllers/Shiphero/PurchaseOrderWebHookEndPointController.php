@@ -20,6 +20,7 @@ use Sleefs\Models\Shiphero\PurchaseOrder;
 use Sleefs\Models\Shiphero\PurchaseOrderItem;
 use Sleefs\Models\Shiphero\PurchaseOrderUpdate;
 use Sleefs\Models\Shiphero\PurchaseOrderUpdateItem;
+use Sleefs\Helpers\Shiphero\POQtyTotalizer;
 
 
 use Sleefs\Controllers\AutomaticProductPublisher;
@@ -29,7 +30,14 @@ use Sleefs\Helpers\ShopifyAPI\RemoteProductGetterBySku;
 use Sleefs\Helpers\Shopify\ProductGetterBySku;  
 use Sleefs\Helpers\Shopify\ProductPublishValidatorByImage;
 use Sleefs\Helpers\Shopify\ProductTaggerForNewResTag;
-use Sleefs\Helpers\FindifyAPI\Findify;   
+use Sleefs\Helpers\FindifyAPI\Findify;  
+
+use Sleefs\Models\Monday\Pulse;
+use Sleefs\Helpers\MondayApi\MondayApi;
+use Sleefs\Helpers\Monday\MondayVendorValidator; 
+use Sleefs\Helpers\Monday\MondayPulseNameExtractor;
+use Sleefs\Helpers\Monday\MondayGroupChecker;
+use Sleefs\Helpers\Monday\MondayFullPulseColumnGetter;
 
 
 use \Sleefs\Helpers\Misc\Response;
@@ -37,6 +45,22 @@ use \PHPMailer\PHPMailer\PHPMailer;
 
 
 Class PurchaseOrderWebHookEndPointController extends Controller {
+
+
+    private $mondayPulseColumnMap = array (
+        'name' => 'name',//Pulse Name
+        'title' => 'title6',//PO Title
+        'vendor' => 'vendor2',//Vendor
+        'created date' => 'created_date8',//Created Date
+        'expected date' => 'expected_date3',//Expected Date
+        'pay' => 'pay',//Pay
+        'received' => 'received',//Received
+        'total cost' => 'total_cost0',//Total Cost
+
+    );
+
+
+    private $mondayValidVendors = array('DX Sporting Goods','Good People Sports');
 	
 
 	public function __invoke(){
@@ -52,11 +76,12 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
                 3. Registro en la DB local los datos de la presente actualización
                 4. Registro de los datos de la PO en el libro "Qty-ProductType" del spreadsheet y registro de la orden en la DB
                 5. Se publican los productos que no estén publicados en la tienda shopify
-                6. Se genera la respuesta al servidor de shiphero
+                6. Se publica/modifica en monday.com el estado de la PO entrante
+                7. Se genera la respuesta al servidor de shiphero
         */
 
-        $debug = array(false,true,true,true,false);//Define que funciones se ejecutan y cuales no. - Produccion
-        //$debug = array(false,false,true,true,true);//Define que funciones se ejecutan y cuales no. - Test
+        //$debug = array(false,true,true,true,false,true);//Define que funciones se ejecutan y cuales no. - Produccion
+        $debug = array(false,false,true,true,true,true);//Define que funciones se ejecutan y cuales no. - Test
 
 
 		$po = json_decode(file_get_contents('php://input'));
@@ -94,7 +119,8 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
 
         $spreadsheet = (new \Google\Spreadsheet\SpreadsheetService)
         ->getSpreadsheetFeed()
-        ->getByTitle('Sleefs - Shiphero - Purchase Orders');
+        //->getByTitle('Sleefs - Shiphero - Purchase Orders');//Production
+        ->getByTitle('CP Sleefs - Shiphero - Purchase Orders');//Dev
 
 
         /*
@@ -629,8 +655,173 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
             }
         } 
         /*
+            
+            6.  Despacha la adición/modificación de la PO hacía la plataforma
+                de monday.com
+        */
 
-            6.  Genera la respuesta al servidor de shiphero
+        if ($debug[5] == true){
+
+            //6.1. Verifica si la orden la PO es elegible para registro en monday
+            //$this->mondayValidVendors = array('DX Sporting Goods','Good People Sports');
+            $vendorValidator = new MondayVendorValidator($this->mondayValidVendors);
+            $pulseNameExtractor = new MondayPulseNameExtractor();
+            $mondayApi = new MondayApi(env('MONDAY_BASEURL'),env('MONDAY_APIKEY'));
+
+
+            if ($vendorValidator->validateVendor(ucwords(trim($poextended->po->results->vendor_name)))){
+                //6.2 Verifica si la orden ya tiene un objeto tipo pulse creado
+                $pulseName = $pulseNameExtractor->extractPulseName($poextended->po->results->po_number);
+                $pulses = Pulse::whereRaw(" (name='{$pulseName}') ")->get();
+                $pulse = '';
+                if($pulses->count() > 0){
+                    $pulse = $pulses->get(0);
+                }else{
+
+                    //Si no lo tiene genera uno
+                    $pulse = new Pulse();
+                    if (isset($poDb) && isset($poDb->id)){
+                        $pulse->idpo = $poDb->id;
+                    }
+                    else{
+                        $poDb = PurchaseOrder::where('po_id','=',$po->purchase_order->po_id)->first();
+                        $pulse->idpo = $poDb->id;
+                    }
+                    $pulse->idmonday = '';
+                    $pulse->name = $pulseName;
+                    $pulse->mon_board = env('MONDAY_BOARD');
+                    $pulse->mon_group = '';
+                }
+                //=======================================================
+                //6.3   Verifica si ya existe un pulse en el tablero con 
+                //      el mismo nombre.
+                $fullPulse = $mondayApi->getFullPulse($pulse,env('MONDAY_BOARD'));
+                if ($fullPulse == null){
+
+                    //6.4   Recupera el grupo al que pertenece la PO
+                    $groupChecker = new MondayGroupChecker();
+                    $group = $groupChecker->getGroup($pulse->name,env('MONDAY_BOARD'),$mondayApi);
+                    if ($group==null){
+                        //6.5   Genera un nuevo grupo
+                        $groupTitle = $groupChecker->getCorrectGroupName ($pulse->name);
+                        $data = array(
+                            'board_id' => env('MONDAY_BOARD'),
+                            'title' => $groupTitle,
+                        );
+                        $group = $mondayApi->addGroupToBoard(env('MONDAY_BOARD'),$data);
+                    }
+
+
+                    $pulseData = array(
+                        'pulse[name]' => $pulse->name,
+                        'board_id' => env('MONDAY_BOARD'),
+                        'user_id' => env('MONDAY_USER'),
+                        'group_id' => $group->id,
+                    );
+                    $newPulse = $mondayApi->createPulse(env('MONDAY_BOARD'),$pulseData);
+                    $fullPulse = $mondayApi->getFullPulse($pulse,env('MONDAY_BOARD'));
+                }
+
+                if ($pulse->idmonday=='' || $pulse->mon_board=='' || $pulse->mon_group==''){
+                    $pulse->idmonday = $fullPulse->pulse->id;
+                    $pulse->mon_board = env('MONDAY_BOARD');
+                    $pulse->mon_group = $fullPulse->board_meta->group_id;
+                    $pulse->save();
+                }
+                //======================================================
+                //6.6   Genera las actualizaciones de los campos
+                //======================================================
+                $pulseGetterValue = new MondayFullPulseColumnGetter();//Recuperador de los valores de las columnas en el $fullPulse
+                //6.6.1 Verifica el title del pulse
+                $pulseTitleCandidate = $poextended->po->results->po_number;
+                $pulseTitleCandidate = preg_replace("/^".$pulse->name."/","",$pulseTitleCandidate);
+                $pulseTitleCandidate = trim($pulseTitleCandidate);                
+                $pulseTitle = $pulseGetterValue->getValue($this->mondayPulseColumnMap['title'],$fullPulse);
+
+                if ($pulseTitle != $pulseTitleCandidate || $pulseTitle == ''){
+                    $dataPulse = array(
+                        'text' => $pulseTitleCandidate,
+                    );
+                    $mondayApi->updatePulse(env('MONDAY_BOARD'),$fullPulse->pulse->id,$this->mondayPulseColumnMap['title'],'text',$dataPulse);
+                }
+                //6.6.2 Verifica el vendor del pulse
+                $pulseVendorCandidate = $poextended->po->results->vendor_name;              
+                $pulseVendor = $pulseGetterValue->getValue($this->mondayPulseColumnMap['vendor'],$fullPulse);
+                if ($pulseVendor != $pulseVendorCandidate || $pulseVendor == ''){
+                    $dataPulse = array(
+                        'text' => $pulseVendorCandidate,
+                    );
+                    $mondayApi->updatePulse(env('MONDAY_BOARD'),$fullPulse->pulse->id,$this->mondayPulseColumnMap['vendor'],'text',$dataPulse);
+                }
+                //6.6.3 Verifica el created date del pulse
+                $pulseCreatedAtCandidate = substr($poextended->po->results->created_at,0,10);
+                $pulseCreatedAt = $pulseGetterValue->getValue($this->mondayPulseColumnMap['created date'],$fullPulse);
+                if ($pulseCreatedAt != $pulseCreatedAtCandidate || $pulseCreatedAt == ''){
+                    $dataPulse = array(
+                        'date_str' => $pulseCreatedAtCandidate,
+                    );
+                    $mondayApi->updatePulse(env('MONDAY_BOARD'),$fullPulse->pulse->id,$this->mondayPulseColumnMap['created date'],'date',$dataPulse);
+                }
+                //6.6.4 Verifica el expected date del pulse
+                $pulseExpectedAtCandidate = substr($poextended->po->results->po_date,0,10);
+                $pulseExpectedAt = $pulseGetterValue->getValue($this->mondayPulseColumnMap['expected date'],$fullPulse);
+                if ($pulseExpectedAt != $pulseExpectedAtCandidate || $pulseExpectedAt == ''){
+                    $dataPulse = array(
+                        'date_str' => $pulseExpectedAtCandidate,
+                    );
+                    $mondayApi->updatePulse(env('MONDAY_BOARD'),$fullPulse->pulse->id,$this->mondayPulseColumnMap['expected date'],'date',$dataPulse);
+                }
+                //6.6.5 Verifica el received del pulse
+                $poTotalizer = new POQtyTotalizer();
+                $totalQtyPoItems = $poTotalizer->getTotalItems($pulse->idpo,'total');
+                $totalQtyPoItemsReceived = $poTotalizer->getTotalItems($pulse->idpo,'received');
+                $pulseStatusIndex = $pulseGetterValue->getValue($this->mondayPulseColumnMap['received'],$fullPulse);
+
+
+                if ($totalQtyPoItemsReceived == 0 ){
+                    //No se ha recibido ningun item
+                    $pulseStatusIndexCandidate = 2;//$index=2, quiere decir color rojo, no se ha recibido nada
+                }
+                elseif($totalQtyPoItemsReceived > 0 && ($totalQtyPoItemsReceived < $totalQtyPoItems)){
+                    //Se ha recibido pero faltan
+                    $pulseStatusIndexCandidate = 9;//$index=9, quiere decir color amarillo, recepción parcial de productos
+                }
+                elseif($totalQtyPoItemsReceived > 0 && ($totalQtyPoItemsReceived == $totalQtyPoItems)){
+                    //PO completa
+                    $pulseStatusIndexCandidate = 1;//$index=1, quiere decir color verde, recepción completa de productos
+                }
+                else{
+                    //Definicion indeterminada
+                    $pulseStatusIndexCandidate = 5;//$index=5, quiere decir color gris, estatus no determinado
+                }
+                
+                if ($pulseStatusIndex != $pulseStatusIndexCandidate || $pulseStatusIndex == ''){
+                    $dataPulse = array(
+                        'color_index' => $pulseStatusIndexCandidate,
+                        'update_id' => "SLEEFS-APP".date("Y-m-dH:i:s"),
+                    );
+                    $mondayApi->updatePulse(env('MONDAY_BOARD'),$fullPulse->pulse->id,$this->mondayPulseColumnMap['received'],'status',$dataPulse);
+                }
+
+                //6.6.6. Verifica el total de la orden
+                $pulseTotalCostCandidate = $poextended->po->results->total_price;              
+                $pulseTotalCost = $pulseGetterValue->getValue($this->mondayPulseColumnMap['total cost'],$fullPulse);
+                if ($pulseTotalCost != $pulseTotalCostCandidate || $pulseTotalCost == '' || $pulseTotalCost == 0.0){
+                    $dataPulse = array(
+                        'value' => $pulseTotalCostCandidate,
+                    );
+                    $mondayApi->updatePulse(env('MONDAY_BOARD'),$fullPulse->pulse->id,$this->mondayPulseColumnMap['total cost'],'numeric',$dataPulse);
+                }
+
+                
+            }
+
+
+        }
+
+        /*
+
+            7.  Genera la respuesta al servidor de shiphero
                 y bloquea la hoja de cáculo
 
         */

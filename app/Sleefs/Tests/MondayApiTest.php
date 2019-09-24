@@ -16,8 +16,8 @@ class MondayApiTest extends TestCase {
     {
         parent::setUp();
 
-        $this->urlEndPoint = 'api.monday.com/v1/';
-        $this->apiKey = 'e4beacc70ba73f31032053947e1709a3';
+        $this->urlEndPoint = env('MONDAY_BASEURL');
+        $this->apiKey = env('MONDAY_APIKEY');
         $this->mondayApi = new MondayApi($this->urlEndPoint,$this->apiKey);
         //print_r($this->mondayApi);
         $this->prepareForTests();
@@ -29,7 +29,7 @@ class MondayApiTest extends TestCase {
 
 		$allBoards = $this->mondayApi->getAllBoards();
 		//print_r($allBoards);
-		$this->assertEquals(3,count($allBoards));
+		$this->assertEquals(8,count($allBoards));
 		$this->assertEquals('POs',$allBoards[0]->name);
 
 	}
@@ -52,14 +52,31 @@ class MondayApiTest extends TestCase {
 	public function testGetBoardPulses(){
 
 		//ID of board to test: https://sleefs.monday.com/boards/227352240/
-		$idBoard = 227352240;
+		$idBoard = 230782591;
+		$pulses = $this->mondayApi->getBoardPulses($idBoard,'page=1&per_page=25');
+		$this->assertEquals(25,count($pulses));
+		$this->assertEquals('P120181231',$pulses[0]->column_values[0]->name);
+
+	}
 
 
-		$pulses = $this->mondayApi->getBoardPulses($idBoard);
-		//print_r($pulses);
-		$this->assertEquals(2,count($pulses));
-		$this->assertEquals('P120181219',$pulses[0]->column_values[0]->name);
+	public function testGetPulse(){
 
+		//ID of board to test: https://sleefs.monday.com/boards/227352240/
+		$pulseId = '322181434';
+		$pulse = $this->mondayApi->getPulse($pulseId);
+		//print_r($pulse);
+		$this->assertEquals('1909-05',$pulse->name);
+	}
+
+
+	public function testGetPulseError(){
+
+		//ID of board to test: https://sleefs.monday.com/boards/227352240/
+		$pulseId = '81434';
+		$pulse = $this->mondayApi->getPulse($pulseId);
+		//print_r($pulse->error);
+		$this->assertObjectHasAttribute('error',$pulse);
 	}
 
 
@@ -67,12 +84,65 @@ class MondayApiTest extends TestCase {
 
 		//ID of board to test: https://sleefs.monday.com/boards/230782591
 		$idBoard = 230782591;
-		$idUser = 5277993;
+		$data = array(
+			'pulse[name]' => 'P120181250',
+			'board_id' => '230782591',
+			'user_id' => '5277993',
+		);
+		$newPulse = $this->mondayApi->createPulse($idBoard,$data);
+		$this->assertEquals('P120181250',$newPulse->pulse->name);
+		$delPulse = $this->mondayApi->deletePulse($newPulse->pulse->id);
+		$this->assertEquals('P120181250',$delPulse->name);
+	}
 
-		$pulses = $this->mondayApi->getBoardPulses($idBoard);
-		//print_r($pulses);
-		$this->assertEquals(4,count($pulses));
-		$this->assertEquals('P120181220',$pulses[0]->column_values[0]->name);
+
+
+	public function testGetBoardGroups(){
+		//ID of board to test: https://sleefs.monday.com/boards/230782591
+		$idBoard = 230782591;
+		$boards = $this->mondayApi->getAllBoardGroups($idBoard);
+		//print_r($boards);
+		$this->assertEquals(8,count($boards));
+	}
+
+
+	public function testAddAndDeleteBoardGroup(){
+
+		$idBoard = 230782591;
+		$date = time();
+		$groupTitle ="PO ".ucfirst(date("F",$date));
+		$data = array(
+			'board_id' => $idBoard,
+			'title' => $groupTitle,
+		);
+		$newGroup = $this->mondayApi->addGroupToBoard($idBoard,$data);
+		//Asserting the add action
+		$this->assertEquals($groupTitle,$newGroup->title);
+		$delResponse = $this->mondayApi->delBoardGroup($idBoard,$newGroup->id);
+		//Asserting the delete action
+		$this->assertEquals($newGroup->id,$delResponse[(count($delResponse) - 1)]->id);
+		$this->assertEquals(1,$delResponse[(count($delResponse) - 1)]->archived);
+		$this->assertEquals($newGroup->title,$delResponse[(count($delResponse) - 1)]->title);
+
+	}
+
+	
+	public function testAddPulseToBoardAndModifyFields(){
+
+		//ID of board to test: https://sleefs.monday.com/boards/230782591
+		$idBoard = 230782591;
+		$dataPulse = array(
+			'pulse[name]' => 'P120181251',
+			'board_id' => '230782591',
+			'user_id' => '5277993',
+		);
+		$newPulse = $this->mondayApi->createPulse($idBoard,$dataPulse);
+		$data = array('color_index' => '0',);
+		$responseUpdatePulse = $this->mondayApi->updatePulse($idBoard,$newPulse->pulse->id,'status3','status',$data);
+		$this->assertObjectHasAttribute('value',$responseUpdatePulse);
+		$this->assertEquals(0,$responseUpdatePulse->value->index);
+		$delPulse = $this->mondayApi->deletePulse($newPulse->pulse->id);
+		$this->assertEquals('P120181251',$delPulse->name);
 
 	}
 

@@ -33,27 +33,47 @@ class Curl {
 
     public static function urlPost($url, $content, $headers=null) {
 
+        $isJsonForm = false;
+
         if ($headers == null){
-
             $headers = array("Content-type: application/json");
-
+            $isJsonForm = true;
         }
         else {
+            $stringFromHeaders = implode(" ",$headers);
+            if (preg_match("/Content\-type:/i",$stringFromHeaders)){
+                
+                if (preg_match("/Content\-type:\ {0,4}application\/json/i",$stringFromHeaders)){
+                    $isJsonForm = true;                
+                    //array_push($headers,"Content-type: application/json");
+                }
 
-            array_push($headers,"Content-type: application/json");
-
+            }
+            else{
+                $isJsonForm = true;                
+                array_push($headers,"Content-type: application/json");
+            }
         }
 
+        if ($isJsonForm){
+            $content = json_encode($content);
+            $contentString = $content;
+        }
+        else{
 
-
-
-        $content = json_encode($content);
+            $contentString = '';
+            foreach ($content as $key => $value){
+                if (preg_match("/[a-zA-Z_]{2,100}/",$key))
+                    $contentString .= $key . "=" . $value ."&";
+            }
+            $contentString .= "\n";
+        }
         $curl = curl_init($url);
         curl_setopt($curl, CURLOPT_HEADER, false);
         curl_setopt($curl, CURLOPT_RETURNTRANSFER, true);
         curl_setopt($curl, CURLOPT_HTTPHEADER, $headers);
         curl_setopt($curl, CURLOPT_POST, true);
-        curl_setopt($curl, CURLOPT_POSTFIELDS, $content);
+        curl_setopt($curl, CURLOPT_POSTFIELDS, $contentString);
 
         if($headers != null && in_array('Custom-SSL-Verification:false',$headers)){
             curl_setopt($curl, CURLOPT_SSL_VERIFYHOST, false); 
@@ -82,26 +102,52 @@ class Curl {
     }
 
     public static function urlDelete($url,$data,$headers=null) {
+
+        $isJsonForm = false;
+
+        if ($headers == null){
+            $headers = array("Content-type: application/json");
+            $isJsonForm = true;
+        }
+        else {
+            $stringFromHeaders = implode(" ",$headers);
+            if (preg_match("/Content\-type:/i",$stringFromHeaders)){
+                
+                if (preg_match("/Content\-type:\ {0,4}application\/json/i",$stringFromHeaders)){
+                    $isJsonForm = true;                
+                    //array_push($headers,"Content-type: application/json");
+                }
+
+            }
+            else{
+                $isJsonForm = true;                
+                array_push($headers,"Content-type: application/json");
+            }
+        }
+
+        if ($isJsonForm){
+            $data = json_encode($data);
+            $dataString = $data;
+        }
+        else{
+
+            $dataString = '';
+            foreach ($data as $key => $value){
+                if (preg_match("/[a-zA-Z_]{2,100}/",$key))
+                    $dataString .= $key . "=" . $value ."&";
+            }
+            $dataString .= "\n";
+        }
+
+
+
         $ch = curl_init();
         curl_setopt($ch, CURLOPT_URL, $url);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "DELETE");
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-
-        if ($headers != null && is_array($headers)){
-
-            array_push($headers,'Content-Type: application/json');
-            array_push($headers,'Content-Length: ' . strlen($data));
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-
-        } else {
-
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            'Content-Type: application/json',
-            'Content-Length: ' . strlen($data))
-            );
-
-        }
+        array_push($headers,'Content-Length: ' . strlen($dataString));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
 
         if($headers != null && in_array('Custom-SSL-Verification:false',$headers)){
             curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, false); 
@@ -126,26 +172,48 @@ class Curl {
 
     public static function urlPUT($url, $data, $headers=null) {
 
-        $data_string = json_encode($data);
+        $isJsonForm = false;
+        if ($headers == null){
+            $headers = array("Content-type: application/json");
+            $isJsonForm = true;
+        }
+        else {
+            $stringFromHeaders = implode(" ",$headers);
+            if (preg_match("/Content\-type:/i",$stringFromHeaders)){
+                
+                if (preg_match("/Content\-type:\ {0,4}application\/json/i",$stringFromHeaders)){
+                    $isJsonForm = true;                
+                    array_push($headers,"Content-type: application/json");
+                }
+
+            }
+            else{
+                $isJsonForm = true;                
+                array_push($headers,"Content-type: application/json");
+            }
+        }
+
+        if ($isJsonForm){
+            $data = json_encode($data);
+            $dataString = $data;
+        }
+        else{
+
+            $dataString = '';
+            $arrKeys = array_keys($data);
+            foreach ($data as $key => $value){
+                if (preg_match("/[a-zA-Z_]{2,100}/",$key))
+                    $dataString .= $key . "=" . $value ."&";
+            }
+            $dataString .= "\n";
+        }
 
         $ch = curl_init($url);
         curl_setopt($ch, CURLOPT_CUSTOMREQUEST, "PUT");
-        curl_setopt($ch, CURLOPT_POSTFIELDS, $data_string);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $dataString);
         curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
-        if ($headers != null && is_array($headers)){
-
-            array_push($headers,'Content-Type: application/json');
-            array_push($headers,'Content-Length: ' . strlen($data_string));
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
-
-        } else {
-
-            curl_setopt($ch, CURLOPT_HTTPHEADER, array(
-            'Content-Type: application/json',
-            'Content-Length: ' . strlen($data_string))
-            );
-
-        }
+        array_push($headers,'Content-Length: ' . strlen($dataString));
+        curl_setopt($ch, CURLOPT_HTTPHEADER, $headers);
         
 
         if($headers != null && in_array('Custom-SSL-Verification:false',$headers)){
