@@ -38,7 +38,19 @@ class ShopifyProductPublisherTest extends TestCase {
         $this->prepareForTests();
       
     }
+
+
+    public function testDummy(){
+
+        $this->assertTrue(true);
+    }
  
+    /*
+    
+    //======================================
+    //SE OMITEN TODOS LOS TEST DE ESTE COMPONENTE, YA QUE FUE RECHAZADO PARA PRODUCCION POR @JaimeSchuster
+    //2019-09-24
+    //======================================
 
     public function testShopifyPublishedProduct(){
 
@@ -201,20 +213,6 @@ class ShopifyProductPublisherTest extends TestCase {
     	//$shopifyApi = new Shopify('6d79f49e6c91cb45eb5e37270f527afa','f6c18f765183ef32b76ebf9824dd8311','sleefs-preorder.myshopify.com/admin/');
         $shopifyApi = new Shopify('f7adb74791e9b142c7f6bc3a64bcc3b0','5486391dc27e857cfc1e8986b8094c12','sleefs-2.myshopify.com/admin/');
     	$rawProduct = new \stdClass();
-        /*
-    	$rawProduct->id = 255606456350;
-    	$rawProduct->title = "Blue Mask Thin Blue Line Compression Tights / Leggings (PRE-ORDER)*";
-    	$rawProduct->vendor = "SLEEFS";
-    	//$rawProduct->created_at = "2017-10-24T11:41:44-04:00";
-    	$rawProduct->created_at = date("Y-m-d",strtotime("-15 days"))."T00:01:44-04:00";
-    	$rawProduct->handle = "blue-mask-thin-blue-line-compression-tights-leggings";
-    	$rawProduct->tags = "alltights, BlackColor, BlueColor, Mask, Police, testing, Thin Blue Line, thinblueline, tights, Warrior";
-    	$rawProduct->product_type = "Tights";
-    	$rawProduct->updated_at = "2018-03-25T23:07:16-04:00";
-    	$rawProduct->template_suffix = null;
-    	//$rawProduct->published_at = "2017-10-24T11:44:54-04:00";
-    	$rawProduct->published_at = null;
-    	*/
 
         $rawProduct->id = 1986958360669;
         $rawProduct->title = "Against All Odds Red Headband";
@@ -249,19 +247,6 @@ class ShopifyProductPublisherTest extends TestCase {
     	//$shopifyApi = new Shopify('6d79f49e6c91cb45eb5e37270f527afa','f6c18f765183ef32b76ebf9824dd8311','sleefs-preorder.myshopify.com/admin/');
         $shopifyApi = new Shopify('f7adb74791e9b142c7f6bc3a64bcc3b0','5486391dc27e857cfc1e8986b8094c12','sleefs-2.myshopify.com/admin/');
     	$rawProduct = new \stdClass();
-        /*
-    	$rawProduct->id = 255605014558;
-    	$rawProduct->title = "Blessed Black Compression Tights / Leggings (PRE-ORDER)*";
-    	$rawProduct->vendor = "SLEEFS";
-    	$rawProduct->created_at = "2017-10-24T11:41:44-04:00";
-    	$rawProduct->handle = "blessed-black-compression-tights-leggings";
-    	$rawProduct->tags = "alltights, BlackColor, blessed, Blessing, blessings, testing, tights, WhiteColor";
-    	$rawProduct->product_type = "Tights";
-    	$rawProduct->updated_at = "2018-03-25T23:07:16-04:00";
-    	$rawProduct->template_suffix = null;
-    	//$rawProduct->published_at = "2017-10-24T11:44:54-04:00";
-    	$rawProduct->published_at = null;
-        */
 
 
         $rawProduct->id = 1986958360669;
@@ -440,9 +425,9 @@ class ShopifyProductPublisherTest extends TestCase {
         
     }
 
+    */
 
-
-	/* Preparing the Test */
+	// Preparing the Test 
 
 	public function createApplication()
     {
@@ -451,10 +436,11 @@ class ShopifyProductPublisherTest extends TestCase {
         return $app;
     }
 
-     /**
-     * Migrates the database and set the mailer to 'pretend'.
-     * This will cause the tests to run quickly.
-     */
+     //
+     // Migrates the database and set the mailer to 'pretend'.
+     // This will cause the tests to run quickly.
+     //
+
     private function prepareForTests()
     {
 
@@ -571,164 +557,6 @@ class ShopifyProductPublisherTest extends TestCase {
         $this->variants[5]->price = 13.0;
         $this->variants[5]->save();
 
-
-		/*
-		array_push($this->variants,new Variant());
-		$this->variants[2]->idsp = 5678890962;
-		$this->variants[2]->sku = 'SL-ARL-BLU-NVY-XL-1';
-		$this->variants[2]->title = 'XL / Blue/navy';
-		$this->variants[2]->idproduct = $this->products[1]->id;
-		$this->variants[2]->price = 5.0;
-		$this->variants[2]->save();
-
-
-		//Product #3
-		array_push($this->products,new Product());
-		$this->products[2]->idsp = 890987647;
-		$this->products[2]->title = 'Ripped Bear arm sleeve';
-		$this->products[2]->vendor = 'Sleefs';
-		$this->products[2]->product_type = 'Sleeve';
-		$this->products[2]->handle = 'brasilian-sleeve-yellow';
-		$this->products[2]->save();
-
-		array_push($this->variants,new Variant());
-		$this->variants[3]->idsp = 56788909571;
-		$this->variants[3]->sku = 'SL-ANIM-BEAR-Y-1';
-		$this->variants[3]->title = 'Y / Black/White';
-		$this->variants[3]->idproduct = $this->products[2]->id;
-		$this->variants[3]->price = 5.0;
-		$this->variants[3]->save();
-
-		array_push($this->variants,new Variant());
-		$this->variants[4]->idsp = 56788909572;
-		$this->variants[4]->sku = 'SL-ANIM-BEAR-XS-1';
-		$this->variants[4]->title = 'XS / Black/White';
-		$this->variants[4]->idproduct = $this->products[2]->id;
-		$this->variants[4]->price = 5.0;
-		$this->variants[4]->save();
-
-		array_push($this->variants,new Variant());
-		$this->variants[5]->idsp = 56788909573;
-		$this->variants[5]->sku = 'SL-ANIM-BEAR-S-M-1';
-		$this->variants[5]->title = 'S/M / Black/White';
-		$this->variants[5]->idproduct = $this->products[2]->id;
-		$this->variants[5]->price = 5.0;
-		$this->variants[5]->save();
-
-		array_push($this->variants,new Variant());
-		$this->variants[6]->idsp = 56788909574;
-		$this->variants[6]->sku = 'SL-ANIM-BEAR-L-1';
-		$this->variants[6]->title = 'L / Black/White';
-		$this->variants[6]->idproduct = $this->products[2]->id;
-		$this->variants[6]->price = 5.0;
-		$this->variants[6]->save();
-
-		array_push($this->variants,new Variant());
-		$this->variants[7]->idsp = 56788909575;
-		$this->variants[7]->sku = 'SL-ANIM-BEAR-XL-1';
-		$this->variants[7]->title = 'XL / Black/White';
-		$this->variants[7]->idproduct = $this->products[2]->id;
-		$this->variants[7]->price = 5.0;
-		$this->variants[7]->save();
-
-		//Product #4
-		array_push($this->products,new Product());
-		$this->products[3]->idsp = 890987648;
-		$this->products[3]->title = 'Red Hat';
-		$this->products[3]->vendor = 'Sleefs';
-		$this->products[3]->product_type = 'Hat';
-		$this->products[3]->handle = 'red-hat';
-		$this->products[3]->save();
-
-		array_push($this->variants,new Variant());
-		$this->variants[6]->idsp = 56788909581;
-		$this->variants[6]->sku = 'SL-REDHAT';
-		$this->variants[6]->title = 'Red Hat';
-		$this->variants[6]->idproduct = $this->products[3]->id;
-		$this->variants[6]->price = 12.50;
-		$this->variants[6]->save();
-
-
-		// Adding POs 
-
-		//PO #1
-		array_push($this->pos, new PurchaseOrder());
-        $this->pos[0]->po_id = 515;
-        $this->pos[0]->po_number = '1810-07 Re Order Kids Tights';
-        $this->pos[0]->po_date = '2017-10-30 00:00:00';
-        $this->pos[0]->fulfillment_status = 'pending';
-		$this->pos[0]->save();
-
-		array_push($this->items,new PurchaseOrderItem());
-		$this->items[0]->idpo = $this->pos[0]->id;
-		$this->items[0]->sku = 'SL-10EJICK-KCL-YM';
-		$this->items[0]->shid = '59dbc5830f969';
-		$this->items[0]->quantity = 5;
-		$this->items[0]->quantity_received = 0;
-		$this->items[0]->name = '100 Emoji Black Tights for Kids / YM / Black';
-		$this->items[0]->idmd5 = md5('SL-10EJICK-KCL-YM'.'-'.'515');
-		$this->items[0]->save();
-
-		array_push($this->items,new PurchaseOrderItem());
-		$this->items[1]->idpo = $this->pos[0]->id;
-		$this->items[1]->sku = 'SL-ANIM-BEAR-Y-1';
-		$this->items[1]->shid = '59dbc5830fa20';
-		$this->items[1]->quantity = 3;
-		$this->items[1]->quantity_received = 3;
-		$this->items[1]->name = 'Ripped Bear arm sleeve / Y / Black/White';
-		$this->items[1]->idmd5 = md5('SL-ANIM-BEAR-Y-1'.'-'.'515');
-		$this->items[1]->save();
-
-
-		//PO #2
-		array_push($this->pos, new PurchaseOrder());
-        $this->pos[1]->po_id = 516;
-        $this->pos[1]->po_number = 'MMA PO 1';
-        $this->pos[1]->po_date = '2017-12-30 21:29:00';
-        $this->pos[1]->fulfillment_status = 'pending';
-		$this->pos[1]->save();
-
-		array_push($this->items,new PurchaseOrderItem());
-		$this->items[2]->idpo = $this->pos[1]->id;
-		$this->items[2]->sku = 'SL-10EJICK-KCL-YM';
-		$this->items[2]->shid = '69d3c5830f969';
-		$this->items[2]->quantity = 12;
-		$this->items[2]->quantity_received = 3;
-		$this->items[2]->name = '100 Emoji Black Tights for Kids / YM / Black';
-		$this->items[2]->idmd5 = md5('SL-10EJICK-KCL-YM'.'-'.'516');
-		$this->items[2]->save();
-
-		array_push($this->items,new PurchaseOrderItem());
-		$this->items[3]->idpo = $this->pos[1]->id;
-		$this->items[3]->sku = 'SL-AERIB-KS-YL';
-		$this->items[3]->shid = '62c35a8302a86';
-		$this->items[3]->quantity = 21;
-		$this->items[3]->quantity_received = 21;
-		$this->items[3]->name = 'Aerial blue and navy arm sleeve / Y / Blue/navy';
-		$this->items[3]->idmd5 = md5('SL-AERIB-KS-YL'.'-'.'516');
-		$this->items[3]->save();
-
-		array_push($this->items,new PurchaseOrderItem());
-		$this->items[4]->idpo = $this->pos[1]->id;
-		$this->items[4]->sku = 'SL-REDHAT';
-		$this->items[4]->shid = '1aa8217bd792f';
-		$this->items[4]->quantity = 23;
-		$this->items[4]->quantity_received = 20;
-		$this->items[4]->name = 'SL-REDHAT';
-		$this->items[4]->idmd5 = md5('SL-REDHAT'.'-'.'516');
-		$this->items[4]->save();
-
-		array_push($this->items,new PurchaseOrderItem());
-		$this->items[5]->idpo = $this->pos[1]->id;
-		$this->items[5]->sku = 'SL-ANIM-BEAR-L-1';
-		$this->items[5]->shid = '3149adc003ed9';
-		$this->items[5]->quantity = 5;
-		$this->items[5]->quantity_received = 0;
-		$this->items[5]->name = 'Ripped Bear arm sleeve / L / Black/White';
-		$this->items[5]->idmd5 = md5('SL-ANIM-BEAR-L-1'.'-'.'516');
-		$this->items[5]->save();
-		
-		*/
 
 		//---------------------------------------------------------------
 		//Real data testing

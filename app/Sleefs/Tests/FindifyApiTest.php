@@ -42,6 +42,7 @@ class FindifyApiTest extends TestCase {
     	$findifyApi = new Findify('https://admin.findify.io/v1/');
     	$loginResult = $findifyApi->login('admin@sleefs.com','Sleefs--5931');
     	$collections = $findifyApi->getAllCollections(250,250);
+        //print_r($collections);
     	$this->assertTrue(is_array($collections));
     	$this->assertEquals(56233,$collections[0]->id,"Se ha cambiado el ID de la colección 'NEW', hay que cambiar ese código");
 
