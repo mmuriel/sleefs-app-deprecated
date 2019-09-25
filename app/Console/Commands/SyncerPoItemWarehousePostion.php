@@ -81,13 +81,13 @@ class SyncerPoItemWarehousePostion extends Command
                         }
                     }
                     catch(\Exception $e){
-                        echo "Error trying to update inventory position: \n".$e->message();
+                        echo "Error trying to update inventory position: \n".$e->getMessage();
 
                     }
                 }
             }catch (\Exception $e){
-                echo "Error trying to update inventory position to SKU: {$upItem->sku} \n".$e->message();
-                $clogger->writeToLog ("Error trying to update inventory position to SKU: {$upItem->sku} \n".$e->message(),"ERROR");
+                echo "Error trying to update inventory position to SKU: {$upItem->sku} \n".$e->getMessage();
+                $clogger->writeToLog ("Error trying to update inventory position to SKU: {$upItem->sku} \n".$e->getMessage(),"ERROR");
             }
         }
     }
