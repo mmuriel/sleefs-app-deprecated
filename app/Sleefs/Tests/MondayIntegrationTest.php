@@ -184,7 +184,7 @@ class MondayIntegrationTest extends TestCase {
 
         $mondayGroupChecker = new MondayGroupChecker();
         $groupName = $mondayGroupChecker->getCorrectGroupName($this->extendedPos[5]->po->results->po_number);
-        $this->assertEquals('PO June',$groupName);
+        $this->assertEquals('PO June '.date("Y"),$groupName);
 
     }
 
@@ -194,7 +194,7 @@ class MondayIntegrationTest extends TestCase {
         $nameExtractor = new MondayPulseNameExtractor();
         $pulseName = $nameExtractor->extractPulseName($this->extendedPos[5]->po->results->po_number);
         $group = $mondayGroupChecker->getGroup($pulseName,$this->mondayBoard,$this->mondayApi);
-        $this->assertRegExp("/^(Po\ June)/i",$group->title);
+        $this->assertRegExp("/^(Po\ June\ 2019)/i",$group->title);
     }
 
 

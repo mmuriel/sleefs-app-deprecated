@@ -29,7 +29,7 @@ class MondayApiTest extends TestCase {
 
 		$allBoards = $this->mondayApi->getAllBoards();
 		//print_r($allBoards);
-		$this->assertEquals(8,count($allBoards));
+		$this->assertEquals(9,count($allBoards));
 		$this->assertEquals('POs',$allBoards[0]->name);
 
 	}

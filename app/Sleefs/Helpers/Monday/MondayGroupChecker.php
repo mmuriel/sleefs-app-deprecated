@@ -46,6 +46,8 @@ class MondayGroupChecker{
 				$groupName .= 'December';
 				break;
 		}
+
+		$groupName .= ' '.date("Y");
 		return $groupName;
 
 	}

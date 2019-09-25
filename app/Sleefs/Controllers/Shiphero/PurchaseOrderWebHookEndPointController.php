@@ -712,6 +712,7 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
                     }
 
 
+
                     $pulseData = array(
                         'pulse[name]' => $pulse->name,
                         'board_id' => env('MONDAY_BOARD'),
@@ -721,7 +722,6 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
                     $newPulse = $mondayApi->createPulse(env('MONDAY_BOARD'),$pulseData);
                     $fullPulse = $mondayApi->getFullPulse($pulse,env('MONDAY_BOARD'));
                 }
-
                 if ($pulse->idmonday=='' || $pulse->mon_board=='' || $pulse->mon_group==''){
                     $pulse->idmonday = $fullPulse->pulse->id;
                     $pulse->mon_board = env('MONDAY_BOARD');
