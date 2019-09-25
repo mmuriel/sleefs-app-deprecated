@@ -27,6 +27,7 @@ class MondayIntegrationTest extends TestCase {
 	private $pulses = array();
     private $extendedPos = array();
 	private $mondayUserId = '5277993';
+    private $mondayBoard = '322181342';
 	public $urlEndPoint, $apiKey, $mondayApi;
 
 	public function setUp(){
@@ -49,7 +50,7 @@ class MondayIntegrationTest extends TestCase {
     }
 
     public function testCheckIfBoardGroupExists(){
-		$groups = $this->mondayApi->getAllBoardGroups(env('MONDAY_BOARD'));
+		$groups = $this->mondayApi->getAllBoardGroups($this->mondayBoard);
 		$ctrlBoardTitle = false;
 		foreach($groups as $group){
 			if ($group->title == 'PO September'){
@@ -61,7 +62,7 @@ class MondayIntegrationTest extends TestCase {
 
     public function testCreateAPulse(){
 
-    	$groups = $this->mondayApi->getAllBoardGroups(env('MONDAY_BOARD'));
+    	$groups = $this->mondayApi->getAllBoardGroups($this->mondayBoard);
 		$ctrlBoardTitle = false;
 		$actualGroup = '';
 		foreach($groups as $group){
@@ -72,11 +73,11 @@ class MondayIntegrationTest extends TestCase {
 
 		$pulseData = array(
 			'pulse[name]' => '1909-20',
-			'board_id' => env('MONDAY_BOARD'),
+			'board_id' => $this->mondayBoard,
 			'user_id' => $this->mondayUserId,
 			'group_id' => $actualGroup->id,
 		);
-		$newPulse = $this->mondayApi->createPulse(env('MONDAY_BOARD'),$pulseData);
+		$newPulse = $this->mondayApi->createPulse($this->mondayBoard,$pulseData);
 		//print_r($newPulse->pulse);
 		if (preg_match('/^([0-9]{6,10})/',''.$newPulse->pulse->id)){
 			$pulse = new Pulse();
@@ -109,10 +110,10 @@ class MondayIntegrationTest extends TestCase {
     	$dataCreated = array('date_str' => date("Y-m-d",$dateCreated));
     	$dataExpected = array('date_str' => date("Y-m-d",$dateExpected));
 
-    	$rawPulse = $this->mondayApi->updatePulse(env('MONDAY_BOARD'),$pulse->idmonday,'created_date8','date',$dataCreated);
-    	$rawPulse = $this->mondayApi->updatePulse(env('MONDAY_BOARD'),$pulse->idmonday,'expected_date3','date',$dataExpected);
+    	$rawPulse = $this->mondayApi->updatePulse($this->mondayBoard,$pulse->idmonday,'created_date8','date',$dataCreated);
+    	$rawPulse = $this->mondayApi->updatePulse($this->mondayBoard,$pulse->idmonday,'expected_date3','date',$dataExpected);
 
-    	$fullPulse = $this->mondayApi->getFullPulse($pulse,env('MONDAY_BOARD'));
+    	$fullPulse = $this->mondayApi->getFullPulse($pulse,$this->mondayBoard);
     	$this->assertEquals('2019-09-25',$fullPulse->column_values[3]->value);
     	$this->assertEquals('2019-09-29',$fullPulse->column_values[4]->value);
     }
@@ -126,7 +127,7 @@ class MondayIntegrationTest extends TestCase {
     	$pulse->mon_board = '';
     	$pulse->mon_group = '';
 
-    	$fullPulse = $this->mondayApi->getFullPulse($pulse,env('MONDAY_BOARD'));
+    	$fullPulse = $this->mondayApi->getFullPulse($pulse,$this->mondayBoard);
     	$this->assertEquals('322181445',$fullPulse->pulse->id);
     }
 
@@ -192,7 +193,7 @@ class MondayIntegrationTest extends TestCase {
         $mondayGroupChecker = new MondayGroupChecker();
         $nameExtractor = new MondayPulseNameExtractor();
         $pulseName = $nameExtractor->extractPulseName($this->extendedPos[5]->po->results->po_number);
-        $group = $mondayGroupChecker->getGroup($pulseName,env('MONDAY_BOARD'),$this->mondayApi);
+        $group = $mondayGroupChecker->getGroup($pulseName,$this->mondayBoard,$this->mondayApi);
         $this->assertRegExp("/^(Po\ June)/i",$group->title);
     }
 
@@ -202,7 +203,7 @@ class MondayIntegrationTest extends TestCase {
         $mondayGroupChecker = new MondayGroupChecker();
         $nameExtractor = new MondayPulseNameExtractor();
         $pulseName = $nameExtractor->extractPulseName($this->extendedPos[6]->po->results->po_number);
-        $group = $mondayGroupChecker->getGroup($pulseName,env('MONDAY_BOARD'),$this->mondayApi);
+        $group = $mondayGroupChecker->getGroup($pulseName,$this->mondayBoard,$this->mondayApi);
         $this->assertEquals(null,$group);
     }
 
@@ -210,7 +211,7 @@ class MondayIntegrationTest extends TestCase {
     public function testDiscoverColumnValueOfFullPulse(){
 
 
-        $fullPulse = $this->mondayApi->getFullPulse($this->pulses[0],env('MONDAY_BOARD'));
+        $fullPulse = $this->mondayApi->getFullPulse($this->pulses[0],$this->mondayBoard);
         $getter = new MondayFullPulseColumnGetter();
         
 
@@ -317,7 +318,7 @@ class MondayIntegrationTest extends TestCase {
         $this->pulses[0]->idpo = $this->pos[1]->id;
         $this->pulses[0]->idmonday = 322181434;
         $this->pulses[0]->name = '1909-05';
-        $this->pulses[0]->mon_board = env('MONDAY_BOARD');
+        $this->pulses[0]->mon_board = $this->mondayBoard;
         $this->pulses[0]->mon_group = 'po';
         $this->pulses[0]->save();
 
