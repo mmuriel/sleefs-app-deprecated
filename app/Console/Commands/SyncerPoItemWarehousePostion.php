@@ -86,8 +86,8 @@ class SyncerPoItemWarehousePostion extends Command
                     }
                 }
             }catch (\Exception $e){
-                echo "Error trying to update inventory position to SKU: {$upItem->sku,} \n".$e->message();
-                $clogger->writeToLog ("Error trying to update inventory position to SKU: {$upItem->sku,} \n".$e->message(),"ERROR");
+                echo "Error trying to update inventory position to SKU: {$upItem->sku} \n".$e->message();
+                $clogger->writeToLog ("Error trying to update inventory position to SKU: {$upItem->sku} \n".$e->message(),"ERROR");
             }
         }
     }
