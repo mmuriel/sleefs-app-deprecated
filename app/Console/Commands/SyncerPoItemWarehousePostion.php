@@ -61,28 +61,33 @@ class SyncerPoItemWarehousePostion extends Command
             //print_r($product);
             //echo "\n------------------------------\n";
 
-            if (is_array($product->products->results)){
-                try{
-                    if (isset($product->products->results[0]->warehouses[0]->inventory_bin) && preg_match("/[A-Z0-9a-z]{2,15}/",$product->products->results[0]->warehouses[0]->inventory_bin)){
-                        $clogger->writeToLog ("Se define la posición en bodega para el item: ".$upItem->sku.", UpdateOrder: ".$upItem->idpoupdate."","INFO");
-                        $upItem->position = $product->products->results[0]->warehouses[0]->inventory_bin;
-                        $upItem->save();
+            try {
+                if (is_array($product->products->results)){
+                    try{
+                        if (isset($product->products->results[0]->warehouses[0]->inventory_bin) && preg_match("/[A-Z0-9a-z]{2,15}/",$product->products->results[0]->warehouses[0]->inventory_bin)){
+                            $clogger->writeToLog ("Se define la posición en bodega para el item: ".$upItem->sku.", UpdateOrder: ".$upItem->idpoupdate."","INFO");
+                            $upItem->position = $product->products->results[0]->warehouses[0]->inventory_bin;
+                            $upItem->save();
 
 
-                        $clogger->writeToLog ("Se define la posición en bodega para el item: ".$upItem->sku.", UpdateOrder: ".$upItem->idpoupdate."","INFO");
+                            $clogger->writeToLog ("Se define la posición en bodega para el item: ".$upItem->sku.", UpdateOrder: ".$upItem->idpoupdate."","INFO");
+
+                        }
+                        else{
+                            
+                            $upItem->tries++;
+                            $upItem->save();
+                            $clogger->writeToLog ("No se define aún la posición en bodega para el item: ".$upItem->sku.", UpdateOrder: ".$upItem->idpoupdate.", intento No. ".$upItem->tries,"INFO");
+                        }
+                    }
+                    catch(\Exception $e){
+                        echo "Error trying to update inventory position: \n".$e->message();
 
                     }
-                    else{
-                        
-                        $upItem->tries++;
-                        $upItem->save();
-                        $clogger->writeToLog ("No se define aún la posición en bodega para el item: ".$upItem->sku.", UpdateOrder: ".$upItem->idpoupdate.", intento No. ".$upItem->tries,"INFO");
-                    }
                 }
-                catch(\Exception $e){
-                    echo "Error trying to update inventory position: \n".$e->message();
-
-                }
+            }catch (\Exception $e){
+                echo "Error trying to update inventory position to SKU: {$upItem->sku,} \n".$e->message();
+                $clogger->writeToLog ("Error trying to update inventory position to SKU: {$upItem->sku,} \n".$e->message(),"ERROR");
             }
         }
     }
