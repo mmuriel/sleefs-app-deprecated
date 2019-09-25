@@ -19,7 +19,8 @@ class CurlTest extends TestCase {
     // a la IP local 127.0.0.1 (localhost) en el 
     // archivo /etc/hosts
 
-    private $urlToCurl = 'https://local.sientifica.com'; 
+    //private $urlToCurl = 'https://local.sientifica.com';//dev 
+    private $urlToCurl = 'https://sleefs-2.sientifica.com';//Production
 	public function setUp(){
         parent::setUp();
     }
