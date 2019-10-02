@@ -34,7 +34,9 @@ class PurchaseOrderItemListView {
 						->leftJoin('products', 'product_images.idproducto', '=', 'products.id')
 						->leftJoin('variants','products.id','=','variants.idproduct')
 						->select('product_images.url')
-						->where('variants.sku','=',$this->poItem->sku)->get();
+						->where('variants.sku','=',$this->poItem->sku)
+						->orderBy('product_images.position','ASC')
+						->get();
 
 		if (count($imageObject)>0){
 			//var_dump($imageObject);
@@ -51,12 +53,12 @@ class PurchaseOrderItemListView {
 		$htmlToRet = '
 								<tr>
                                     <td>'.$this->poItem->name.'</td>
-                                    <td>'.$this->poItem->sku.'</td>
+                                    <td data-prdsku="'.$this->poItem->sku.'">'.$this->poItem->sku.'</td>
                                     <td>'.$this->poItem->quantity.'</td>
                                     <td>'.money_format('%i',$this->poItem->price).'</td>
                                     <td>'.money_format('%i',($this->poItem->price * $this->poItem->quantity)).'</td>
                                     <td>
-                                    	<img src="'.$imageUrl.'" style="'.$styleObj.'"/>
+                                    	<img src="'.$imageUrl.'" style="'.$styleObj.'" class="product-img" data-prdSku="'.$this->poItem->sku.'"/>
                                     </td>
                                 </tr>';
 

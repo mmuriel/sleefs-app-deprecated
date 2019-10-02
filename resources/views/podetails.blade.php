@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="x-ua-compatible" content="ie=edge">
+        <meta name="csrf-token" content="{{ csrf_token() }}">
         <title>@yield('page_title')</title>
         <meta name="description" content="">
         <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -35,7 +36,7 @@
                 </tr>
                 <tr>
                     <td>PO ID</td>
-                    <td>{{ $po->po_id }}</td>
+                    <td data-poid="{{ $po->po_id }}" class="poid">{{ $po->po_id }}</td>
                 </tr>
                 <tr>
                     <td>PO Number</td>
@@ -63,6 +64,8 @@
                 </tr>
             </table>
             <h2>PO Items</h2>
+            <button id="btn__updatepics">Update Pics</button>
+            <div class="updatepics__console msg-displayer"></div>
             <table class="po_items">
                 <thead>
                     <tr>
@@ -87,6 +90,6 @@
                 </tbody>
             </table>
         </div>
-        <script src="js/app-sleefs.js"></script>
+        <script src="{{ $app['url']->to('/') }}/js/app-sleefs.js"></script>
     </body>
 </html>

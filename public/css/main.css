@@ -542,6 +542,27 @@ header nav ul li a{
 }
 
 
+.msg-displayer-inline--ok{
+
+	display: inline;
+	background-color: green;
+	color: #fff;
+}
+
+
+.msg-displayer-inline--error{
+	display: inline;
+	background-color: red;
+	color: #fff;
+}
+
+
+.msg-displayer-inline--processing{
+	display: inline;
+	background-color: #FAD96C;
+	color: #000;
+}
+
 
 
 
@@ -732,4 +753,13 @@ table.po_items th, table.po_items td, table.po_details th, table.po_details td{
 	width: 100%;
 	font-size: 12px;
 	
+}
+
+
+.updatepics__console{
+
+	padding: 5px;
+	margin: 10px;
+	max-width: 670px;
+
 }

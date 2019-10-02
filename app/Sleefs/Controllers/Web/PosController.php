@@ -122,12 +122,14 @@ class PosController extends BaseController{
 				return $updateObj;
 
 			});
-
-
-			return view("podetails",['po'=>$po,'poextended'=>$poextended->po->results]);
-			
+			return view("podetails",['po'=>$po,'poextended'=>$poextended->po->results]);	
 		}
-		
+	}
+
+
+	function updatePic(Request $request,$poid){
+
+		return response()->json(['data1' => 'MMMA','data2'=>'NNNNNA']);
 
 	}
 
