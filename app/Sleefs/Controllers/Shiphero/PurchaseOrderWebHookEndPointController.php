@@ -77,11 +77,12 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
                 4. Registro de los datos de la PO en el libro "Qty-ProductType" del spreadsheet y registro de la orden en la DB
                 5. Se publican los productos que no estén publicados en la tienda shopify
                 6. Se publica/modifica en monday.com el estado de la PO entrante
-                7. Se genera la respuesta al servidor de shiphero
+        --->    7. Se genera la respuesta al servidor de shiphero //No tiene correspondencia en el array $debug
+        
         */
 
-        //$debug = array(false,true,true,true,false,true);//Define que funciones se ejecutan y cuales no. - Produccion
-        $debug = array(false,false,true,true,true,true);//Define que funciones se ejecutan y cuales no. - Test
+        $debug = array(false,true,true,true,false,true);//Define que funciones se ejecutan y cuales no. - Produccion
+        //$debug = array(false,false,true,true,true,true);//Define que funciones se ejecutan y cuales no. - Test
 
 
 		$po = json_decode(file_get_contents('php://input'));

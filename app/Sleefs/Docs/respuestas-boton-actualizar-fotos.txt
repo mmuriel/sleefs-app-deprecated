@@ -1,0 +1,55 @@
+SL-GRPWPTY-WB
+SL-GRPWPTY-WB
+
+{…}
+​
+error: false
+​
+images: Array [ "https://cdn.shopify.com/s/files/1/0282/4738/products/goat-headbands_150x150.jpg?v=1512481602", "https://cdn.shopify.com/s/files/1/0282/4738/products/Goat_White_Gold_Wide_01_150x150.jpg?v=1512481602" ]
+​
+<prototype>: Object { … }
+app-sleefs.js:115:11
+
+
+
+
+
+Ok:
+
+{
+  "error": false,
+  "sku": "SL-GOAT-WH",
+  "images": [
+    "https://cdn.shopify.com/s/files/1/0282/4738/products/goat-headbands_150x150.jpg?v=1512481602",
+    "https://cdn.shopify.com/s/files/1/0282/4738/products/Goat_White_Gold_Wide_01_150x150.jpg?v=1512481602"
+  ]
+}
+
+
+Error:
+
+{
+  "readyState": 4,
+  "responseText": "{\"error\":true,\"message\":\"No variant for this SKU\",\"sku\":\"CUSTOM-JS\"}",
+  "responseJSON": {
+    "error": true,
+    "message": "No variant for this SKU",
+    "sku": "CUSTOM-JS"
+  },
+  "status": 404,
+  "statusText": "Not Found"
+}
+
+
+
+{
+  "readyState": 4,
+  "responseText": "{\"error\":true,\"message\":\"No images for this SKU\",\"sku\":\"SL-CUSTOM-SP\"}",
+  "responseJSON": {
+    "error": true,
+    "message": "No images for this SKU",
+    "sku": "SL-CUSTOM-SP"
+  },
+  "status": 404,
+  "statusText": "Not Found"
+}
