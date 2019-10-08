@@ -377,6 +377,8 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
                     $poDb->po_date = $poextended->po->results->po_date;
                 }
                 $poDb->fulfillment_status = $poextended->po->results->fulfillment_status;
+                if (isset($poextended->po->results->shipping_price))
+                    $poDb->sh_cost = $poextended->po->results->shipping_price;
                 $poDb->save();
 
                 //3.2. Se registran los PO Items
@@ -417,6 +419,8 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
                     $poDb->po_date = $poextended->po->results->po_date;
                 }
                 $poDb->fulfillment_status = $poextended->po->results->fulfillment_status;
+                if (isset($poextended->po->results->shipping_price))
+                    $poDb->sh_cost = $poextended->po->results->shipping_price;
                 $poDb->save();
 
                 for ($i = 0; $i < count($po->purchase_order->line_items);$i++){

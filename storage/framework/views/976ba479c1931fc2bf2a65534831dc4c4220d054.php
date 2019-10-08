@@ -87,6 +87,21 @@
                             <?php echo $item->poItemListView; ?>
 
                         <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
+                    <tr>
+                        <td colspan="4">Subtotal: </td>
+                        <td><?php echo e($po->subTotal); ?></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td colspan="4">Shipping Cost: </td>
+                        <td><?php echo e($po->sh_cost); ?></td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td colspan="4">Total: </td>
+                        <td><?php echo e($po->grandTotal); ?></td>
+                        <td></td>
+                    </tr>
                     <?php endif; ?>
                 </tbody>
             </table>

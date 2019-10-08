@@ -86,6 +86,21 @@
                         @foreach ($po->items as $item)
                             {!! $item->poItemListView !!}
                         @endforeach
+                    <tr>
+                        <td colspan="4">Subtotal: </td>
+                        <td>{{ $po->subTotal }}</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td colspan="4">Shipping Cost: </td>
+                        <td>{{ $po->sh_cost }}</td>
+                        <td></td>
+                    </tr>
+                    <tr>
+                        <td colspan="4">Total: </td>
+                        <td>{{ $po->grandTotal }}</td>
+                        <td></td>
+                    </tr>
                     @endif
                 </tbody>
             </table>

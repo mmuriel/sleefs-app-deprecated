@@ -29,7 +29,8 @@ class ShowPosController extends BaseController{
 		else{
 
 
-
+			$po->subTotal = 0.0;
+			$po->grandTotal = 0.0;
 			$po->items = $po->items()->orderBy('name')->get();
 			$po->items = $po->items->map(function($updateObj,$key){
 
@@ -40,7 +41,11 @@ class ShowPosController extends BaseController{
 
 			});
 
+			foreach ($po->items as $item){
+				$po->subTotal += (double)($item->price * $item->quantity);
+			}
 
+			$po->grandTotal = (double)($po->subTotal + $po->sh_cost);
 			return view("podetails",['po'=>$po,'poextended'=>$poextended->po->results]);
 			
 		}
