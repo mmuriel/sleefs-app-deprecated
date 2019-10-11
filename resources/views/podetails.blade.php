@@ -92,12 +92,12 @@
                         <td></td>
                     </tr>
                     <tr>
-                        <td colspan="4">Shipping Cost: </td>
+                        <td colspan="4">Shipping & Handling:</td>
                         <td>{{ $po->sh_cost }}</td>
                         <td></td>
                     </tr>
                     <tr>
-                        <td colspan="4">Total: </td>
+                        <td colspan="4">Total:</td>
                         <td>{{ $po->grandTotal }}</td>
                         <td></td>
                     </tr>
