@@ -316,7 +316,7 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
 
                 case 'update':
                     $record = $operationalEntry->getValues();
-                    $record['poname'] = $poextended->po->results->po_number; 
+                    $record['poname'] = htmlspecialchars($poextended->po->results->po_number); 
                     $record['status'] = $poextended->po->results->fulfillment_status;
                     $record['expecteddate'] = '';
                     $record['vendor'] = htmlspecialchars($poextended->po->results->vendor_name);
@@ -331,7 +331,7 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
                 case 'insert':
                     $listFeedOrders->insert([
                         'id' => $poextended->po->results->po_id,
-                        'poname' => $poextended->po->results->po_number,
+                        'poname' => htmlspecialchars($poextended->po->results->po_number),
                         'status' => $poextended->po->results->fulfillment_status,
                         'createddate' => $poextended->po->results->created_at,
                         'expecteddate' => '',
