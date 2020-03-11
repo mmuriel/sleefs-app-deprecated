@@ -67,7 +67,7 @@ class ShopifyApiTest extends TestCase {
 	
 	public function testGetProductsFromApi(){
 
-		$spClient = new Shopify('f7adb74791e9b142c7f6bc3a64bcc3b0','5486391dc27e857cfc1e8986b8094c12','sleefs-2.myshopify.com/admin/');
+		$spClient = new Shopify('f7adb74791e9b142c7f6bc3a64bcc3b0','5486391dc27e857cfc1e8986b8094c12','sleefs-2.myshopify.com/admin/api/2020-01/');
 		$options = "ids=431368941,10847934410";
 		$data = $spClient->getAllProducts($options);
 
@@ -81,7 +81,7 @@ class ShopifyApiTest extends TestCase {
 
 	public function testGetVariantsFromApi(){
 
-		$spClient = new Shopify('f7adb74791e9b142c7f6bc3a64bcc3b0','5486391dc27e857cfc1e8986b8094c12','sleefs-2.myshopify.com/admin/');
+		$spClient = new Shopify('f7adb74791e9b142c7f6bc3a64bcc3b0','5486391dc27e857cfc1e8986b8094c12','sleefs-2.myshopify.com/admin/api/2020-01/');
 		$options = "ids=431368941,10847934410";
 		$data = $spClient->getAllProducts($options);
 		//count($data->products);
@@ -94,7 +94,7 @@ class ShopifyApiTest extends TestCase {
 
 	public function testGetSingleProductFromApi(){
 
-		$spClient = new Shopify('f7adb74791e9b142c7f6bc3a64bcc3b0','5486391dc27e857cfc1e8986b8094c12','sleefs-2.myshopify.com/admin/');
+		$spClient = new Shopify('f7adb74791e9b142c7f6bc3a64bcc3b0','5486391dc27e857cfc1e8986b8094c12','sleefs-2.myshopify.com/admin/api/2020-01/');
 		$options = "ids=431368941,10847934410";
 		$data = $spClient->getSingleProduct('431368941');
 		$this->assertEquals('Baseball Lace USA Arm Sleeve',$data->product->title);

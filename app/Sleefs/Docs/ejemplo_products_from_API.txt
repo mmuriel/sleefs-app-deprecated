@@ -1,5 +1,5 @@
 100-emoji-red-arm-sleeve
-https://sleefs-2.myshopify.com/admin/products/1558599696496
+https://sleefs-2.myshopify.com/admin/api/2020-01/products/1558599696496
 {
     "products": [
         {
@@ -16,7 +16,7 @@ https://sleefs-2.myshopify.com/admin/products/1558599696496
 
 
 1-asterisk-thin-blue-line-wristband
-https://sleefs-2.myshopify.com/admin/products/12275921994
+https://sleefs-2.myshopify.com/admin/api/2020-01/products/12275921994
 {
     "products": [
         {
