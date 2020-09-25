@@ -1,0 +1,584 @@
+{
+	"id": 2784021151789,
+	"email": "mauricio.muriel@sientifica.com",
+	"closed_at": null,
+	"created_at": "2020-09-17T21:29:40-04:00",
+	"updated_at": "2020-09-17T21:29:41-04:00",
+	"number": 3,
+	"note": null,
+	"token": "bd2ecedd45e31251ff3bdda3f98664a7",
+	"gateway": "test",
+	"test": false,
+	"total_price": "29.85",
+	"subtotal_price": "23.00",
+	"total_weight": 62,
+	"total_tax": "1.95",
+	"taxes_included": false,
+	"currency": "USD",
+	"financial_status": "pending",
+	"confirmed": true,
+	"total_discounts": "0.00",
+	"total_line_items_price": "23.00",
+	"cart_token": "5a1b8384cf97790865e29cbe40b0f14d",
+	"buyer_accepts_marketing": false,
+	"name": "SL1003",
+	"referring_site": "",
+	"landing_site": "\/admin\/settings\/notifications",
+	"cancelled_at": null,
+	"cancel_reason": null,
+	"total_price_usd": "29.85",
+	"checkout_token": "0b95f0aa6b46e03f86a1512eba79d2bd",
+	"reference": null,
+	"user_id": null,
+	"location_id": null,
+	"source_identifier": null,
+	"source_url": null,
+	"processed_at": "2020-09-17T21:29:39-04:00",
+	"device_id": null,
+	"phone": null,
+	"customer_locale": "en",
+	"app_id": 580111,
+	"browser_ip": "45.229.72.146",
+	"landing_site_ref": null,
+	"order_number": 1003,
+	"discount_applications": [],
+	"discount_codes": [],
+	"note_attributes": [],
+	"payment_gateway_names": ["test"],
+	"processing_method": "manual",
+	"checkout_id": 16821410365485,
+	"source_name": "web",
+	"fulfillment_status": null,
+	"tax_lines": [{
+		"price": "1.67",
+		"rate": 0.06,
+		"title": "Florida State Tax",
+		"price_set": {
+			"shop_money": {
+				"amount": "1.67",
+				"currency_code": "USD"
+			},
+			"presentment_money": {
+				"amount": "1.67",
+				"currency_code": "USD"
+			}
+		}
+	}, {
+		"price": "0.28",
+		"rate": 0.01,
+		"title": "Miami Dade County Tax",
+		"price_set": {
+			"shop_money": {
+				"amount": "0.28",
+				"currency_code": "USD"
+			},
+			"presentment_money": {
+				"amount": "0.28",
+				"currency_code": "USD"
+			}
+		}
+	}],
+	"tags": "",
+	"contact_email": "mauricio.muriel@sientifica.com",
+	"order_status_url": "https:\/\/sleefs-test1.myshopify.com\/30637293613\/orders\/bd2ecedd45e31251ff3bdda3f98664a7\/authenticate?key=7c5e59f52185883cb92a613901a11e24",
+	"presentment_currency": "USD",
+	"total_line_items_price_set": {
+		"shop_money": {
+			"amount": "23.00",
+			"currency_code": "USD"
+		},
+		"presentment_money": {
+			"amount": "23.00",
+			"currency_code": "USD"
+		}
+	},
+	"total_discounts_set": {
+		"shop_money": {
+			"amount": "0.00",
+			"currency_code": "USD"
+		},
+		"presentment_money": {
+			"amount": "0.00",
+			"currency_code": "USD"
+		}
+	},
+	"total_shipping_price_set": {
+		"shop_money": {
+			"amount": "4.90",
+			"currency_code": "USD"
+		},
+		"presentment_money": {
+			"amount": "4.90",
+			"currency_code": "USD"
+		}
+	},
+	"subtotal_price_set": {
+		"shop_money": {
+			"amount": "23.00",
+			"currency_code": "USD"
+		},
+		"presentment_money": {
+			"amount": "23.00",
+			"currency_code": "USD"
+		}
+	},
+	"total_price_set": {
+		"shop_money": {
+			"amount": "29.85",
+			"currency_code": "USD"
+		},
+		"presentment_money": {
+			"amount": "29.85",
+			"currency_code": "USD"
+		}
+	},
+	"total_tax_set": {
+		"shop_money": {
+			"amount": "1.95",
+			"currency_code": "USD"
+		},
+		"presentment_money": {
+			"amount": "1.95",
+			"currency_code": "USD"
+		}
+	},
+	"line_items": [{
+		"id": 6065338646573,
+		"variant_id": 31927734698029,
+		"title": "Against All Odds Sticker",
+		"quantity": 1,
+		"sku": "SL-AAO-ST",
+		"variant_title": "Black\/White\/Gray \/ 2.5\" x 3.8\"",
+		"vendor": "Sleefs",
+		"fulfillment_service": "manual",
+		"product_id": 4502201270317,
+		"requires_shipping": true,
+		"taxable": true,
+		"gift_card": false,
+		"name": "Against All Odds Sticker - Black\/White\/Gray \/ 2.5\" x 3.8\"",
+		"variant_inventory_management": null,
+		"properties": [],
+		"product_exists": true,
+		"fulfillable_quantity": 1,
+		"grams": 6,
+		"price": "3.00",
+		"total_discount": "0.00",
+		"fulfillment_status": null,
+		"pre_tax_price": "3.00",
+		"price_set": {
+			"shop_money": {
+				"amount": "3.00",
+				"currency_code": "USD"
+			},
+			"presentment_money": {
+				"amount": "3.00",
+				"currency_code": "USD"
+			}
+		},
+		"pre_tax_price_set": {
+			"shop_money": {
+				"amount": "3.00",
+				"currency_code": "USD"
+			},
+			"presentment_money": {
+				"amount": "3.00",
+				"currency_code": "USD"
+			}
+		},
+		"total_discount_set": {
+			"shop_money": {
+				"amount": "0.00",
+				"currency_code": "USD"
+			},
+			"presentment_money": {
+				"amount": "0.00",
+				"currency_code": "USD"
+			}
+		},
+		"discount_allocations": [],
+		"duties": [],
+		"admin_graphql_api_id": "gid:\/\/shopify\/LineItem\/6065338646573",
+		"tax_lines": [{
+			"title": "Florida State Tax",
+			"price": "0.18",
+			"rate": 0.06,
+			"price_set": {
+				"shop_money": {
+					"amount": "0.18",
+					"currency_code": "USD"
+				},
+				"presentment_money": {
+					"amount": "0.18",
+					"currency_code": "USD"
+				}
+			}
+		}, {
+			"title": "Miami Dade County Tax",
+			"price": "0.03",
+			"rate": 0.01,
+			"price_set": {
+				"shop_money": {
+					"amount": "0.03",
+					"currency_code": "USD"
+				},
+				"presentment_money": {
+					"amount": "0.03",
+					"currency_code": "USD"
+				}
+			}
+		}],
+		"origin_location": {
+			"id": 2467029123117,
+			"country_code": "US",
+			"province_code": "FL",
+			"name": "sleefs-test1",
+			"address1": "3901 SW 47th Avenue ",
+			"address2": "Suite 415",
+			"city": "Fort Lauderdale",
+			"zip": "33314"
+		}
+	}, {
+		"id": 6065338679341,
+		"variant_id": 31927698358317,
+		"title": "Fearless Visor Skin",
+		"quantity": 1,
+		"sku": "SL-FRLS-VD",
+		"variant_title": "SLEEFS (Purchased before 4\/25\/19) \/ Black",
+		"vendor": "Sleefs",
+		"fulfillment_service": "manual",
+		"product_id": 4502188490797,
+		"requires_shipping": true,
+		"taxable": true,
+		"gift_card": false,
+		"name": "Fearless Visor Skin - SLEEFS (Purchased before 4\/25\/19) \/ Black",
+		"variant_inventory_management": "shopify",
+		"properties": [],
+		"product_exists": true,
+		"fulfillable_quantity": 1,
+		"grams": 28,
+		"price": "15.00",
+		"total_discount": "0.00",
+		"fulfillment_status": null,
+		"pre_tax_price": "15.00",
+		"price_set": {
+			"shop_money": {
+				"amount": "15.00",
+				"currency_code": "USD"
+			},
+			"presentment_money": {
+				"amount": "15.00",
+				"currency_code": "USD"
+			}
+		},
+		"pre_tax_price_set": {
+			"shop_money": {
+				"amount": "15.00",
+				"currency_code": "USD"
+			},
+			"presentment_money": {
+				"amount": "15.00",
+				"currency_code": "USD"
+			}
+		},
+		"total_discount_set": {
+			"shop_money": {
+				"amount": "0.00",
+				"currency_code": "USD"
+			},
+			"presentment_money": {
+				"amount": "0.00",
+				"currency_code": "USD"
+			}
+		},
+		"discount_allocations": [],
+		"duties": [],
+		"admin_graphql_api_id": "gid:\/\/shopify\/LineItem\/6065338679341",
+		"tax_lines": [{
+			"title": "Florida State Tax",
+			"price": "0.90",
+			"rate": 0.06,
+			"price_set": {
+				"shop_money": {
+					"amount": "0.90",
+					"currency_code": "USD"
+				},
+				"presentment_money": {
+					"amount": "0.90",
+					"currency_code": "USD"
+				}
+			}
+		}, {
+			"title": "Miami Dade County Tax",
+			"price": "0.15",
+			"rate": 0.01,
+			"price_set": {
+				"shop_money": {
+					"amount": "0.15",
+					"currency_code": "USD"
+				},
+				"presentment_money": {
+					"amount": "0.15",
+					"currency_code": "USD"
+				}
+			}
+		}],
+		"origin_location": {
+			"id": 2467029123117,
+			"country_code": "US",
+			"province_code": "FL",
+			"name": "sleefs-test1",
+			"address1": "3901 SW 47th Avenue ",
+			"address2": "Suite 415",
+			"city": "Fort Lauderdale",
+			"zip": "33314"
+		}
+	}, {
+		"id": 6065338712109,
+		"variant_id": 31927587110957,
+		"title": "Ace of Skulls Red Arm Sleeve",
+		"quantity": 1,
+		"sku": "SL-AOSRED-AS-L",
+		"variant_title": "L \/ Red",
+		"vendor": "Sleefs",
+		"fulfillment_service": "manual",
+		"product_id": 4502155034669,
+		"requires_shipping": true,
+		"taxable": true,
+		"gift_card": false,
+		"name": "Ace of Skulls Red Arm Sleeve - L \/ Red",
+		"variant_inventory_management": "shopify",
+		"properties": [],
+		"product_exists": true,
+		"fulfillable_quantity": 1,
+		"grams": 28,
+		"price": "5.00",
+		"total_discount": "0.00",
+		"fulfillment_status": null,
+		"pre_tax_price": "5.00",
+		"price_set": {
+			"shop_money": {
+				"amount": "5.00",
+				"currency_code": "USD"
+			},
+			"presentment_money": {
+				"amount": "5.00",
+				"currency_code": "USD"
+			}
+		},
+		"pre_tax_price_set": {
+			"shop_money": {
+				"amount": "5.00",
+				"currency_code": "USD"
+			},
+			"presentment_money": {
+				"amount": "5.00",
+				"currency_code": "USD"
+			}
+		},
+		"total_discount_set": {
+			"shop_money": {
+				"amount": "0.00",
+				"currency_code": "USD"
+			},
+			"presentment_money": {
+				"amount": "0.00",
+				"currency_code": "USD"
+			}
+		},
+		"discount_allocations": [],
+		"duties": [],
+		"admin_graphql_api_id": "gid:\/\/shopify\/LineItem\/6065338712109",
+		"tax_lines": [{
+			"title": "Florida State Tax",
+			"price": "0.30",
+			"rate": 0.06,
+			"price_set": {
+				"shop_money": {
+					"amount": "0.30",
+					"currency_code": "USD"
+				},
+				"presentment_money": {
+					"amount": "0.30",
+					"currency_code": "USD"
+				}
+			}
+		}, {
+			"title": "Miami Dade County Tax",
+			"price": "0.05",
+			"rate": 0.01,
+			"price_set": {
+				"shop_money": {
+					"amount": "0.05",
+					"currency_code": "USD"
+				},
+				"presentment_money": {
+					"amount": "0.05",
+					"currency_code": "USD"
+				}
+			}
+		}],
+		"origin_location": {
+			"id": 2467029123117,
+			"country_code": "US",
+			"province_code": "FL",
+			"name": "sleefs-test1",
+			"address1": "3901 SW 47th Avenue ",
+			"address2": "Suite 415",
+			"city": "Fort Lauderdale",
+			"zip": "33314"
+		}
+	}],
+	"fulfillments": [],
+	"refunds": [],
+	"total_tip_received": "0.0",
+	"original_total_duties_set": null,
+	"current_total_duties_set": null,
+	"admin_graphql_api_id": "gid:\/\/shopify\/Order\/2784021151789",
+	"shipping_lines": [{
+		"id": 2290058428461,
+		"title": "Standard",
+		"price": "4.90",
+		"code": "Standard",
+		"source": "shopify",
+		"phone": null,
+		"requested_fulfillment_service_id": null,
+		"delivery_category": null,
+		"carrier_identifier": null,
+		"discounted_price": "4.90",
+		"price_set": {
+			"shop_money": {
+				"amount": "4.90",
+				"currency_code": "USD"
+			},
+			"presentment_money": {
+				"amount": "4.90",
+				"currency_code": "USD"
+			}
+		},
+		"discounted_price_set": {
+			"shop_money": {
+				"amount": "4.90",
+				"currency_code": "USD"
+			},
+			"presentment_money": {
+				"amount": "4.90",
+				"currency_code": "USD"
+			}
+		},
+		"discount_allocations": [],
+		"tax_lines": [{
+			"title": "Florida State Tax",
+			"price": "0.29",
+			"rate": 0.06,
+			"price_set": {
+				"shop_money": {
+					"amount": "0.29",
+					"currency_code": "USD"
+				},
+				"presentment_money": {
+					"amount": "0.29",
+					"currency_code": "USD"
+				}
+			}
+		}, {
+			"title": "Miami Dade County Tax",
+			"price": "0.05",
+			"rate": 0.01,
+			"price_set": {
+				"shop_money": {
+					"amount": "0.05",
+					"currency_code": "USD"
+				},
+				"presentment_money": {
+					"amount": "0.05",
+					"currency_code": "USD"
+				}
+			}
+		}]
+	}],
+	"billing_address": {
+		"first_name": "Mauricio",
+		"address1": "7590 NW 186 St",
+		"phone": null,
+		"city": "Hialeah",
+		"zip": "33015",
+		"province": "Florida",
+		"country": "United States",
+		"last_name": "Muriel",
+		"address2": "Suite 110",
+		"company": null,
+		"latitude": 25.9417981,
+		"longitude": -80.3245747,
+		"name": "Mauricio Muriel",
+		"country_code": "US",
+		"province_code": "FL"
+	},
+	"shipping_address": {
+		"first_name": "Mauricio",
+		"address1": "7590 NW 186 St",
+		"phone": null,
+		"city": "Hialeah",
+		"zip": "33015",
+		"province": "Florida",
+		"country": "United States",
+		"last_name": "Muriel",
+		"address2": "Suite 110",
+		"company": null,
+		"latitude": 25.9417981,
+		"longitude": -80.3245747,
+		"name": "Mauricio Muriel",
+		"country_code": "US",
+		"province_code": "FL"
+	},
+	"client_details": {
+		"browser_ip": "45.229.72.146",
+		"accept_language": "en-US,en;q=0.9",
+		"user_agent": "Mozilla\/5.0 (Macintosh; Intel Mac OS X 10_14_6) AppleWebKit\/537.36 (KHTML, like Gecko) Chrome\/85.0.4183.102 Safari\/537.36",
+		"session_hash": "2c6f066fed061befbf62db23c7edeaa0",
+		"browser_width": 1919,
+		"browser_height": 981
+	},
+	"customer": {
+		"id": 3753447981101,
+		"email": "mauricio.muriel@sientifica.com",
+		"accepts_marketing": false,
+		"created_at": "2020-09-17T15:48:27-04:00",
+		"updated_at": "2020-09-17T21:29:41-04:00",
+		"first_name": "Mauricio",
+		"last_name": "Muriel",
+		"orders_count": 3,
+		"state": "disabled",
+		"total_spent": "147.44",
+		"last_order_id": 2784021151789,
+		"note": null,
+		"verified_email": true,
+		"multipass_identifier": null,
+		"tax_exempt": false,
+		"phone": null,
+		"tags": "",
+		"last_order_name": "SL1003",
+		"currency": "USD",
+		"accepts_marketing_updated_at": "2020-09-17T15:48:27-04:00",
+		"marketing_opt_in_level": null,
+		"admin_graphql_api_id": "gid:\/\/shopify\/Customer\/3753447981101",
+		"default_address": {
+			"id": 4337090396205,
+			"customer_id": 3753447981101,
+			"first_name": "Mauricio",
+			"last_name": "Muriel",
+			"company": null,
+			"address1": "7590 NW 186 St",
+			"address2": "Suite 110",
+			"city": "Hialeah",
+			"province": "Florida",
+			"country": "United States",
+			"zip": "33015",
+			"phone": null,
+			"name": "Mauricio Muriel",
+			"province_code": "FL",
+			"country_code": "US",
+			"country_name": "United States",
+			"default": true
+		}
+	}
+}

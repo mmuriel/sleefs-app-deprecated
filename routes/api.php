@@ -3,6 +3,7 @@
 use Illuminate\Http\Request;
 
 use \Sleefs\Controllers\Shiphero\PurchaseOrderWebHookEndPointController;
+use \Sleefs\Controllers\Shopify\OrderCreateController;
 
 /*
 |--------------------------------------------------------------------------
@@ -40,6 +41,7 @@ Route::post('/sh','\Sleefs\Controllers\Shiphero\PurchaseOrderWebHookEndPointCont
 
 //Route::post('/sp/products/add','\Sleefs\Controllers\Shopify\ProductAddController');
 Route::post('/sp/products/update','\Sleefs\Controllers\Shopify\ProductUpdateController');
+Route::post('/sp/orders','\Sleefs\Controllers\Shopify\OrderCreateController');
 /*
 
 	Rutas para Test clase CURL con Phpunit

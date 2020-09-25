@@ -42,6 +42,32 @@ class SleefsPdfProductsTest extends TestCase {
 
         $this->assertTrue(file_exists($response->notes));
         $this->assertRegExp("/(".$orderId."\.pdf){1,1}$/",$response->notes);
+        unlink ($pdfDestPath."/".$orderId.".pdf");
+        rmdir ($pdfDestPath);
+    }
+
+
+    public function testCreatePdfBlankFile(){
+
+        $pdfGen = new SleefsPdfStickerGenerator();
+        $pdf = new Fpdi();
+        $pdfDestPath = base_path()."/app/Sleefs/Docs/".date("Ymd");
+        $orderId = 'SL67209821';
+
+        if(!is_dir($pdfDestPath))
+        {
+            mkdir($pdfDestPath);
+        }
+
+        if (file_exists($pdfDestPath."/".$orderId.".pdf"))
+            unlink ($pdfDestPath."/".$orderId.".pdf");
+
+        $response = $pdfGen->createPdfFile($pdf,'',$orderId,$pdfDestPath);
+        $this->assertTrue(file_exists($response->notes));
+        $this->assertRegExp("/(".$orderId."\.pdf){1,1}$/",$response->notes);
+        unlink ($pdfDestPath."/".$orderId.".pdf");
+        rmdir ($pdfDestPath);
+
     }
 
 	// Preparing the Test 
@@ -55,7 +81,6 @@ class SleefsPdfProductsTest extends TestCase {
      //
      // Migrates the database and set the mailer to 'pretend'.
      // This will cause the tests to run quickly.
-     //
 
     private function prepareForTests(){
 		//---------------------------------------------------------------

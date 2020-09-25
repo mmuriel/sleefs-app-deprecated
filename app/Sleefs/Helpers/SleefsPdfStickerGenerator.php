@@ -15,17 +15,26 @@ class SleefsPdfStickerGenerator {
 
         // set the source file
         //echo "\n[MMA]: ".$pathToPdfFile;
-        $pageCount = $pdf->setSourceFile($pdfSourceTemplate);
+        if ($pdfSourceTemplate != '')
+        {
+            $pageCount = $pdf->setSourceFile($pdfSourceTemplate);
 
-        // iterate through all pages
-        for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
-            // import a page
-            $templateId = $pdf->importPage($pageNo);
+            // iterate through all pages
+            for ($pageNo = 1; $pageNo <= $pageCount; $pageNo++) {
+                // import a page
+                $templateId = $pdf->importPage($pageNo);
 
+                $pdf->AddPage();
+                // use the imported page and adjust the page size
+                $pdf->useTemplate($templateId, ['adjustPageSize' => true]);
+                //$pdf->SetXY(5, 128);
+                $pdf->SetXY(5,6);
+                $pdf->Write(1,$orderId);
+            }
+        }
+        else
+        {
             $pdf->AddPage();
-            // use the imported page and adjust the page size
-            $pdf->useTemplate($templateId, ['adjustPageSize' => true]);
-            //$pdf->SetXY(5, 128);
             $pdf->SetXY(5,6);
             $pdf->Write(1,$orderId);
         }
@@ -36,7 +45,7 @@ class SleefsPdfStickerGenerator {
             $pdfDestPath = $pdfDestPath."/";
 
         $dateNow = date("Y-m-d H:i:s");
-        $newTitle = "Order ".$orderId." ".$dateNow;
+        $newTitle = $orderId." ".$dateNow;
         $pdf->SetTitle($newTitle);
         $pdf->SetSubject($newTitle);
         $pdf->SetKeywords($orderId.",".$dateNow);

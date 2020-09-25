@@ -23,5 +23,7 @@ php_errors.log
 /.phpintel
 /.phpintel/*
 error_log
+/dropbox/
+/dropbox/*
 
 

@@ -21,6 +21,7 @@ class Kernel extends ConsoleKernel
         Commands\InventoryReport::Class,
         Commands\ShopifyProductIDAdjuster::Class,
         Commands\SleefsTestCreateInventoryReport::Class,
+        Commands\CreateBlankPdfFilesFromVariantsName::Class,
     ];
 
     /**
