@@ -48,7 +48,7 @@ class CreateBlankPdfFilesFromVariantsName extends Command
     public function handle()
     {
         //It creates required object and it initialize variables
-        $pathToFolder = env("APP_PATH_TO_DRPBOX");
+        $pathToFolder = env("APP_PATH_TO_DRPBOX")."PDFS/APP-BLANK/";
         $productNameNormalizer = new ProductNameToDirectoryNormalizer();
         $productDirectoryChecker = new ProductNameToDirectoryChecker();
         $variantTitleNormalizer = new VariantTitleToFileNameNormalizer();
@@ -71,7 +71,8 @@ class CreateBlankPdfFilesFromVariantsName extends Command
             $isDirectoryCreated = $productDirectoryChecker->isDirectoryAlreadyCreated($pathToFolder.$normalizedName);
             if ($isDirectoryCreated->value == false)
             {
-                mkdir($pathToFolder.$normalizedName);
+                echo $pathToFolder.$normalizedName."\n";
+                mkdir($pathToFolder.$normalizedName,0755, true);
             }
 
             //It creates for every variant a PDF file

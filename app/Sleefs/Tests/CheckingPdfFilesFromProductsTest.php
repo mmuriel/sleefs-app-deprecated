@@ -12,7 +12,9 @@ use Sleefs\Models\Shopify\Variant;
 use Sleefs\Helpers\Shopify\ProductNameToDirectoryNormalizer;
 use Sleefs\Helpers\Shopify\VariantTitleToFileNameNormalizer;
 use Sleefs\Helpers\Shopify\ProductNameToDirectoryChecker;
+use Sleefs\Helpers\Shopify\PdfTemplateSeeker;
 use Sleefs\Helpers\SleefsPdfStickerGenerator;
+
 
 
 class CheckingPdfFilesFromProductsTest extends TestCase {
@@ -188,6 +190,59 @@ class CheckingPdfFilesFromProductsTest extends TestCase {
         }
         rmdir ($pathToFolder.$normalizedName);
     }
+
+
+    public function testSeekForPdfTemplateFileFromVariantID(){
+
+        $pdfSeek = new PdfTemplateSeeker();
+        $productNameNormalizer = new ProductNameToDirectoryNormalizer();
+        $productDirectoryChecker = new ProductNameToDirectoryChecker();
+        $variantTitleNormalizer = new VariantTitleToFileNameNormalizer();
+
+        $pathToFolder = base_path()."/app/Sleefs/Docs/dropbox/";
+        $pathToBlank = $pathToFolder."APP-BLANK/";
+        $pathToProduction = $pathToFolder."APP-PDFS/";
+        $seekerResp = '';
+
+
+        $normalizedDirName=$this->prd->title;
+        $normalizedDirName=$productNameNormalizer->normalizeProductName($normalizedDirName,array("/[^a-zA-Z0-9\ \-&]/","/&/"),array("","AND"));
+
+        foreach ($this->prd->variants as $variant){
+            $normalizedVariantTitle=$variantTitleNormalizer->normalizeVariantTitle($variant->title,array("/[^a-zA-Z0-9\ \-&\/]/","/&/","/\//"),array("","AND","--"));
+            
+            //Look for pdf template file (blank folder)
+            $seekerResp = $pdfSeek->seekForPdfTemplate($pathToBlank.$normalizedDirName."/",$normalizedVariantTitle);
+            $this->assertTrue($seekerResp->value);
+            $this->assertEquals('blank',$seekerResp->status);
+            $this->assertRegExp("/\ __blank\.pdf$/",$seekerResp->notes);
+            //Look for pdf template file (production folder)
+            $seekerResp = $pdfSeek->seekForPdfTemplate($pathToProduction.$normalizedDirName."/",$normalizedVariantTitle);
+            $this->assertTrue($seekerResp->value);
+            $this->assertEquals('no blank',$seekerResp->status);
+            //print_r($seekerResp);
+        }
+
+
+        $normalizedDirName=$this->prd2->title;
+        $normalizedDirName=$productNameNormalizer->normalizeProductName($normalizedDirName,array("/[^a-zA-Z0-9\ \-&]/","/&/"),array("","AND"));
+
+        foreach ($this->prd2->variants as $variant){
+            $normalizedVariantTitle=$variantTitleNormalizer->normalizeVariantTitle($variant->title,array("/[^a-zA-Z0-9\ \-&\/]/","/&/","/\//"),array("","AND","--"));
+            
+            //Look for pdf template file (blank folder)
+            $seekerResp = $pdfSeek->seekForPdfTemplate($pathToBlank.$normalizedDirName."/",$normalizedVariantTitle);
+            $this->assertTrue($seekerResp->value);
+            $this->assertEquals('blank',$seekerResp->status);
+
+            //Look for pdf template file (production folder)
+            $seekerResp = $pdfSeek->seekForPdfTemplate($pathToProduction.$normalizedDirName."/",$normalizedVariantTitle);
+            $this->assertFalse($seekerResp->value);
+            $this->assertEquals('',$seekerResp->status);
+            //print_r($seekerResp);
+        }
+    }
+
 
 
 
