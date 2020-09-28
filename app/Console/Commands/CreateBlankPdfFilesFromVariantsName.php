@@ -72,7 +72,7 @@ class CreateBlankPdfFilesFromVariantsName extends Command
             if ($isDirectoryCreated->value == false)
             {
                 echo $pathToFolder.$normalizedName."\n";
-                mkdir($pathToFolder.$normalizedName,0755, true);
+                mkdir($pathToFolder.$normalizedName,0775, true);
             }
 
             //It creates for every variant a PDF file
@@ -95,7 +95,7 @@ class CreateBlankPdfFilesFromVariantsName extends Command
                     else
                     {
                         echo "No se ha podido crear el archivo PDF: ".$normalizedName."/".$normalizedVariantTitle.".pdf\n";
-                        $clogger->writeToLog ("Se ha creado el archivo PDF: ".$normalizedName."/".$normalizedVariantTitle.".pdf","INFO");
+                        $clogger->writeToLog ("No se ha podido crear el archivo PDF: ".$normalizedName."/".$normalizedVariantTitle.".pdf","WARNING");
                     }
                 }
                 else
