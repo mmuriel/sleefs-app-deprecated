@@ -27,3 +27,8 @@ error_log
 /dropbox/*
 
 
+.DS_Store
+/.DS_Store
+/*/.DS_Store
+
+
