@@ -4,13 +4,14 @@ namespace Sleefs\Test;
 
 use Illuminate\Foundation\Testing\TestCase ;
 use Illuminate\Contracts\Console\Kernel;
+
 use Sleefs\Models\Shiphero\PurchaseOrder;
 use Sleefs\Models\Shiphero\PurchaseOrderItem;
+use Sleefs\Helpers\ShipheroGQLApi\ShipheroGQLApi;
+use Sleefs\Helpers\GraphQL\GraphQLClient;
 
-use \mdeschermeier\shiphero\Shiphero;
 
-
-class ShipheroApiTest extends TestCase {
+class ShipheroGraphQLApiTest extends TestCase {
 
 	public $po,$item1,$item2;
 
@@ -21,8 +22,6 @@ class ShipheroApiTest extends TestCase {
 
         $this->po = new PurchaseOrder();
         $this->po->po_id = 515;
-        $this->po->po_id_legacy = 53032;
-        $this->po->po_id_token = 'UHVyY2hhc2VPcmRlcjo1MzAzMg==';
         $this->po->po_number = '1710-05 Brett Stern Order';
         $this->po->po_date = '2017-10-30 00:00:00';
         $this->po->fulfillment_status = 'closed';
@@ -49,27 +48,46 @@ class ShipheroApiTest extends TestCase {
 		$this->item2->save();
     }
  
+    public function testRefreshToken()
+    {
+    	$gqlClient = new GraphQLClient('https://public-api.shiphero.com/graphql');
+    	$shipHeroApi = new ShipheroGQLApi($gqlClient,'https://public-api.shiphero.com/graphql','https://public-api.shiphero.com/auth',env('SHIPHERO_ACCESSTOKEN'),env('SHIPHERO_REFRESHTOKEN'));
 
-	public function testInmemoryDatabaseAddingRecords(){		
+    	$oldAccessToken = env('SHIPHERO_ACCESSTOKEN');
+    	$newAccessToken = '';
 
-		/* Testing saved items to database */
-		$this->assertDatabaseHas('sh_purchaseorders',['po_id' => '515','fulfillment_status' => 'closed','po_id_legacy' => 53032]);
-		$this->assertDatabaseHas('sh_purchaseorder_items',['shid' => '59dbc5830f969','sku' => 'SL-USA-BLK-CL-L']);
+    	$resp = $shipHeroApi->refreshAccessToken();
+    	$arrEnv = file(base_path('.env'));
+    	$savedAccessTokenInEnvFile = '';
+    	foreach ($arrEnv as $envRecord){
+    		if (preg_match("/SHIPHERO_ACCESSTOKEN=([^\"\>\<]{1,2000})/",$envRecord,$matches))
+    		{
+    			$newAccessToken = trim($matches[1]);
+    			break;
+    		}
+    	}
 
-		
-	}
-
-	public function testInmemoryDatabaseProductVariantsRelationship(){
-
-		$tmpPrd = PurchaseOrder::where('po_id','=','515')->first();
-		$this->assertEquals('closed',$this->po->fulfillment_status);		
-		$this->assertEquals('SL-USA-BLK-CL-L',$tmpPrd->items[0]->sku);
-
-		$tmpVariant = PurchaseOrderItem::where('shid','=','59dbc5830fa20')->first();
-		$this->assertEquals('SL-USA-BLK-CL-XL',$tmpVariant->sku);
+    	$this->assertEquals($shipHeroApi->getAccessToken(),$newAccessToken);
+    	$this->assertFalse(($shipHeroApi->getAccessToken() == $oldAccessToken));
+    	//print_r($resp->access_token);
+    }
 
 
-	}
+    public function testGetExtendedPO()
+    {
+    	$gqlClient = new GraphQLClient('https://public-api.shiphero.com/graphql');
+    	$shipHeroApi = new ShipheroGQLApi($gqlClient,'https://public-api.shiphero.com/graphql','https://public-api.shiphero.com/auth',env('SHIPHERO_ACCESSTOKEN'),env('SHIPHERO_REFRESHTOKEN'));
+
+    	$resp = $shipHeroApi->getExtendedPO(584025,25);
+    	$this->assertEquals(75,count($resp->data->purchase_order->data->line_items->edges));
+    }
+
+
+    public function testGetProduct()
+    {
+    	$gqlClient = new GraphQLClient('https://public-api.shiphero.com/graphql');
+    	$shipHeroApi = new ShipheroGQLApi($gqlClient,'https://public-api.shiphero.com/graphql','https://public-api.shiphero.com/auth',env('SHIPHERO_ACCESSTOKEN'),env('SHIPHERO_REFRESHTOKEN'));
+    }
 
 	/* Preparing the Test */
 

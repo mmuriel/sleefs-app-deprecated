@@ -1,0 +1,110 @@
+Ejemplo de paginacion API Shiphero GraphQL
+
+
+La siguinte PO (id: 584025) tiene 75 sku's (line_items) incluidos. Como ejercicio para controlar la paginación de los elementos LineItems se debe utilizar sobre el nombre de la operacion (que en este caso coincide con campo line_items) los atributos:
+
+"first": Para indicar la cantidad de line_items por petición
+"after": Para indicar el ID (alfanumérico, con "cara" de token) del último elemento de la página anterior
+
+La petición (el query) tiene esta estructura:
+
+query{
+   	purchase_order (id:"584025", analyze: false){
+      request_id,
+      complexity,
+  		data{
+        id,
+        po_number,
+        po_date,
+        account_id,
+        vendor_id,
+        created_at,
+        fulfillment_status,
+        po_note,
+        description,
+        subtotal,
+        shipping_price,
+        total_price,
+       	line_items(after:"YXJyYXljb25uZWN0aW9uOjU5", first: 20) {
+          pageInfo{
+            hasNextPage,
+            startCursor,
+            endCursor,
+          }
+        edges {
+          node {           
+            id,
+            legacy_id,
+            po_id,
+            account_id,
+            warehouse_id,
+            vendor_id,
+            po_number,
+            sku,
+            barcode,
+            note,
+            quantity,
+            quantity_received,
+            quantity_rejected,
+            product_name,
+          }
+        }
+      }
+  }
+  }
+}
+
+Los metadatos para controlar la paginación de a 20 elementos line_item por cada petición, es la siguiente:
+
+
+Tanda #1
+===================
+
+Last node ID:
+UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc4NTg0MTk=
+Legacy: 7858390 - 7858419
+
+pageInfo:
+"hasNextPage": true,
+"startCursor": "YXJyYXljb25uZWN0aW9uOjA=",
+"endCursor": "YXJyYXljb25uZWN0aW9uOjE5"
+
+
+Tanda #2
+===================
+
+Last node ID:
+UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc4NTgzOTg=
+Legacy: 7858421 - 7858398
+
+pageInfo:
+"hasNextPage": true,
+"startCursor": "YXJyYXljb25uZWN0aW9uOjIw",
+"endCursor": "YXJyYXljb25uZWN0aW9uOjM5"
+
+
+
+Tanda #3
+===================
+
+Last node ID:
+UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc4NTg0MDc=
+Legacy: 7858410 - 7858407
+
+pageInfo:
+"hasNextPage": true,
+"startCursor": "YXJyYXljb25uZWN0aW9uOjQw",
+"endCursor": "YXJyYXljb25uZWN0aW9uOjU5"
+
+
+Tanda #4
+===================
+
+Last node ID:
+UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc4NTgzNjI=
+Legacy: 7858417 - 7858362
+
+pageInfo:
+"hasNextPage": false,
+"startCursor": "YXJyYXljb25uZWN0aW9uOjYw",
+"endCursor": "YXJyYXljb25uZWN0aW9uOjc0"

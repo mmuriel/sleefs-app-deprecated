@@ -8,6 +8,9 @@ use \Google\Spreadsheet\ServiceRequestFactory;
 use \mdeschermeier\shiphero\Shiphero;
 use \Sleefs\Helpers\ProductTypeGetter;
 
+use Sleefs\Helpers\GraphQL\GraphQLClient;
+use Sleefs\Helpers\ShipheroGQLApi\ShipheroGQLApi;
+
 use Sleefs\Models\Shopify\Variant;
 use Sleefs\Models\Shopify\Product;
 
@@ -20,6 +23,7 @@ use Sleefs\Models\Shiphero\PurchaseOrder;
 use Sleefs\Models\Shiphero\PurchaseOrderItem;
 use Sleefs\Models\Shiphero\PurchaseOrderUpdate;
 use Sleefs\Models\Shiphero\PurchaseOrderUpdateItem;
+use Sleefs\Models\Shiphero\Vendor;
 use Sleefs\Helpers\Shiphero\POQtyTotalizer;
 
 
@@ -92,8 +96,29 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
 		$clogger->writeToLog ("Procesando PO: ".json_encode($po),"INFO");
 
 		/* Genera la PO extendida */
-		Shiphero::setKey('8c072f53ec41629ee14c35dd313a684514453f31');
-        $poextended = Shiphero::getPO($po->purchase_order->po_id);
+		//Shiphero::setKey('8c072f53ec41629ee14c35dd313a684514453f31');
+        //$poextended = Shiphero::getPO($po->purchase_order->po_id);
+        $gqlClient = new GraphQLClient('https://public-api.shiphero.com/graphql');
+        $shipheroGqlApi = new ShipheroGQLApi($gqlClient,'https://public-api.shiphero.com/graphql','https://public-api.shiphero.com/auth',env('SHIPHERO_ACCESSTOKEN'),env('SHIPHERO_REFRESHTOKEN'));
+
+        $poextended = $shipheroGqlApi->getExtendedPO($po->purchase_order->id);
+        $poextended = $poextended->data->purchase_order->data;
+        $poextended->line_items = $poextended->line_items->edges;
+        if (isset($poextended->line_items[0])){
+            $poextended->vendor_name = $poextended->line_items[0]->node->vendor->name;
+            $poextended->vendor_id = $poextended->line_items[0]->node->vendor->id;
+        }
+        else
+        {
+            $clogger->writeToLog ("ORDER: La PO ".$po->purchase_order->id." no incluye productos (line items), no se procesa hasta que se definan estos elementos en sus registros","ERROR");
+            return response()->json(["code"=>200,"Message" => "Success"]);
+        }
+
+
+
+
+        $poextended->po_date = date("Y-m-d H:i:s",strtotime($poextended->po_date));
+        $poextended->created_at = date("Y-m-d H:i:s",strtotime($poextended->created_at));
         $clogger->writeToLog ("Con PO Extendida: ".json_encode($poextended),"INFO");
 		/* 
 			Recupera la hoja de calculo para 
@@ -120,8 +145,8 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
 
         $spreadsheet = (new \Google\Spreadsheet\SpreadsheetService)
         ->getSpreadsheetFeed()
-        ->getByTitle('Sleefs - Shiphero - Purchase Orders');//Production
-        //->getByTitle('CP Sleefs - Shiphero - Purchase Orders');//Dev
+        //->getByTitle('Sleefs - Shiphero - Purchase Orders');//Production
+        ->getByTitle(env('GOOGLE_SPREADSHEET_DOC'));//Dev
 
 
         /*
@@ -173,8 +198,9 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
                $record = $entry->getValues();
                if ($record['id'] == $po->purchase_order->po_id){
 
-                    foreach ($poextended->po->results->items as $po_item){
+                    foreach ($poextended->line_items as $po_item){
                         //$product = $variant->product;
+                        $po_item = $po_item->node;
                         if ($record['sku'] == $po_item->sku){
 
                             $variant = Variant::where("sku","=",$po_item->sku)->first();
@@ -185,11 +211,11 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
 
                        		//$record'id' => $po->purchase_order->po_id,
             	            $record['ordered'] = $po_item->quantity; 
-                            $record['po'] = $poextended->po->results->po_number; 
+                            $record['po'] = $poextended->po_number; 
                             $record['received'] = $po_item->quantity_received;
                             $record['pending'] = $po_item->quantity - $po_item->quantity_received;
                             $record['status'] = $po_item->fulfillment_status;
-                            $record['total'] = $poextended->po->results->total_price;
+                            $record['total'] = $poextended->total_price;
 
                             if ($variant != null)
                                 $record['type'] = $variant->product->product_type;
@@ -223,8 +249,9 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
             $orderTotalItems = 0;
 
 
-            foreach ($poextended->po->results->items as $po_item){
+            foreach ($poextended->line_items as $po_item){
 
+                $po_item = $po_item->node;
                 // Estos dos valores son utilizados en el siguiente paso
                 $orderTotalItemsReceived += (0 + $po_item->quantity_received);
                 $orderTotalItems += (0 + $po_item->quantity);
@@ -249,13 +276,13 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
                     $listFeed->insert([
 
                         'id' => $po->purchase_order->po_id,
-                        'po' => $poextended->po->results->po_number,
+                        'po' => $poextended->po_number,
                         'sku' => $po_item->sku,
                         'status' => $po_item->fulfillment_status,
                         'ordered' => $po_item->quantity,
                         'received' => $po_item->quantity_received,
                         'pending' => $po_item->quantity - $po_item->quantity_received,
-                        'total' => $poextended->po->results->total_price,
+                        'total' => $poextended->total_price,
                         'type' => $typeToRecord,
 
                         ]);
@@ -288,7 +315,8 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
 
             $orderTotalItemsReceived = 0;
             $orderTotalItems = 0;
-            foreach ($poextended->po->results->items as $po_item){
+            foreach ($poextended->line_items as $po_item){
+                $po_item = $po_item->node;
                 $orderTotalItemsReceived += (0 + $po_item->quantity_received);
                 $orderTotalItems += (0 + $po_item->quantity);
             }
@@ -299,9 +327,9 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
             $operationalEntry = '';
             foreach ($listFeedOrders->getEntries() as $entry) {
                $record = $entry->getValues();
-               if ($record['id'] == $po->purchase_order->po_id){
+               if ($record['id'] == $po->purchase_order->po_id || $record['legacyid'] == $poextended->legacy_id){
                     $operationalEntry = $entry;
-                    if ($poextended->po->results->fulfillment_status == 'canceled' || $poextended->po->results->fulfillment_status == 'cancelled'){
+                    if ($poextended->fulfillment_status == 'canceled' || $poextended->fulfillment_status == 'cancelled'){
                         $operation = 'delete';
                     }
                     else{
@@ -316,11 +344,12 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
 
                 case 'update':
                     $record = $operationalEntry->getValues();
-                    $record['poname'] = htmlspecialchars($poextended->po->results->po_number); 
-                    $record['status'] = $poextended->po->results->fulfillment_status;
+                    $record['poname'] = htmlspecialchars($poextended->po_number); 
+                    $record['status'] = $poextended->fulfillment_status;
+                    $record['legacyid'] = $poextended->legacy_id;
                     $record['expecteddate'] = '';
-                    $record['vendor'] = htmlspecialchars($poextended->po->results->vendor_name);
-                    $record['totalcost'] = $poextended->po->results->total_price;
+                    $record['vendor'] = htmlspecialchars($poextended->vendor_name);
+                    $record['totalcost'] = $poextended->total_price;
                     $record['totalitems'] = $orderTotalItems;
                     $record['itemsreceived'] = $orderTotalItemsReceived;
                     $record['pendingitems'] = $orderTotalItems - $orderTotalItemsReceived;
@@ -330,13 +359,14 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
 
                 case 'insert':
                     $listFeedOrders->insert([
-                        'id' => $poextended->po->results->po_id,
-                        'poname' => htmlspecialchars($poextended->po->results->po_number),
-                        'status' => $poextended->po->results->fulfillment_status,
-                        'createddate' => $poextended->po->results->created_at,
+                        'id' => $po->purchase_order->po_id,
+                        'legacyid' => $poextended->legacy_id,
+                        'poname' => htmlspecialchars($poextended->po_number),
+                        'status' => $poextended->fulfillment_status,
+                        'createddate' => $poextended->created_at,
                         'expecteddate' => '',
-                        'vendor' => htmlspecialchars($poextended->po->results->vendor_name),
-                        'totalcost' => $poextended->po->results->total_price,
+                        'vendor' => htmlspecialchars($poextended->vendor_name),
+                        'totalcost' => $poextended->total_price,
                         'totalitems' => $orderTotalItems,
                         'itemsreceived' => $orderTotalItemsReceived,
                         'pendingitems' => $orderTotalItems - $orderTotalItemsReceived,
@@ -358,8 +388,6 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
 
         */
 
-
-
         $ctrlUpdates = array();
         if ($debug[2] == true){
             //var_dump($poextended);
@@ -368,23 +396,30 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
             $arrProductType = array();
 
             //3.1. Define si la orden ya ha sido registrada en la DB
-            $poDb = PurchaseOrder::where('po_id','=',$po->purchase_order->po_id)->first();
+            //$poDb = PurchaseOrder::where('po_id','=',$po->purchase_order->po_id)->first();
+            $poDb = PurchaseOrder::whereRaw("po_id = '".$po->purchase_order->po_id."' || po_id_legacy = '".$poextended->legacy_id."' || po_id_token = '".$poextended->id."'")->first();
             if ($poDb == null){//No ha sido resgistrada aún
                 $poDb = new PurchaseOrder();
+
+                //Registra los identificadores de PO de shiphero, SON TRES!!!!!
                 $poDb->po_id = $po->purchase_order->po_id;
-                $poDb->po_number = $poextended->po->results->po_number;
-                if ($poextended->po->results->po_date != 'None'){
-                    $poDb->po_date = $poextended->po->results->po_date;
+                $poDb->po_id_token = $poextended->id;
+                $poDb->po_id_legacy = $poextended->legacy_id;
+
+                $poDb->po_number = $poextended->po_number;
+                if ($poextended->po_date != 'None'){
+                    $poDb->po_date = $poextended->po_date;
                 }
-                $poDb->fulfillment_status = $poextended->po->results->fulfillment_status;
-                if (isset($poextended->po->results->shipping_price))
-                    $poDb->sh_cost = $poextended->po->results->shipping_price;
+                $poDb->fulfillment_status = $poextended->fulfillment_status;
+                if (isset($poextended->shipping_price))
+                    $poDb->sh_cost = $poextended->shipping_price;
                 $poDb->save();
 
                 //3.2. Se registran los PO Items
                 for ($i = 0; $i < count($po->purchase_order->line_items);$i++){
 
-                    $itemExt = $poextended->po->results->items[$i];
+                    $itemExt = $poextended->line_items[$i];
+                    $itemExt = $itemExt->node;
                     $itemShort = $po->purchase_order->line_items[$i];
                     $variant = Variant::where('sku','=',$itemExt->sku)->first();
                     $prdTypeItem = 'nd';
@@ -414,20 +449,27 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
             }
             else {//Ya la orden existe en el sistema, se actualizan los registros
 
-                $poDb->po_number = $poextended->po->results->po_number;
-                if ($poextended->po->results->po_date != 'None'){
-                    $poDb->po_date = $poextended->po->results->po_date;
+                $poDb->po_number = $poextended->po_number;
+                if ($poextended->po_date != 'None'){
+                    $poDb->po_date = $poextended->po_date;
                 }
-                $poDb->fulfillment_status = $poextended->po->results->fulfillment_status;
-                if (isset($poextended->po->results->shipping_price))
-                    $poDb->sh_cost = $poextended->po->results->shipping_price;
+                //Actualiza los identificadores de PO de shiphero, SON TRES!!!!!
+                $poDb->po_id = $po->purchase_order->po_id;
+                $poDb->po_id_token = $poextended->id;
+                $poDb->po_id_legacy = $poextended->legacy_id;
+
+
+                $poDb->fulfillment_status = $poextended->fulfillment_status;
+                if (isset($poextended->shipping_price))
+                    $poDb->sh_cost = $poextended->shipping_price;
                 $poDb->save();
 
                 for ($i = 0; $i < count($po->purchase_order->line_items);$i++){
 
                     $itemShort = $po->purchase_order->line_items[$i];
                     //$itemExt = $poextended->po->results->items[$i];
-                    foreach ($poextended->po->results->items as $tmpItem){
+                    foreach ($poextended->line_items as $tmpItem){
+                        $tmpItem = $tmpItem->node;
                         if ($tmpItem->sku == $itemShort->sku){
                             $itemExt = $tmpItem;
                             break;
@@ -565,9 +607,9 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
             $items = PurchaseOrderItem::whereRaw("idpo='".$poDb->id."'")->get();
             foreach ($po->purchase_order->line_items as $itemRaw){
                 foreach ($items as $item){
-
                     if ($item->shid == $itemRaw->id){
                         //Registra el objeto PurchaseOrderUpdateItem
+                        //echo "Cantidad para el elemento ".$itemRaw->sku.": ".$ctrlUpdates[$itemRaw->sku]."\n";
                         if (isset($ctrlUpdates[$itemRaw->sku])){
                             if (((int)($ctrlUpdates[$itemRaw->sku])) > 0){
                                 $poUpdateItem = new PurchaseOrderUpdateItem();
@@ -590,7 +632,6 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
         
 
         //return response()->json(['ctrlUpdates'=>$ctrlUpdates,'poextended'=>$poextended,'po'=>$po]);
-
 
         /*
 
@@ -620,7 +661,8 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
 
             $actualIdProduct = '';
             $qtyPublishedProducts = 0;
-            foreach($poextended->po->results->items as $shItem){
+            foreach($poextended->line_items as $shItem){
+                $shItem = $shItem->node;
                 if ($shItem->quantity_received > 0){//Solo se publican los productos que tengan ingreso al inventario
 
                     $localProductGetter = new ProductGetterBySku();
@@ -655,7 +697,7 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
             }
             if (!($htmlEmailBody == '')){
 
-                $this->sendPublisingReport("Next are the results of publishing products of PO No.".$poextended->po->results->po_number." to sleefs.com store:<br /><br />\n\n".$htmlEmailBody,"Publishing items report for PO: ".$poextended->po->results->po_number);
+                $this->sendPublisingReport("Next are the results of publishing products of PO No.".$poextended->po_number." to sleefs.com store:<br /><br />\n\n".$htmlEmailBody,"Publishing items report for PO: ".$poextended->po_number);
 
             }
         } 
@@ -674,9 +716,9 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
             $mondayApi = new MondayApi(env('MONDAY_BASEURL'),env('MONDAY_APIKEY'));
 
 
-            if ($vendorValidator->validateVendor(ucwords(trim($poextended->po->results->vendor_name)))){
+            if ($vendorValidator->validateVendor(ucwords(trim($poextended->vendor_name)))){
                 //6.2 Verifica si la orden ya tiene un objeto tipo pulse creado
-                $pulseName = $pulseNameExtractor->extractPulseName($poextended->po->results->po_number);
+                $pulseName = $pulseNameExtractor->extractPulseName($poextended->po_number);
                 $pulses = Pulse::whereRaw(" (name='{$pulseName}') ")->get();
                 $pulse = '';
                 if($pulses->count() > 0){
@@ -738,7 +780,7 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
                 //======================================================
                 $pulseGetterValue = new MondayFullPulseColumnGetter();//Recuperador de los valores de las columnas en el $fullPulse
                 //6.6.1 Verifica el title del pulse
-                $pulseTitleCandidate = $poextended->po->results->po_number;
+                $pulseTitleCandidate = $poextended->po_number;
                 $pulseTitleCandidate = preg_replace("/^".$pulse->name."/","",$pulseTitleCandidate);
                 $pulseTitleCandidate = trim($pulseTitleCandidate);                
                 $pulseTitle = $pulseGetterValue->getValue($this->mondayPulseColumnMap['title'],$fullPulse);
@@ -750,7 +792,7 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
                     $mondayApi->updatePulse(env('MONDAY_BOARD'),$fullPulse->pulse->id,$this->mondayPulseColumnMap['title'],'text',$dataPulse);
                 }
                 //6.6.2 Verifica el vendor del pulse
-                $pulseVendorCandidate = $poextended->po->results->vendor_name;              
+                $pulseVendorCandidate = $poextended->vendor_name;              
                 $pulseVendor = $pulseGetterValue->getValue($this->mondayPulseColumnMap['vendor'],$fullPulse);
                 if ($pulseVendor != $pulseVendorCandidate || $pulseVendor == ''){
                     $dataPulse = array(
@@ -759,7 +801,7 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
                     $mondayApi->updatePulse(env('MONDAY_BOARD'),$fullPulse->pulse->id,$this->mondayPulseColumnMap['vendor'],'text',$dataPulse);
                 }
                 //6.6.3 Verifica el created date del pulse
-                $pulseCreatedAtCandidate = substr($poextended->po->results->created_at,0,10);
+                $pulseCreatedAtCandidate = substr($poextended->created_at,0,10);
                 $pulseCreatedAt = $pulseGetterValue->getValue($this->mondayPulseColumnMap['created date'],$fullPulse);
                 if ($pulseCreatedAt != $pulseCreatedAtCandidate || $pulseCreatedAt == ''){
                     $dataPulse = array(
@@ -768,7 +810,7 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
                     $mondayApi->updatePulse(env('MONDAY_BOARD'),$fullPulse->pulse->id,$this->mondayPulseColumnMap['created date'],'date',$dataPulse);
                 }
                 //6.6.4 Verifica el expected date del pulse
-                $pulseExpectedAtCandidate = substr($poextended->po->results->po_date,0,10);
+                $pulseExpectedAtCandidate = substr($poextended->po_date,0,10);
                 $pulseExpectedAt = $pulseGetterValue->getValue($this->mondayPulseColumnMap['expected date'],$fullPulse);
                 if ($pulseExpectedAt != $pulseExpectedAtCandidate || $pulseExpectedAt == ''){
                     $dataPulse = array(
@@ -809,7 +851,7 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
                 }
 
                 //6.6.6. Verifica el total de la orden
-                $pulseTotalCostCandidate = $poextended->po->results->total_price;              
+                $pulseTotalCostCandidate = $poextended->total_price;              
                 $pulseTotalCost = $pulseGetterValue->getValue($this->mondayPulseColumnMap['total cost'],$fullPulse);
                 if ($pulseTotalCost != $pulseTotalCostCandidate || $pulseTotalCost == '' || $pulseTotalCost == 0.0){
                     $dataPulse = array(

@@ -5,7 +5,6 @@ namespace Sleefs\Test;
 use Illuminate\Foundation\Testing\TestCase ;
 use Illuminate\Contracts\Console\Kernel;
 
-use \mdeschermeier\shiphero\Shiphero;
 use Sleefs\Helpers\Shiphero\SkuRawCollection;
 use Sleefs\Helpers\Shiphero\ShipheroAllProductsGetter;
 use Sleefs\Models\Shopify\Variant;
@@ -17,6 +16,8 @@ use Sleefs\Models\Shiphero\PurchaseOrderItem;
 use Sleefs\Helpers\Shopify\ProductGetterBySku;
 use Sleefs\Helpers\Shopify\QtyOrderedBySkuGetter;
 use Sleefs\Helpers\Shiphero\ShipheroDailyInventoryReport;
+use Sleefs\Helpers\ShipheroGQLApi\ShipheroGQLApi;
+use Sleefs\Helpers\GraphQL\GraphQLClient;
 
 class InventoryReportTest extends TestCase {
 
@@ -35,23 +36,26 @@ class InventoryReportTest extends TestCase {
       
     }
  
- 	public function testGetting1000ProductsFromShiphero(){
+ 	public function testGetting5ProductsFromShiphero(){
+
+ 		$gqlClient = new GraphQLClient('https://public-api.shiphero.com/graphql');
+    	$shipHeroApi = new ShipheroGQLApi($gqlClient,'https://public-api.shiphero.com/graphql','https://public-api.shiphero.com/auth',env('SHIPHERO_ACCESSTOKEN'),env('SHIPHERO_REFRESHTOKEN'));
 	
- 		$options = array('page'=>1, 'count'=>1000);
-		$products = Shiphero::getProduct($options);
-		//print_r($products);
-		$this->assertEquals(1000,count($products->products->results),"No se han retornado 1000 productos");
+ 		$options = array('qtyProducts'=>5,'createdFrom' => '2020-10-01','createdTo' => '2020-10-02');
+ 		$products = $shipHeroApi->getProducts($options);
+		$this->assertEquals(5,count($products->products->results),"No se han retornado 100 productos");
 
 		$prdsCollection = new SkuRawCollection();
 		$prdsCollection->addElementsFromShipheroApi($products->products->results);
-		$this->assertEquals(1000,$prdsCollection->count(),"La se esperan 0 y la colección tiene".$prdsCollection->count());
+
+		$this->assertEquals(5,$prdsCollection->count(),"Se esperan 5 y la colección tiene".$prdsCollection->count());
 
  	}
 
  	public function testGettingAllShipheroProducts(){
  		$shProductsGetter = new ShipheroAllProductsGetter();
  		$prdsCollection = new SkuRawCollection();
- 		$prdsCollection = $shProductsGetter->getAllProducts(['apikey'=>env('SHIPHERO_APIKEY'),'qtyperpage'=>1000],$prdsCollection);
+ 		$prdsCollection = $shProductsGetter->getAllProducts(['graphqlUrl'=>'https://public-api.shiphero.com/graphql','authUrl'=>'https://public-api.shiphero.com/auth','qtyProductsPerPage'=>31],$prdsCollection);
  		$this->assertGreaterThan(12000,$prdsCollection->count());
  		//print_r($prdsCollection->get('SL-WROWPP-AS-Y')); 		
  	}
@@ -166,15 +170,7 @@ class InventoryReportTest extends TestCase {
      */
     private function prepareForTests()
     {
-
-    	Shiphero::setKey(env('SHIPHERO_APIKEY'));
-
-
-    	
-     	\Artisan::call('migrate');
-     	
-
-
+		\Artisan::call('migrate');
      	// Adding data to database
      	//Product #1
      	array_push($this->products,new Product());
