@@ -30,9 +30,9 @@ class ShipheroGQLApi {
         $ctrlNextPage = 0;
         if ($afterForPagination == null)
 
-            $postContent = array('query' => '{purchase_order(id:"'.$poId.'"){request_id,complexity,data{id,legacy_id,po_number,po_date,account_id,vendor_id,created_at,fulfillment_status,po_note,description,subtotal,shipping_price,total_price,line_items(first:'.$qtyLineItemsPerPage.'){pageInfo{hasNextPage,startCursor,endCursor,}edges{node{id,price,po_id,account_id,warehouse_id,vendor_id,po_number,sku,barcode,note,quantity,quantity_received,quantity_rejected,product_name,fulfillment_status,vendor{id,name}}}}}}}');
+            $postContent = array('query' => '{purchase_order(id:"'.$poId.'"){request_id,complexity,data{id,legacy_id,po_number,po_date,account_id,vendor_id,created_at,fulfillment_status,po_note,description,subtotal,shipping_price,total_price,line_items(first:'.$qtyLineItemsPerPage.'){pageInfo{hasNextPage,startCursor,endCursor,}edges{node{id,price,po_id,account_id,warehouse_id,vendor_id,po_number,sku,barcode,note,quantity,quantity_received,quantity_rejected,product_name,fulfillment_status,vendor{id,name,email,account_id,account_number}}}}}}}');
         else 
-            $postContent = array('query' => '{purchase_order(id:"'.$poId.'"){request_id,complexity,data{id,legacy_id,po_number,po_date,account_id,vendor_id,created_at,fulfillment_status,po_note,description,subtotal,shipping_price,total_price,line_items(after:"'.$afterForPagination.'",first:'.$qtyLineItemsPerPage.'){pageInfo{hasNextPage,startCursor,endCursor}edges{node{id,price,legacy_id,po_id,account_id,warehouse_id,vendor_id,po_number,sku,barcode,note,quantity,quantity_received,quantity_rejected,product_name,fulfillment_status,vendor{id,name}}}}}}}');
+            $postContent = array('query' => '{purchase_order(id:"'.$poId.'"){request_id,complexity,data{id,legacy_id,po_number,po_date,account_id,vendor_id,created_at,fulfillment_status,po_note,description,subtotal,shipping_price,total_price,line_items(after:"'.$afterForPagination.'",first:'.$qtyLineItemsPerPage.'){pageInfo{hasNextPage,startCursor,endCursor}edges{node{id,price,legacy_id,po_id,account_id,warehouse_id,vendor_id,po_number,sku,barcode,note,quantity,quantity_received,quantity_rejected,product_name,fulfillment_status,vendor{id,name,email,account_id,account_number}}}}}}}');
 
 
 
@@ -46,7 +46,7 @@ class ShipheroGQLApi {
 
                 while ($ctrlNextPage == 1)
                 {
-                    $postContent = array('query' => '{purchase_order(id:"'.$poId.'"){request_id,complexity,data{id,legacy_id,po_number,po_date,account_id,vendor_id,created_at,fulfillment_status,po_note,description,subtotal,shipping_price,total_price,line_items(after:"'.$afterForPagination.'",first:'.$qtyLineItemsPerPage.'){pageInfo{hasNextPage,startCursor,endCursor}edges{node{id,price,legacy_id,po_id,account_id,warehouse_id,vendor_id,po_number,sku,barcode,note,quantity,quantity_received,quantity_rejected,product_name,fulfillment_status,vendor{id,name}}}}}}}');
+                    $postContent = array('query' => '{purchase_order(id:"'.$poId.'"){request_id,complexity,data{id,legacy_id,po_number,po_date,account_id,vendor_id,created_at,fulfillment_status,po_note,description,subtotal,shipping_price,total_price,line_items(after:"'.$afterForPagination.'",first:'.$qtyLineItemsPerPage.'){pageInfo{hasNextPage,startCursor,endCursor}edges{node{id,price,legacy_id,po_id,account_id,warehouse_id,vendor_id,po_number,sku,barcode,note,quantity,quantity_received,quantity_rejected,product_name,fulfillment_status,vendor{id,name,email,account_id,account_number}}}}}}}');
                     $nextCall = $this->graphqlClient->query($postContent,array("Authorization: Bearer ".$this->accesToken,"Content-type: application/json"));
                     if (isset($nextCall->data->purchase_order->data->line_items->pageInfo->hasNextPage))
                     {

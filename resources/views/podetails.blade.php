@@ -52,15 +52,15 @@
                 </tr>
                 <tr>
                     <td>Vendor Name</td>
-                    <td>{{ $poextended->vendor_name}}</td>
+                    <td>{{ $poextended->line_items[0]->node->vendor->name}}</td>
                 </tr>
                 <tr>
                     <td>Vendor Email</td>
-                    <td>{{ $poextended->vendor_email}}</td>
+                    <td>{{ $poextended->line_items[0]->node->vendor->email}}</td>
                 </tr>
                 <tr>
                     <td>Vendor Account Number</td>
-                    <td>{{ $poextended->vendor_account_number }}</td>
+                    <td>{{ $poextended->line_items[0]->node->vendor->account_number }}</td>
                 </tr>
             </table>
             <h2>PO Items</h2>

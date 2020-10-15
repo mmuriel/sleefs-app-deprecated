@@ -52,15 +52,15 @@
                 </tr>
                 <tr>
                     <td>Vendor Name</td>
-                    <td><?php echo e($poextended->vendor_name); ?></td>
+                    <td><?php echo e($poextended->line_items[0]->node->vendor->name); ?></td>
                 </tr>
                 <tr>
                     <td>Vendor Email</td>
-                    <td><?php echo e($poextended->vendor_email); ?></td>
+                    <td><?php echo e($poextended->line_items[0]->node->vendor->email); ?></td>
                 </tr>
                 <tr>
                     <td>Vendor Account Number</td>
-                    <td><?php echo e($poextended->vendor_account_number); ?></td>
+                    <td><?php echo e($poextended->line_items[0]->node->vendor->account_number); ?></td>
                 </tr>
             </table>
             <h2>PO Items</h2>
@@ -93,12 +93,12 @@
                         <td></td>
                     </tr>
                     <tr>
-                        <td colspan="4">Shipping Cost: </td>
+                        <td colspan="4">Shipping & Handling:</td>
                         <td><?php echo e($po->sh_cost); ?></td>
                         <td></td>
                     </tr>
                     <tr>
-                        <td colspan="4">Total: </td>
+                        <td colspan="4">Total:</td>
                         <td><?php echo e($po->grandTotal); ?></td>
                         <td></td>
                     </tr>
