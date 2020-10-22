@@ -37,7 +37,7 @@ use Sleefs\Helpers\Shopify\ProductTaggerForNewResTag;
 use Sleefs\Helpers\FindifyAPI\Findify;  
 
 use Sleefs\Models\Monday\Pulse;
-use Sleefs\Helpers\MondayApi\MondayApi;
+use Sleefs\Helpers\MondayApi\MondayGqlApi;
 use Sleefs\Helpers\Monday\MondayVendorValidator; 
 use Sleefs\Helpers\Monday\MondayPulseNameExtractor;
 use Sleefs\Helpers\Monday\MondayGroupChecker;
@@ -85,8 +85,8 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
         
         */
 
-        $debug = array(false,true,true,true,false,true);//Define que funciones se ejecutan y cuales no. - Produccion
-        //$debug = array(false,false,true,true,true,true);//Define que funciones se ejecutan y cuales no. - Test
+        //$debug = array(false,true,true,true,false,true);//Define que funciones se ejecutan y cuales no. - Produccion
+        $debug = array(false,true,true,true,false,true);//Define que funciones se ejecutan y cuales no. - Test
 
 
 		$po = json_decode(file_get_contents('php://input'));
@@ -145,8 +145,7 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
 
         $spreadsheet = (new \Google\Spreadsheet\SpreadsheetService)
         ->getSpreadsheetFeed()
-        //->getByTitle('Sleefs - Shiphero - Purchase Orders');//Production
-        ->getByTitle(env('GOOGLE_SPREADSHEET_DOC'));//Dev
+        ->getByTitle(env('GOOGLE_SPREADSHEET_DOC'));
 
 
         /*
@@ -713,21 +712,25 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
             //$this->mondayValidVendors = array('DX Sporting Goods','Good People Sports');
             $vendorValidator = new MondayVendorValidator($this->mondayValidVendors);
             $pulseNameExtractor = new MondayPulseNameExtractor();
-            $mondayApi = new MondayApi(env('MONDAY_BASEURL'),env('MONDAY_APIKEY'));
+            $gqlClientForMonday = new GraphQLClient(env('MONDAY_GRAPHQL_BASEURL'),array("Authorization: ".env('MONDAY_APIKEY')));
+            $mondayApi = new MondayGqlApi($gqlClientForMonday);
 
 
-            if ($vendorValidator->validateVendor(ucwords(trim($poextended->vendor_name)))){
-                //6.2 Verifica si la orden ya tiene un objeto tipo pulse creado
+            if ($vendorValidator->validateVendor(ucwords(trim($poextended->vendor_name))))
+            {
+                //6.2 Verifica si la orden ya tiene un objeto tipo pulse creado en la DB
                 $pulseName = $pulseNameExtractor->extractPulseName($poextended->po_number);
                 $pulses = Pulse::whereRaw(" (name='{$pulseName}') ")->get();
                 $pulse = '';
-                if($pulses->count() > 0){
+                if($pulses->count() > 0)
+                {
                     $pulse = $pulses->get(0);
-                }else{
-
-                    //Si no lo tiene genera uno
+                }
+                else
+                {
+                    //Si no tiene el objeto tipo Pulse creado en la DB, genera uno
                     $pulse = new Pulse();
-                    if (isset($poDb) && isset($poDb->id)){
+                    if (isset($poDb) && isset($poDb->id)){ // $poDb Objeto tipo: PurchaseOrder (Modelo laravel)
                         $pulse->idpo = $poDb->id;
                     }
                     else{
@@ -741,19 +744,20 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
                 }
                 //=======================================================
                 //6.3   Verifica si ya existe un pulse en el tablero con 
-                //      el mismo nombre.
+                //      el mismo nombre y/o ID del pulse en monday.com
                 $fullPulse = $mondayApi->getFullPulse($pulse,env('MONDAY_BOARD'));
-                if ($fullPulse == null){
+                if ($fullPulse == null)
+                {
+                    //6.4 NO EXISTE el pulse en monday.com, entonces, lo genera.
 
-                    //6.4   Recupera el grupo al que pertenece la PO
+                    //6.4.1   Recupera el grupo al que pertenece la PO
                     $groupChecker = new MondayGroupChecker();
                     $group = $groupChecker->getGroup($pulse->name,env('MONDAY_BOARD'),$mondayApi);
                     if ($group==null){
                         //6.5   Genera un nuevo grupo
                         $groupTitle = $groupChecker->getCorrectGroupName ($pulse->name);
                         $data = array(
-                            'board_id' => env('MONDAY_BOARD'),
-                            'title' => $groupTitle,
+                            'group_name' => $groupTitle
                         );
                         $group = $mondayApi->addGroupToBoard(env('MONDAY_BOARD'),$data);
                     }
@@ -761,18 +765,16 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
 
 
                     $pulseData = array(
-                        'pulse[name]' => $pulse->name,
-                        'board_id' => env('MONDAY_BOARD'),
-                        'user_id' => env('MONDAY_USER'),
-                        'group_id' => $group->id,
+                        'item_name' => $pulse->name,
+                        'group_id' => $group->id
                     );
                     $newPulse = $mondayApi->createPulse(env('MONDAY_BOARD'),$pulseData);
                     $fullPulse = $mondayApi->getFullPulse($pulse,env('MONDAY_BOARD'));
                 }
                 if ($pulse->idmonday=='' || $pulse->mon_board=='' || $pulse->mon_group==''){
-                    $pulse->idmonday = $fullPulse->pulse->id;
+                    $pulse->idmonday = $fullPulse->id;
                     $pulse->mon_board = env('MONDAY_BOARD');
-                    $pulse->mon_group = $fullPulse->board_meta->group_id;
+                    $pulse->mon_group = $fullPulse->group->id;
                     $pulse->save();
                 }
                 //======================================================
@@ -786,37 +788,29 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
                 $pulseTitle = $pulseGetterValue->getValue($this->mondayPulseColumnMap['title'],$fullPulse);
 
                 if ($pulseTitle != $pulseTitleCandidate || $pulseTitle == ''){
-                    $dataPulse = array(
-                        'text' => $pulseTitleCandidate,
-                    );
-                    $mondayApi->updatePulse(env('MONDAY_BOARD'),$fullPulse->pulse->id,$this->mondayPulseColumnMap['title'],'text',$dataPulse);
+                    //$mondayApi->updatePulse(env('MONDAY_BOARD'),$fullPulse->pulse->id,$this->mondayPulseColumnMap['title'],'text',$dataPulse);
+                    $mondayApi->updatePulse(env('MONDAY_BOARD'),$fullPulse->id,$this->mondayPulseColumnMap['title'],$pulseTitleCandidate);
                 }
                 //6.6.2 Verifica el vendor del pulse
                 $pulseVendorCandidate = $poextended->vendor_name;              
                 $pulseVendor = $pulseGetterValue->getValue($this->mondayPulseColumnMap['vendor'],$fullPulse);
                 if ($pulseVendor != $pulseVendorCandidate || $pulseVendor == ''){
-                    $dataPulse = array(
-                        'text' => $pulseVendorCandidate,
-                    );
-                    $mondayApi->updatePulse(env('MONDAY_BOARD'),$fullPulse->pulse->id,$this->mondayPulseColumnMap['vendor'],'text',$dataPulse);
+                    //$mondayApi->updatePulse(env('MONDAY_BOARD'),$fullPulse->pulse->id,$this->mondayPulseColumnMap['vendor'],'text',$dataPulse);
+                    $mondayApi->updatePulse(env('MONDAY_BOARD'),$fullPulse->id,$this->mondayPulseColumnMap['vendor'],$pulseVendorCandidate);
                 }
                 //6.6.3 Verifica el created date del pulse
                 $pulseCreatedAtCandidate = substr($poextended->created_at,0,10);
                 $pulseCreatedAt = $pulseGetterValue->getValue($this->mondayPulseColumnMap['created date'],$fullPulse);
                 if ($pulseCreatedAt != $pulseCreatedAtCandidate || $pulseCreatedAt == ''){
-                    $dataPulse = array(
-                        'date_str' => $pulseCreatedAtCandidate,
-                    );
-                    $mondayApi->updatePulse(env('MONDAY_BOARD'),$fullPulse->pulse->id,$this->mondayPulseColumnMap['created date'],'date',$dataPulse);
+                    //$mondayApi->updatePulse(env('MONDAY_BOARD'),$fullPulse->pulse->id,$this->mondayPulseColumnMap['created date'],'date',$dataPulse);
+                    $mondayApi->updatePulse(env('MONDAY_BOARD'),$fullPulse->id,$this->mondayPulseColumnMap['created date'],$pulseCreatedAtCandidate);
                 }
                 //6.6.4 Verifica el expected date del pulse
                 $pulseExpectedAtCandidate = substr($poextended->po_date,0,10);
                 $pulseExpectedAt = $pulseGetterValue->getValue($this->mondayPulseColumnMap['expected date'],$fullPulse);
                 if ($pulseExpectedAt != $pulseExpectedAtCandidate || $pulseExpectedAt == ''){
-                    $dataPulse = array(
-                        'date_str' => $pulseExpectedAtCandidate,
-                    );
-                    $mondayApi->updatePulse(env('MONDAY_BOARD'),$fullPulse->pulse->id,$this->mondayPulseColumnMap['expected date'],'date',$dataPulse);
+                    //$mondayApi->updatePulse(env('MONDAY_BOARD'),$fullPulse->pulse->id,$this->mondayPulseColumnMap['expected date'],'date',$dataPulse);
+                    $mondayApi->updatePulse(env('MONDAY_BOARD'),$fullPulse->id,$this->mondayPulseColumnMap['expected date'],$pulseExpectedAtCandidate);
                 }
                 //6.6.5 Verifica el received del pulse
                 $poTotalizer = new POQtyTotalizer();
@@ -843,27 +837,18 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
                 }
                 
                 if ($pulseStatusIndex != $pulseStatusIndexCandidate || $pulseStatusIndex == ''){
-                    $dataPulse = array(
-                        'color_index' => $pulseStatusIndexCandidate,
-                        'update_id' => "SLEEFS-APP".date("Y-m-dH:i:s"),
-                    );
-                    $mondayApi->updatePulse(env('MONDAY_BOARD'),$fullPulse->pulse->id,$this->mondayPulseColumnMap['received'],'status',$dataPulse);
+                    //$mondayApi->updatePulse(env('MONDAY_BOARD'),$fullPulse->pulse->id,$this->mondayPulseColumnMap['received'],'status',$dataPulse);
+                    $mondayApi->updatePulse(env('MONDAY_BOARD'),$fullPulse->id,$this->mondayPulseColumnMap['received'],$pulseStatusIndexCandidate);
                 }
 
                 //6.6.6. Verifica el total de la orden
                 $pulseTotalCostCandidate = $poextended->total_price;              
                 $pulseTotalCost = $pulseGetterValue->getValue($this->mondayPulseColumnMap['total cost'],$fullPulse);
                 if ($pulseTotalCost != $pulseTotalCostCandidate || $pulseTotalCost == '' || $pulseTotalCost == 0.0){
-                    $dataPulse = array(
-                        'value' => $pulseTotalCostCandidate,
-                    );
-                    $mondayApi->updatePulse(env('MONDAY_BOARD'),$fullPulse->pulse->id,$this->mondayPulseColumnMap['total cost'],'numeric',$dataPulse);
-                }
-
-                
+                    //$mondayApi->updatePulse(env('MONDAY_BOARD'),$fullPulse->pulse->id,$this->mondayPulseColumnMap['total cost'],'numeric',$dataPulse);
+                    $mondayApi->updatePulse(env('MONDAY_BOARD'),$fullPulse->id,$this->mondayPulseColumnMap['total cost'],$pulseTotalCostCandidate);
+                }  
             }
-
-
         }
 
         /*

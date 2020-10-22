@@ -52,7 +52,32 @@ class MondayGroupChecker{
 
 	}
 
-	public function getGroup($pulseName,$boardId,\Sleefs\Helpers\MondayApi\MondayApi $mondayApi){
+	/**
+	*	Recupera el grupo al que pertenece (o debería pertenecer a partir del Pulse.name) 
+	*	un pulse.
+	*
+	*	Recupera a partir del API de monday.com el grupo al que pertenece un pulse,
+	*	se utilize el atributo Pulse.name para deducir el nombre del grupo en el tablero.
+	*
+	*	@param 	string $pulseName Valor del atributo Pulse.name de un objeto del tipo
+	*			Sleefs\Models\Monday\Pulse
+	*	@param 	integer $boardId ID en el sistema de monday.com del board sobre el que se
+	*			realizará la búsqueda.
+	*	@param 	\Sleefs\Helpers\MondayApi\MondayGqlApi $mondayApi Objeto que sirve de interfaz
+	*			para con el API GraphQL de monday.com
+	*	@return	stdClass $group Un objeto tipo stdClass que representa un group, tiene la
+	*			siguiente estructura:
+
+				{
+					"color": "#037f4c",
+					"id": "po_october_2020",
+					"position": "65536.0",
+					"title": "PO October 2020"
+				}
+	*
+	*
+	*/
+	public function getGroup($pulseName,$boardId,\Sleefs\Helpers\MondayApi\MondayGqlApi $mondayApi){
 
 		$groupName = $this->getCorrectGroupName($pulseName);
 		$groups = $mondayApi->getAllBoardGroups($boardId);

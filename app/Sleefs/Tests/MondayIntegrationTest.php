@@ -5,7 +5,8 @@ namespace Sleefs\Test;
 use Illuminate\Foundation\Testing\TestCase ;
 use Illuminate\Contracts\Console\Kernel;
 
-use \mdeschermeier\shiphero\Shiphero;
+//use \mdeschermeier\shiphero\Shiphero;
+use Sleefs\Helpers\GraphQL\GraphQLClient;
 use Sleefs\Helpers\Shiphero\SkuRawCollection;
 use Sleefs\Helpers\Shiphero\ShipheroAllProductsGetter;
 use Sleefs\Models\Shopify\Variant;
@@ -14,7 +15,7 @@ use Sleefs\Models\Shiphero\InventoryReport;
 use Sleefs\Models\Shiphero\InventoryReportItem;
 use Sleefs\Models\Shiphero\PurchaseOrder;
 use Sleefs\Models\Shiphero\PurchaseOrderItem;
-use \Sleefs\Helpers\MondayApi\MondayApi;
+use Sleefs\Helpers\MondayApi\MondayGqlApi;
 
 use Sleefs\Models\Monday\Pulse;
 use Sleefs\Helpers\Monday\MondayVendorValidator;
@@ -27,24 +28,21 @@ class MondayIntegrationTest extends TestCase {
 	private $pulses = array();
     private $extendedPos = array();
 	private $mondayUserId = '5277993';
-    private $mondayBoard = '322181342';
-	public $urlEndPoint, $apiKey, $mondayApi;
+    private $mondayBoard = '670700889';
+	public $mondayApi;
 
 	public function setUp(){
         parent::setUp();
-
-        $this->urlEndPoint = env('MONDAY_BASEURL');
-        $this->apiKey = env('MONDAY_APIKEY');
-        $this->mondayApi = new MondayApi($this->urlEndPoint,$this->apiKey);
-
+        $gqlClt = new GraphQLClient(env('MONDAY_GRAPHQL_BASEURL'),array("Authorization: ".env('MONDAY_APIKEY')));
+        $this->mondayApi = new MondayGqlApi($gqlClt);
         $this->prepareForTests();
     }
 
     public function testCheckPulseIfExists(){
 
-    	$pulse = Pulse::whereRaw(" idpo='".$this->pos[0]->id."' ")->get();
+    	$pulse = Pulse::whereRaw(" idpo='".$this->pos[1]->id."' ")->get();
     	//echo "MMMMMM: 43\n";
-    	//print_r($pulse->count());
+    	//print_r($pulse);
     	$this->assertEquals(0,$pulse->count(),"Si existen pulsos registrados en la DB");
 
     }
@@ -53,7 +51,7 @@ class MondayIntegrationTest extends TestCase {
 		$groups = $this->mondayApi->getAllBoardGroups($this->mondayBoard);
 		$ctrlBoardTitle = false;
 		foreach($groups as $group){
-			if ($group->title == 'PO September'){
+			if ($group->title == 'PO October 2020'){
 				$ctrlBoardTitle = true;
 			}
 		}
@@ -66,41 +64,46 @@ class MondayIntegrationTest extends TestCase {
 		$ctrlBoardTitle = false;
 		$actualGroup = '';
 		foreach($groups as $group){
-			if ($group->title == 'PO September'){
+			if ($group->title == 'PO October 2020'){
 				$actualGroup = $group;
 			}
 		}
 
 		$pulseData = array(
-			'pulse[name]' => '1909-20',
-			'board_id' => $this->mondayBoard,
-			'user_id' => $this->mondayUserId,
-			'group_id' => $actualGroup->id,
+			'item_name' => '2010-07',
+            'group_id' => 'po_october_2020',
+            'column_values' => array(
+                'title6' => '2-Layer NG',
+                'vendor2' => 'Good People Sports',
+                'created_date8' => '2020-10-13',
+                'expected_date3' => '2020-11-02',
+                'total_cost0' => '1200',
+                'received' => '2'
+            )
 		);
 		$newPulse = $this->mondayApi->createPulse($this->mondayBoard,$pulseData);
-		//print_r($newPulse->pulse);
-		if (preg_match('/^([0-9]{6,10})/',''.$newPulse->pulse->id)){
+		if (isset($newPulse->data->create_item->id) && preg_match('/^([0-9]{6,10})/',''.$newPulse->data->create_item->id)){
 			$pulse = new Pulse();
-			$pulse->idpo = $this->pos[0]->id;
-			$pulse->idmonday = $newPulse->pulse->id;
-			$pulse->name = $newPulse->pulse->name;
-			$pulse->mon_board = $newPulse->pulse->board_id;
-			$pulse->mon_group = $newPulse->board_meta->group_id;
+			$pulse->idpo = $this->pos[4]->id;
+			$pulse->idmonday = $newPulse->data->create_item->id;
+			$pulse->name = $newPulse->data->create_item->name;
+			$pulse->mon_board = $this->mondayBoard;
+			$pulse->mon_group = $pulseData['group_id'];
 			$saveOperationRes = $pulse->save();
 		}
 		$pulseCopy = Pulse::find($pulse->id);
 		//Assertions
-		$this->assertRegExp('/^([0-9]{6,10})/',''.$newPulse->pulse->id);
+		$this->assertRegExp('/^([0-9]{6,10})/',''.$newPulse->data->create_item->id);
 		$this->assertEquals(true,$saveOperationRes);
-		$this->assertEquals($newPulse->pulse->id,$pulseCopy->idmonday);
+		$this->assertEquals($newPulse->data->create_item->id,$pulseCopy->idmonday);
 		//Remove the new pulse for after re-test
-		$this->mondayApi->deletePulse($newPulse->pulse->id);
+		$this->mondayApi->deletePulse($newPulse->data->create_item->id);
     }
 
     public function testGetAnAlreadyCreatedPulse(){
     	$pulse = Pulse::find(1);
     	$rawPulse = $this->mondayApi->getPulse($pulse->idmonday);
-    	$this->assertEquals('1909-05',$rawPulse->name);
+    	$this->assertEquals('2010-20',$rawPulse->name);
     }
 
     public function testUpdateAnExistingPulse(){
@@ -110,26 +113,14 @@ class MondayIntegrationTest extends TestCase {
     	$dataCreated = array('date_str' => date("Y-m-d",$dateCreated));
     	$dataExpected = array('date_str' => date("Y-m-d",$dateExpected));
 
-    	$rawPulse = $this->mondayApi->updatePulse($this->mondayBoard,$pulse->idmonday,'created_date8','date',$dataCreated);
-    	$rawPulse = $this->mondayApi->updatePulse($this->mondayBoard,$pulse->idmonday,'expected_date3','date',$dataExpected);
+    	$rawPulse = $this->mondayApi->updatePulse($this->mondayBoard,$pulse->idmonday,'created_date8',$dataCreated['date_str']);
+    	$rawPulse = $this->mondayApi->updatePulse($this->mondayBoard,$pulse->idmonday,'expected_date3',$dataExpected['date_str']);
 
-    	$fullPulse = $this->mondayApi->getFullPulse($pulse,$this->mondayBoard);
-    	$this->assertEquals('2019-09-25',$fullPulse->column_values[3]->value);
-    	$this->assertEquals('2019-09-29',$fullPulse->column_values[4]->value);
+    	$fullPulse = $this->mondayApi->getPulse($pulse->idmonday);
+    	$this->assertEquals('2019-09-25',$fullPulse->column_values[2]->text);
+    	$this->assertEquals('2019-09-29',$fullPulse->column_values[3]->text);
     }
 
-
-    public function testGetExistingPulse(){
-    	$pulse = new Pulse();
-    	$pulse->idpo = $this->pos[2]->id;
-    	$pulse->idmonday = '';
-    	$pulse->name = '1909-04';
-    	$pulse->mon_board = '';
-    	$pulse->mon_group = '';
-
-    	$fullPulse = $this->mondayApi->getFullPulse($pulse,$this->mondayBoard);
-    	$this->assertEquals('322181445',$fullPulse->pulse->id);
-    }
 
     /*
         If a PO vendor isn't Good People Sports or DX, it is not a valid candidate PO for monday.com registry
@@ -138,14 +129,14 @@ class MondayIntegrationTest extends TestCase {
 
         $arrValidVendors = array('DX Sporting Goods','Good People Sports');
         $validator = new MondayVendorValidator($arrValidVendors);
-        $validvendorPO1 = $validator->validateVendor($this->extendedPos[0]->po->results->vendor_name);
-        $validvendorPO2 = $validator->validateVendor($this->extendedPos[4]->po->results->vendor_name);
+        $validvendorPO1 = $validator->validateVendor($this->extendedPos[0]->line_items[0]->node->vendor->name);
+        $validvendorPO2 = $validator->validateVendor($this->extendedPos[4]->line_items[0]->node->vendor->name);
         //Valid vendors assertions
         $this->assertTrue($validvendorPO1);
         $this->assertTrue($validvendorPO2);
 
         //Invalid vendors assertions
-        $validvendorPO3 = $validator->validateVendor($this->extendedPos[1]->po->results->vendor_name);
+        $validvendorPO3 = $validator->validateVendor($this->extendedPos[1]->line_items[0]->node->vendor->name);
         $this->assertFalse($validvendorPO3);
     }
 
@@ -153,19 +144,19 @@ class MondayIntegrationTest extends TestCase {
     public function testGetPulseNameFromPONumber(){
 
         $nameExtractor = new MondayPulseNameExtractor();
-        $this->assertRegExp('/^[0-9]{4,4}\-{1}[0-9]{1,2}/',$nameExtractor->extractPulseName($this->extendedPos[0]->po->results->po_number));
+        $this->assertRegExp('/^[0-9]{4,4}\-{1}[0-9]{1,2}/',$nameExtractor->extractPulseName($this->extendedPos[0]->po_number));
     }
 
 
     public function testGetPulseSuccessFromPONumber(){
 
         $nameExtractor = new MondayPulseNameExtractor();
-        $pulseName = $nameExtractor->extractPulseName($this->extendedPos[1]->po->results->po_number);
+        $pulseName = $nameExtractor->extractPulseName($this->extendedPos[0]->po_number);
         $pulsesOk = Pulse::whereRaw(" (name='{$pulseName}') ")->get();
         $pulse = $pulsesOk->get(0);
         $this->assertEquals(1,$pulsesOk->count());
-        $this->assertEquals('322181434',$pulsesOk->get(0)->idmonday);
-        $this->assertEquals('322181434',$pulse->idmonday);
+        $this->assertEquals('807861772',$pulsesOk->get(0)->idmonday);
+        $this->assertEquals('807861772',$pulse->idmonday);
 
     }
 
@@ -173,7 +164,7 @@ class MondayIntegrationTest extends TestCase {
     public function testTryTOGetPulseFromPONumberError(){
 
         $nameExtractor = new MondayPulseNameExtractor();
-        $pulseName = $nameExtractor->extractPulseName($this->extendedPos[0]->po->results->po_number);
+        $pulseName = $nameExtractor->extractPulseName($this->extendedPos[1]->po_number);
         $pulsesOk = Pulse::whereRaw(" (name='{$pulseName}') ")->get();
         $this->assertEquals(0,$pulsesOk->count());
 
@@ -183,8 +174,8 @@ class MondayIntegrationTest extends TestCase {
     public function testGetCorrectGroupNameFromPulse(){
 
         $mondayGroupChecker = new MondayGroupChecker();
-        $groupName = $mondayGroupChecker->getCorrectGroupName($this->extendedPos[5]->po->results->po_number);
-        $this->assertEquals('PO June '.date("Y"),$groupName);
+        $groupName = $mondayGroupChecker->getCorrectGroupName($this->extendedPos[6]->po_number);
+        $this->assertEquals('PO September '.date("Y"),$groupName);
 
     }
 
@@ -192,9 +183,9 @@ class MondayIntegrationTest extends TestCase {
 
         $mondayGroupChecker = new MondayGroupChecker();
         $nameExtractor = new MondayPulseNameExtractor();
-        $pulseName = $nameExtractor->extractPulseName($this->extendedPos[5]->po->results->po_number);
+        $pulseName = $nameExtractor->extractPulseName($this->extendedPos[0]->po_number);
         $group = $mondayGroupChecker->getGroup($pulseName,$this->mondayBoard,$this->mondayApi);
-        $this->assertRegExp("/^(Po\ June\ 2019)/i",$group->title);
+        $this->assertRegExp("/^(Po\ October\ 2020)/i",$group->title);
     }
 
 
@@ -202,7 +193,7 @@ class MondayIntegrationTest extends TestCase {
 
         $mondayGroupChecker = new MondayGroupChecker();
         $nameExtractor = new MondayPulseNameExtractor();
-        $pulseName = $nameExtractor->extractPulseName($this->extendedPos[6]->po->results->po_number);
+        $pulseName = $nameExtractor->extractPulseName($this->extendedPos[6]->po_number);
         $group = $mondayGroupChecker->getGroup($pulseName,$this->mondayBoard,$this->mondayApi);
         $this->assertEquals(null,$group);
     }
@@ -211,10 +202,8 @@ class MondayIntegrationTest extends TestCase {
     public function testDiscoverColumnValueOfFullPulse(){
 
 
-        $fullPulse = $this->mondayApi->getFullPulse($this->pulses[0],$this->mondayBoard);
+        $fullPulse = $this->mondayApi->getPulse($this->pulses[0]->idmonday,$this->mondayBoard);
         $getter = new MondayFullPulseColumnGetter();
-        
-
         $pulseName = $getter->getValue('name',$fullPulse);
         $pulseTitle = $getter->getValue('title6',$fullPulse);
         $pulseVendor = $getter->getValue('vendor2',$fullPulse);
@@ -224,14 +213,13 @@ class MondayIntegrationTest extends TestCase {
         $pulseTotalCost = $getter->getValue('total_cost0',$fullPulse);
 
 
-        $this->assertEquals('1909-05',$pulseName);
-        $this->assertEquals('sw1759',$pulseTitle);
-        $this->assertEquals('',$pulseVendor);
-        $this->assertEquals(null,$pulseVendor);
+        $this->assertEquals('2010-20',$pulseName);
+        $this->assertEquals('D1021',$pulseTitle);
+        $this->assertEquals('DX Sporting Goods',$pulseVendor);
         $this->assertEquals('2019-09-25',$pulseCreatedDate);
         $this->assertEquals('2019-09-29',$pulseExpectedDate);
-        $this->assertEquals(5,$pulseReceived);
-        $this->assertEquals(67.50,$pulseTotalCost);
+        $this->assertEquals(2,$pulseReceived);
+        $this->assertEquals(3349.5,$pulseTotalCost);
 
     }
 
@@ -253,20 +241,20 @@ class MondayIntegrationTest extends TestCase {
 		//PO #1
 		//Vendor: DX Sporting Goods
 		array_push($this->pos, new PurchaseOrder());
-        $this->pos[0]->po_id = 1720;
-        $this->pos[0]->po_number = '1909-20  SW1773';
-        $this->pos[0]->po_date = '2019-09-27 00:00:00';
+        $this->pos[0]->po_id = 2267;
+        $this->pos[0]->po_number = '2010-20  D1021';
+        $this->pos[0]->po_date = '2020-11-02 00:00:00';
         $this->pos[0]->fulfillment_status = 'pending';
 		$this->pos[0]->save();
-        array_push($this->extendedPos,json_decode('{"Message": "success", "code": "200", "po": {"results": {"shipping_name": null, "shipping_method": null, "payment_method": "credit", "tax": 0.0, "vendor_id": 0, "po_id": 1720, "shipping_carrier": null, "items": [{"sku": "CUSTOM-SP", "created_at": "2019-09-16 13:01:15", "sell_ahead": 0, "price": "2.50", "fulfillment_status": "pending", "vendor_sku": "CUSTOM-SP", "product_name": "Custom Spats", "quantity_received": 0, "quantity": 62}, {"sku": "CUSTOM-HB", "created_at": "2019-09-16 13:01:15", "sell_ahead": 0, "price": "1.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Custom Headbands (Regular)", "quantity_received": 0, "quantity": 62}], "discount": "0.00", "warehouse_country": null, "vendor_address2": "", "vendor_address1": "", "packing_note": null, "warehouse_zip": null, "warehouse_name": null, "subtotal": "248", "warehouse_phone": null, "shipping_price": "0.00", "vendor_email": "xxx", "payment_due_by": "net30", "po_date": "2019-09-27 00:00:00", "total_price": "248", "warehouse_state": null, "vendor_city": "", "po_number": "1909-20 SW1773", "description": null, "warehouse_city": null, "updated_shop_with_data": 1, "warehouse_email": null, "vendor_phone": "", "warehouse": "Primary", "vendor_state": "", "tracking_number": "", "vendor_account_number": "", "warehouse_address2": null, "warehouse_address1": null, "fulfillment_status": "pending", "vendor_zip": "", "po_note": "", "vendor_name": "DX Sporting Goods", "created_at": "2019-09-16 13:01:15", "vendor_country": ""}}}'));
+        array_push($this->extendedPos,json_decode('{"id":"UHVyY2hhc2VPcmRlcjo1OTUyNTk=","legacy_id":595259,"po_number":"2010-20  D1021","po_date":"2020-11-02 00:00:00","account_id":"QWNjb3VudDoxMTU3","vendor_id":"VmVuZG9yOjE4Mzg1","created_at":"2020-10-19 18:20:43","fulfillment_status":"pending","po_note":null,"description":null,"subtotal":"630","shipping_price":"0.00","total_price":"630","line_items":[{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjgwMDc2Mjg=","price":"1.25","po_id":"UHVyY2hhc2VPcmRlcjo1OTUyNTk=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE4Mzg1","po_number":null,"sku":"CUSTOM-SL-1","barcode":"CUSTOM-SL-1","note":null,"quantity":504,"quantity_received":0,"quantity_rejected":0,"product_name":"Custom Arm Sleeves (Single)","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE4Mzg1","name":"DX Sporting Goods","email":"xxx","account_id":"QWNjb3VudDoxMTU3","account_number":null}}}],"vendor_name":"DX Sporting Goods"}'));
 		//PO #2
 		array_push($this->pos, new PurchaseOrder());
-        $this->pos[1]->po_id = 1701;
-        $this->pos[1]->po_number = '1909-05  SW1759';
-        $this->pos[1]->po_date = '2019-09-05 16:42:00';
+        $this->pos[1]->po_id = 2266;
+        $this->pos[1]->po_number = '57951563501025491 Turf Tape';
+        $this->pos[1]->po_date = '2020-11-02 00:00:00';
         $this->pos[1]->fulfillment_status = 'pending';
 		$this->pos[1]->save();
-        array_push($this->extendedPos,json_decode('{"Message": "success", "code": "200", "po": {"results": {"shipping_name": null, "shipping_method": null, "payment_method": "credit", "tax": 0.0, "vendor_id": 0, "po_id": 1701, "shipping_carrier": null, "items": [{"sku": "CUSTOM-SP", "created_at": "2019-09-05 20:42:36", "sell_ahead": 0, "price": "2.50", "fulfillment_status": "pending", "vendor_sku": "CUSTOM-SP", "product_name": "Custom Spats", "quantity_received": 0, "quantity": 27}], "discount": "0.00", "warehouse_country": null, "vendor_address2": "", "vendor_address1": "", "packing_note": null, "warehouse_zip": null, "warehouse_name": null, "subtotal": "67.5", "warehouse_phone": null, "shipping_price": "0.00", "vendor_email": "xxx", "payment_due_by": "net30", "po_date": "2019-09-19 00:00:00", "total_price": "67.5", "warehouse_state": null, "vendor_city": "", "po_number": "1909-05  SW1759", "description": null, "warehouse_city": null, "updated_shop_with_data": 1, "warehouse_email": null, "vendor_phone": "", "warehouse": "Primary", "vendor_state": "", "tracking_number": "", "vendor_account_number": "", "warehouse_address2": null, "warehouse_address1": null, "fulfillment_status": "pending", "vendor_zip": "", "po_note": "", "vendor_name": "MMA No Valid Vendor", "created_at": "2019-09-05 20:42:36", "vendor_country": ""}}}'));
+        array_push($this->extendedPos,json_decode('{"id":"UHVyY2hhc2VPcmRlcjo1OTQ4NjY=","legacy_id":594866,"po_number":"57951563501025491 Turf Tape","po_date":"2020-11-02 00:00:00","account_id":"QWNjb3VudDoxMTU3","vendor_id":"VmVuZG9yOjI2OTY2MQ==","created_at":"2020-10-19 13:23:42","fulfillment_status":"pending","po_note":null,"description":null,"subtotal":"1440","shipping_price":"0.00","total_price":"1440","line_items":[{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjgwMDQxNzE=","price":"1.80","po_id":"UHVyY2hhc2VPcmRlcjo1OTQ4NjY=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjI2OTY2MQ==","po_number":null,"sku":"SL-WHT-TP","barcode":"SL-WHT-TP","note":null,"quantity":500,"quantity_received":0,"quantity_rejected":0,"product_name":"Basic White Turf Tape","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjI2OTY2MQ==","name":"Wuxi Jieyu Microfiber Fabric Manufacturing","email":"chocogwan1@wxjieyu.cn","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjgwMDQxNzI=","price":"1.80","po_id":"UHVyY2hhc2VPcmRlcjo1OTQ4NjY=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjI2OTY2MQ==","po_number":null,"sku":"SL-PNK-TP","barcode":"SL-PNK-TP","note":null,"quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Hue Pink Turf Tape ","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjI2OTY2MQ==","name":"Wuxi Jieyu Microfiber Fabric Manufacturing","email":"chocogwan1@wxjieyu.cn","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjgwMDQxNzM=","price":"1.80","po_id":"UHVyY2hhc2VPcmRlcjo1OTQ4NjY=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjI2OTY2MQ==","po_number":null,"sku":"SL-RED-TP","barcode":"SL-RED-TP","note":null,"quantity":200,"quantity_received":0,"quantity_rejected":0,"product_name":"Hue Red Turf Tape ","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjI2OTY2MQ==","name":"Wuxi Jieyu Microfiber Fabric Manufacturing","email":"chocogwan1@wxjieyu.cn","account_id":"QWNjb3VudDoxMTU3","account_number":null}}}],"vendor_name":"Wuxi Jieyu Microfiber Fabric Manufacturing"}'));
 		//PO #3
 		array_push($this->pos, new PurchaseOrder());
         $this->pos[2]->po_id = 1702;
@@ -279,47 +267,47 @@ class MondayIntegrationTest extends TestCase {
 		
         //PO #4
         array_push($this->pos, new PurchaseOrder());
-        $this->pos[3]->po_id = 1674;
-        $this->pos[3]->po_number = '1908-35 SW1744';
-        $this->pos[3]->po_date = '2019-09-02 00:00:00';
+        $this->pos[3]->po_id = 2264;
+        $this->pos[3]->po_number = '2010-19 Mask Re';
+        $this->pos[3]->po_date = '2020-11-02 00:00:00';
         $this->pos[3]->fulfillment_status = 'pending';
         $this->pos[3]->save();
-        array_push($this->extendedPos,json_decode('{"Message":"success","code":"200","po":{"results":{"shipping_name":null,"shipping_method":null,"payment_method":"credit","tax":0,"vendor_id":0,"po_id":1674,"shipping_carrier":null,"items":[{"sku":"CUSTOM-SP","created_at":"2019-08-19 16:47:39","sell_ahead":0,"price":"2.50","fulfillment_status":"closed","vendor_sku":"CUSTOM-SP","product_name":"Custom Spats","quantity_received":15,"quantity":15},{"sku":"CUSTOM-SL-1","created_at":"2019-08-19 16:47:39","sell_ahead":0,"price":"1.00","fulfillment_status":"closed","vendor_sku":"","product_name":"Custom Arm Sleeves (Single)","quantity_received":18,"quantity":18}],"discount":"0.00","warehouse_country":null,"vendor_address2":"","vendor_address1":"","packing_note":null,"warehouse_zip":null,"warehouse_name":null,"subtotal":"55.5","warehouse_phone":null,"shipping_price":"0.00","vendor_email":"xxx","payment_due_by":"net30","po_date":"2019-09-02 00:00:00","total_price":"55.5","warehouse_state":null,"vendor_city":"","po_number":"1908-35 SW1744","description":null,"warehouse_city":null,"updated_shop_with_data":0,"warehouse_email":null,"vendor_phone":"","warehouse":"Primary","vendor_state":"","tracking_number":"","vendor_account_number":"","warehouse_address2":null,"warehouse_address1":null,"fulfillment_status":"closed","vendor_zip":"","po_note":"","vendor_name":"DX Sporting Goods","created_at":"2019-08-19 16:47:39","vendor_country":""}}}'));
+        array_push($this->extendedPos,json_decode('{"id":"UHVyY2hhc2VPcmRlcjo1OTM3MTc=","legacy_id":593717,"po_number":"2010-19 Mask Re","po_date":"2020-11-02 00:00:00","account_id":"QWNjb3VudDoxMTU3","vendor_id":"VmVuZG9yOjY5NDQy","created_at":"2020-10-16 13:06:07","fulfillment_status":"pending","po_note":null,"description":null,"subtotal":"1495","shipping_price":"1495","total_price":"2990","line_items":[{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc5ODY4OTk=","price":"0.65","po_id":"UHVyY2hhc2VPcmRlcjo1OTM3MTc=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjY5NDQy","po_number":"2010-19 Mask Re","sku":"SL-GRNGRN-MK","barcode":"SL-GRNGRN-MK","note":null,"quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Green Grin Flat Face Mask ONE SIZE \/ Purple\/Green","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjY5NDQy","name":"Good People Sports","email":"953440032@qq.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc5ODY4OTM=","price":"0.65","po_id":"UHVyY2hhc2VPcmRlcjo1OTM3MTc=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjY5NDQy","po_number":"2010-19 Mask Re","sku":"SL-TIEDYE-MK","barcode":"SL-TIEDYE-MK","note":null,"quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Tie Dye Flat Face Mask ONE SIZE \/ Multicolor","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjY5NDQy","name":"Good People Sports","email":"953440032@qq.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc5ODY4ODI=","price":"0.65","po_id":"UHVyY2hhc2VPcmRlcjo1OTM3MTc=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjY5NDQy","po_number":"2010-19 Mask Re","sku":"SL-DANICO-KMK","barcode":"SL-DANICO-KMK","note":null,"quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Dangerous Icons Kids Essential Face Mask ONE SIZE \/ Multicolor","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjY5NDQy","name":"Good People Sports","email":"953440032@qq.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc5ODY4ODQ=","price":"0.65","po_id":"UHVyY2hhc2VPcmRlcjo1OTM3MTc=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjY5NDQy","po_number":"2010-19 Mask Re","sku":"SL-UNIDRE-KMK","barcode":"SL-UNIDRE-KMK","note":null,"quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Unicorns Dream Kids Essential Face Mask ONE SIZE \/ White\/Blue","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjY5NDQy","name":"Good People Sports","email":"953440032@qq.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc5ODY4OTQ=","price":"0.65","po_id":"UHVyY2hhc2VPcmRlcjo1OTM3MTc=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjY5NDQy","po_number":"2010-19 Mask Re","sku":"SL-SKULL-MK","barcode":"SL-SKULL-MK","note":null,"quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Skull Blue Flat Face Mask ONE SIZE \/ Blue","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjY5NDQy","name":"Good People Sports","email":"953440032@qq.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc5ODY4OTU=","price":"0.65","po_id":"UHVyY2hhc2VPcmRlcjo1OTM3MTc=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjY5NDQy","po_number":"2010-19 Mask Re","sku":"SL-BARWIR-MK","barcode":"SL-BARWIR-MK","note":null,"quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Barbed Wires DIY Face Mask ONE SIZE \/ Black\/White","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjY5NDQy","name":"Good People Sports","email":"953440032@qq.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc5ODY4ODE=","price":"0.65","po_id":"UHVyY2hhc2VPcmRlcjo1OTM3MTc=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjY5NDQy","po_number":"2010-19 Mask Re","sku":"SL-SPIPNK-KMK","barcode":"SL-SPIPNK-KMK","note":null,"quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Sprinkles Pink Kids Essential Face Mask ONE SIZE \/ Pink","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjY5NDQy","name":"Good People Sports","email":"953440032@qq.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc5ODY4ODY=","price":"0.65","po_id":"UHVyY2hhc2VPcmRlcjo1OTM3MTc=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjY5NDQy","po_number":"2010-19 Mask Re","sku":"SL-SLEUNI-KMK","barcode":"SL-SLEUNI-KMK","note":null,"quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Sleeping Unicorn Kids Essential Face Mask ONE SIZE \/ White\/Purple","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjY5NDQy","name":"Good People Sports","email":"953440032@qq.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc5ODY4ODg=","price":"0.65","po_id":"UHVyY2hhc2VPcmRlcjo1OTM3MTc=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjY5NDQy","po_number":"2010-19 Mask Re","sku":"SL-LIGPNK-MK","barcode":"SL-LIGPNK-MK","note":null,"quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Light Pink Flat Face Mask ONE SIZE \/ Pink","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjY5NDQy","name":"Good People Sports","email":"953440032@qq.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc5ODY4ODU=","price":"0.65","po_id":"UHVyY2hhc2VPcmRlcjo1OTM3MTc=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjY5NDQy","po_number":"2010-19 Mask Re","sku":"SL-DIPABLU-KMK","barcode":"SL-DIPABLU-KMK","note":null,"quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Dinosaurs Pattern Blue Kids Essential Face Mask ONE SIZE \/ Multicolor","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjY5NDQy","name":"Good People Sports","email":"953440032@qq.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc5ODY4ODM=","price":"0.65","po_id":"UHVyY2hhc2VPcmRlcjo1OTM3MTc=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjY5NDQy","po_number":"2010-19 Mask Re","sku":"SL-MERRAI-KMK","barcode":"SL-MERRAI-KMK","note":null,"quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Mermaid Rainbow Kids Essential Face Mask ONE SIZE \/ Teal\/Yellow","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjY5NDQy","name":"Good People Sports","email":"953440032@qq.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc5ODY4OTg=","price":"0.65","po_id":"UHVyY2hhc2VPcmRlcjo1OTM3MTc=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjY5NDQy","po_number":"2010-19 Mask Re","sku":"SL-NEBULA-MK","barcode":"SL-NEBULA-MK","note":null,"quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Nebula Flat Face Mask ONE SIZE \/ Purple","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjY5NDQy","name":"Good People Sports","email":"953440032@qq.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc5ODY4OTY=","price":"0.65","po_id":"UHVyY2hhc2VPcmRlcjo1OTM3MTc=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjY5NDQy","po_number":"2010-19 Mask Re","sku":"SL-AQU-MK","barcode":"SL-AQU-MK","note":null,"quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Azure Flat Face Mask ONE SIZE \/ Blue","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjY5NDQy","name":"Good People Sports","email":"953440032@qq.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc5ODY4ODk=","price":"0.65","po_id":"UHVyY2hhc2VPcmRlcjo1OTM3MTc=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjY5NDQy","po_number":"2010-19 Mask Re","sku":"SL-NAVY-MK","barcode":"SL-NAVY-MK","note":null,"quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Navy Flat Face Mask ONE SIZE \/ Blue","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjY5NDQy","name":"Good People Sports","email":"953440032@qq.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc5ODY4Nzk=","price":"0.65","po_id":"UHVyY2hhc2VPcmRlcjo1OTM3MTc=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjY5NDQy","po_number":"2010-19 Mask Re","sku":"SL-WATSMI-KMK","barcode":"SL-WATSMI-KMK","note":null,"quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Watermelon Smile Kids Essential Face Mask ONE SIZE \/ Red\/Green","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjY5NDQy","name":"Good People Sports","email":"953440032@qq.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc5ODY4OTA=","price":"0.65","po_id":"UHVyY2hhc2VPcmRlcjo1OTM3MTc=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjY5NDQy","po_number":"2010-19 Mask Re","sku":"SL-PUR-MK","barcode":"SL-PUR-MK","note":null,"quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Purple Flat Face Mask ONE SIZE \/ Purple","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjY5NDQy","name":"Good People Sports","email":"953440032@qq.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc5ODY4ODc=","price":"0.65","po_id":"UHVyY2hhc2VPcmRlcjo1OTM3MTc=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjY5NDQy","po_number":"2010-19 Mask Re","sku":"SL-BENJ-MK","barcode":"SL-BENJ-MK","note":null,"quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Money Benjamins Flat Face Mask ONE SIZE \/ Green","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjY5NDQy","name":"Good People Sports","email":"953440032@qq.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc5ODY4OTc=","price":"0.65","po_id":"UHVyY2hhc2VPcmRlcjo1OTM3MTc=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjY5NDQy","po_number":"2010-19 Mask Re","sku":"SL-GLD-MK","barcode":"SL-GLD-MK","note":null,"quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Gold DIY Face Mask ONE SIZE \/ Gold","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjY5NDQy","name":"Good People Sports","email":"953440032@qq.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc5ODY4OTE=","price":"0.65","po_id":"UHVyY2hhc2VPcmRlcjo1OTM3MTc=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjY5NDQy","po_number":"2010-19 Mask Re","sku":"SL-VAMSKU-MK","barcode":"SL-VAMSKU-MK","note":null,"quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Vampire Skull DIY Face Mask ONE SIZE \/ Black\/White","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjY5NDQy","name":"Good People Sports","email":"953440032@qq.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc5ODY4ODA=","price":"0.65","po_id":"UHVyY2hhc2VPcmRlcjo1OTM3MTc=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjY5NDQy","po_number":"2010-19 Mask Re","sku":"SL-DINROB-KMK","barcode":"SL-DINROB-KMK","note":null,"quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Dino Robot Kids Essential Face Mask ONE SIZE \/ Yellow","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjY5NDQy","name":"Good People Sports","email":"953440032@qq.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc5ODY4Nzg=","price":"0.65","po_id":"UHVyY2hhc2VPcmRlcjo1OTM3MTc=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjY5NDQy","po_number":"2010-19 Mask Re","sku":"SL-BUTFAL-KMK","barcode":"SL-BUTFAL-KMK","note":null,"quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Butterflies Fall Kids Essential Face Mask ONE SIZE \/ Blue\/Pink","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjY5NDQy","name":"Good People Sports","email":"953440032@qq.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc5ODY4OTI=","price":"0.65","po_id":"UHVyY2hhc2VPcmRlcjo1OTM3MTc=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjY5NDQy","po_number":"2010-19 Mask Re","sku":"SL-PNKDON-MK","barcode":"SL-PNKDON-MK","note":null,"quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Pink Donuts Flat Face Mask ONE SIZE \/ Pink","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjY5NDQy","name":"Good People Sports","email":"953440032@qq.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc5ODY5MDA=","price":"0.65","po_id":"UHVyY2hhc2VPcmRlcjo1OTM3MTc=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjY5NDQy","po_number":"2010-19 Mask Re","sku":"SL-GOOVIB-MK","barcode":"298076452","note":null,"quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Good Vibes DIY Face Mask ONE SIZE \/ Green","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjY5NDQy","name":"Good People Sports","email":"953440032@qq.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}}],"vendor_name":"Good People Sports"}'));
 
         //PO #5
         array_push($this->pos, new PurchaseOrder());
-        $this->pos[4]->po_id = 1733;
-        $this->pos[4]->po_number = '1909-31 New Sep Designs';
-        $this->pos[4]->po_date = '2019-09-18 15:54:32';
+        $this->pos[4]->po_id = 2251;
+        $this->pos[4]->po_number = '2010-07 2-Layer NG';
+        $this->pos[4]->po_date = '2020-10-26 00:00:00';
         $this->pos[4]->fulfillment_status = 'pending';
         $this->pos[4]->save();
-        array_push($this->extendedPos,json_decode('{"Message": "success", "code": "200", "po": {"results": {"shipping_name": null, "shipping_method": null, "payment_method": "credit", "tax": 0.0, "vendor_id": 0, "po_id": 1733, "shipping_carrier": null, "items": [{"sku": "SL-CAUTAP-SP-Y", "created_at": "2019-09-18 15:54:32", "sell_ahead": 0, "price": "1.10", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Caution Tape Spats / Cleat Covers Y / Black/Yellow", "quantity_received": 0, "quantity": 10}, {"sku": "SL-BIOGRU-TH", "created_at": "2019-09-18 15:54:33", "sell_ahead": 0, "price": "0.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Biohazard Grunge Tie Headband ONE SIZE / Yellow/Black", "quantity_received": 0, "quantity": 50}, {"sku": "SL-WRNTSU-SP-SM", "created_at": "2019-09-18 15:54:32", "sell_ahead": 0, "price": "1.10", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Tsunami Warning Spats / Cleat Covers S/M / Black/Yellow/Red", "quantity_received": 0, "quantity": 10}, {"sku": "SL-BIOGRU-AS-Y", "created_at": "2019-09-18 15:54:32", "sell_ahead": 0, "price": "0.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Biohazard Grunge Arm Sleeve Y / Yellow/Black", "quantity_received": 0, "quantity": 10}, {"sku": "SL-DNGR-AS-S-M", "created_at": "2019-09-18 15:54:32", "sell_ahead": 0, "price": "0.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Danger Arm Sleeve S/M / Yellow/Black", "quantity_received": 0, "quantity": 15}, {"sku": "SL-WRNHUR-AS-Y", "created_at": "2019-09-18 15:54:31", "sell_ahead": 0, "price": "0.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Hurricane Warning Arm Sleeve Y / Black/Yellow/Red", "quantity_received": 0, "quantity": 10}, {"sku": "SL-WRNTSU-AS-S-M", "created_at": "2019-09-18 15:54:31", "sell_ahead": 0, "price": "0.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Tsunami Warning Arm Sleeve S/M / Black/Yellow/Red", "quantity_received": 0, "quantity": 15}, {"sku": "SL-BIOGRU-SP-SM", "created_at": "2019-09-18 15:54:33", "sell_ahead": 0, "price": "1.10", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Biohazard Grunge Spats / Cleat Covers S/M / Yellow/Black", "quantity_received": 0, "quantity": 10}, {"sku": "SL-WRNTSU-SP-LXL", "created_at": "2019-09-18 15:54:32", "sell_ahead": 0, "price": "1.10", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Tsunami Warning Spats / Cleat Covers L/XL / Black/Yellow/Red", "quantity_received": 0, "quantity": 10}, {"sku": "SL-BIOGRU-WH", "created_at": "2019-09-18 15:54:33", "sell_ahead": 0, "price": "0.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Biohazard Grunge Headband ONE SIZE / Yellow/Black", "quantity_received": 0, "quantity": 50}, {"sku": "SL-DNGR-SP-SM", "created_at": "2019-09-18 15:54:33", "sell_ahead": 0, "price": "1.10", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Danger Spats / Cleat Covers S/M / Yellow/Black", "quantity_received": 0, "quantity": 10}, {"sku": "SL-CAUTAP-AS-XL", "created_at": "2019-09-18 15:54:32", "sell_ahead": 0, "price": "0.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Caution Tape Arm Sleeve XL / Black/Yellow", "quantity_received": 0, "quantity": 10}, {"sku": "SL-CAUTAP-AS-Y", "created_at": "2019-09-18 15:54:32", "sell_ahead": 0, "price": "0.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Caution Tape Arm Sleeve Y / Black/Yellow", "quantity_received": 0, "quantity": 10}, {"sku": "SL-WRNHUR-WH", "created_at": "2019-09-18 15:54:33", "sell_ahead": 0, "price": "0.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Hurricane Warning Headband ONE SIZE / Black/Yellow/Red", "quantity_received": 0, "quantity": 50}, {"sku": "SL-WRNTSU-AS-L", "created_at": "2019-09-18 15:54:31", "sell_ahead": 0, "price": "0.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Tsunami Warning Arm Sleeve L / Black/Yellow/Red", "quantity_received": 0, "quantity": 15}, {"sku": "SL-DNGR-TH", "created_at": "2019-09-18 15:54:33", "sell_ahead": 0, "price": "0.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Danger Tie Headband ONE SIZE / Yellow/Black", "quantity_received": 0, "quantity": 50}, {"sku": "SL-BIOGRU-AS-L", "created_at": "2019-09-18 15:54:32", "sell_ahead": 0, "price": "0.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Biohazard Grunge Arm Sleeve L / Yellow/Black", "quantity_received": 0, "quantity": 15}, {"sku": "SL-WRNTSU-AS-Y", "created_at": "2019-09-18 15:54:31", "sell_ahead": 0, "price": "0.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Tsunami Warning Arm Sleeve Y / Black/Yellow/Red", "quantity_received": 0, "quantity": 10}, {"sku": "SL-WRNTSU-SP-Y", "created_at": "2019-09-18 15:54:32", "sell_ahead": 0, "price": "1.10", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Tsunami Warning Spats / Cleat Covers Y / Black/Yellow/Red", "quantity_received": 0, "quantity": 10}, {"sku": "SL-WRNHUR-SP-Y", "created_at": "2019-09-18 15:54:32", "sell_ahead": 0, "price": "1.10", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Hurricane Warning Spats / Cleat Covers Y / Black/Yellow/Red", "quantity_received": 0, "quantity": 10}, {"sku": "SL-CAUTAP-AS-S-M", "created_at": "2019-09-18 15:54:32", "sell_ahead": 0, "price": "0.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Caution Tape Arm Sleeve S/M / Black/Yellow", "quantity_received": 0, "quantity": 15}, {"sku": "SL-DNGR-WH", "created_at": "2019-09-18 15:54:33", "sell_ahead": 0, "price": "0.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Danger Headband ONE SIZE / Yellow/Black", "quantity_received": 0, "quantity": 50}, {"sku": "SL-BIOGRU-AS-XL", "created_at": "2019-09-18 15:54:32", "sell_ahead": 0, "price": "0.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Biohazard Grunge Arm Sleeve XL / Yellow/Black", "quantity_received": 0, "quantity": 10}, {"sku": "SL-WRNTSU-AS-XL", "created_at": "2019-09-18 15:54:31", "sell_ahead": 0, "price": "0.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Tsunami Warning Arm Sleeve XL / Black/Yellow/Red", "quantity_received": 0, "quantity": 10}, {"sku": "SL-CAUTAP-SP-LXL", "created_at": "2019-09-18 15:54:32", "sell_ahead": 0, "price": "1.10", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Caution Tape Spats / Cleat Covers L/XL / Black/Yellow", "quantity_received": 0, "quantity": 10}, {"sku": "SL-CAUTAP-AS-L", "created_at": "2019-09-18 15:54:32", "sell_ahead": 0, "price": "0.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Caution Tape Arm Sleeve L / Black/Yellow", "quantity_received": 0, "quantity": 15}, {"sku": "SL-WRNHUR-SP-SM", "created_at": "2019-09-18 15:54:32", "sell_ahead": 0, "price": "1.10", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Hurricane Warning Spats / Cleat Covers S/M / Black/Yellow/Red", "quantity_received": 0, "quantity": 10}, {"sku": "SL-WRNHUR-AS-XL", "created_at": "2019-09-18 15:54:32", "sell_ahead": 0, "price": "0.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Hurricane Warning Arm Sleeve XL / Black/Yellow/Red", "quantity_received": 0, "quantity": 10}, {"sku": "SL-DNGR-AS-L", "created_at": "2019-09-18 15:54:32", "sell_ahead": 0, "price": "0.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Danger Arm Sleeve L / Yellow/Black", "quantity_received": 0, "quantity": 15}, {"sku": "SL-WRNHUR-AS-L", "created_at": "2019-09-18 15:54:32", "sell_ahead": 0, "price": "0.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Hurricane Warning Arm Sleeve L / Black/Yellow/Red", "quantity_received": 0, "quantity": 15}, {"sku": "SL-DNGR-AS-Y", "created_at": "2019-09-18 15:54:32", "sell_ahead": 0, "price": "0.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Danger Arm Sleeve Y / Yellow/Black", "quantity_received": 0, "quantity": 10}, {"sku": "SL-BIOGRU-AS-S-M", "created_at": "2019-09-18 15:54:32", "sell_ahead": 0, "price": "0.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Biohazard Grunge Arm Sleeve S/M / Yellow/Black", "quantity_received": 0, "quantity": 15}, {"sku": "SL-CAUTAP-SP-SM", "created_at": "2019-09-18 15:54:32", "sell_ahead": 0, "price": "1.10", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Caution Tape Spats / Cleat Covers S/M / Black/Yellow", "quantity_received": 0, "quantity": 10}, {"sku": "SL-CAUTAP-WH", "created_at": "2019-09-18 15:54:33", "sell_ahead": 0, "price": "0.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Caution Tape Headband ONE SIZE / Black/Yellow", "quantity_received": 0, "quantity": 50}, {"sku": "SL-DNGR-SP-LXL", "created_at": "2019-09-18 15:54:33", "sell_ahead": 0, "price": "1.10", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Danger Spats / Cleat Covers L/XL / Yellow/Black", "quantity_received": 0, "quantity": 10}, {"sku": "SL-BIOGRU-SP-Y", "created_at": "2019-09-18 15:54:33", "sell_ahead": 0, "price": "1.10", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Biohazard Grunge Spats / Cleat Covers Y / Yellow/Black", "quantity_received": 0, "quantity": 10}, {"sku": "SL-DNGR-AS-XL", "created_at": "2019-09-18 15:54:32", "sell_ahead": 0, "price": "0.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Danger Arm Sleeve XL / Yellow/Black", "quantity_received": 0, "quantity": 10}, {"sku": "SL-WRNHUR-AS-S-M", "created_at": "2019-09-18 15:54:31", "sell_ahead": 0, "price": "0.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Hurricane Warning Arm Sleeve S/M / Black/Yellow/Red", "quantity_received": 0, "quantity": 15}, {"sku": "SL-DNGR-SP-Y", "created_at": "2019-09-18 15:54:33", "sell_ahead": 0, "price": "1.10", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Danger Spats / Cleat Covers Y / Yellow/Black", "quantity_received": 0, "quantity": 10}, {"sku": "SL-WRNHUR-SP-LXL", "created_at": "2019-09-18 15:54:32", "sell_ahead": 0, "price": "1.10", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Hurricane Warning Spats / Cleat Covers L/XL / Black/Yellow/Red", "quantity_received": 0, "quantity": 10}, {"sku": "SL-BIOGRU-SP-LXL", "created_at": "2019-09-18 15:54:33", "sell_ahead": 0, "price": "1.10", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Biohazard Grunge Spats / Cleat Covers L/XL / Yellow/Black", "quantity_received": 0, "quantity": 10}, {"sku": "SL-WRNTSU-WH", "created_at": "2019-09-18 15:54:33", "sell_ahead": 0, "price": "0.50", "fulfillment_status": "pending", "vendor_sku": "", "product_name": "Tsunami Warning Headband ONE SIZE / Black/Yellow/Red", "quantity_received": 0, "quantity": 50}], "discount": "0", "warehouse_country": null, "vendor_address2": "", "vendor_address1": "", "packing_note": null, "warehouse_zip": null, "warehouse_name": null, "subtotal": "465", "warehouse_phone": null, "shipping_price": "0", "vendor_email": "953440032@qq.com", "payment_due_by": "unlimited", "po_date": "2019-10-09 00:00:00", "total_price": "465", "warehouse_state": null, "vendor_city": "", "po_number": "1909-31 New Sep Designs", "description": null, "warehouse_city": null, "updated_shop_with_data": 1, "warehouse_email": null, "vendor_phone": "", "warehouse": "Primary", "vendor_state": "", "tracking_number": "", "vendor_account_number": "", "warehouse_address2": null, "warehouse_address1": null, "fulfillment_status": "pending", "vendor_zip": "", "po_note": "", "vendor_name": "Good People Sports", "created_at": "2019-09-18 15:54:31", "vendor_country": ""}}}'));
+        array_push($this->extendedPos,json_decode('{"id":"UHVyY2hhc2VPcmRlcjo1OTEyMDI=","legacy_id":591202,"po_number":"2010-07 2-Layer NG","po_date":"2020-10-26 00:00:00","account_id":"QWNjb3VudDoxMTU3","vendor_id":"VmVuZG9yOjY5NDQy","created_at":"2020-10-13 18:52:36","fulfillment_status":"pending","po_note":null,"description":null,"subtotal":"1200","shipping_price":"0.00","total_price":"1200","line_items":[{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc5NTE4NTk=","price":"1.20","po_id":"UHVyY2hhc2VPcmRlcjo1OTEyMDI=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjY5NDQy","po_number":null,"sku":"SL-BLK-RHN","barcode":"SL-BLK-RHN","note":null,"quantity":1000,"quantity_received":0,"quantity_rejected":0,"product_name":"Basic Black 2-Layer Neck Gaiter ONE SIZE \/ Black","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjY5NDQy","name":"Good People Sports","email":"953440032@qq.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}}],"vendor_name":"Good People Sports"}'));
         //PO #6
         array_push($this->pos, new PurchaseOrder());
-        $this->pos[5]->po_id = 1351;
-        $this->pos[5]->po_number = '1906-02 SW1744';
-        $this->pos[5]->po_date = '2019-06-01 01:00:00';
+        $this->pos[5]->po_id = 2217;
+        $this->pos[5]->po_number = 'HB\/AM20200914-D';
+        $this->pos[5]->po_date = '2020-10-19 00:00:00';
         $this->pos[5]->fulfillment_status = 'pending';
         $this->pos[5]->save();
-        array_push($this->extendedPos,json_decode('{"Message":"success","code":"200","po":{"results":{"shipping_name":null,"shipping_method":null,"payment_method":"credit","tax":0,"vendor_id":0,"po_id":1351,"shipping_carrier":null,"items":[{"sku":"CUSTOM-SP","created_at":"2019-08-19 16:47:39","sell_ahead":0,"price":"2.50","fulfillment_status":"closed","vendor_sku":"CUSTOM-SP","product_name":"Custom Spats","quantity_received":15,"quantity":15},{"sku":"CUSTOM-SL-1","created_at":"2019-08-19 16:47:39","sell_ahead":0,"price":"1.00","fulfillment_status":"closed","vendor_sku":"","product_name":"Custom Arm Sleeves (Single)","quantity_received":18,"quantity":18}],"discount":"0.00","warehouse_country":null,"vendor_address2":"","vendor_address1":"","packing_note":null,"warehouse_zip":null,"warehouse_name":null,"subtotal":"55.5","warehouse_phone":null,"shipping_price":"0.00","vendor_email":"xxx","payment_due_by":"net30","po_date":"2019-09-02 00:00:00","total_price":"55.5","warehouse_state":null,"vendor_city":"","po_number":"1906-02 SW1744","description":null,"warehouse_city":null,"updated_shop_with_data":0,"warehouse_email":null,"vendor_phone":"","warehouse":"Primary","vendor_state":"","tracking_number":"","vendor_account_number":"","warehouse_address2":null,"warehouse_address1":null,"fulfillment_status":"closed","vendor_zip":"","po_note":"","vendor_name":"DX Sporting Goods","created_at":"2019-08-19 16:47:39","vendor_country":""}}}'));
+        array_push($this->extendedPos,json_decode('{"id":"UHVyY2hhc2VPcmRlcjo1NzEwNjA=","legacy_id":571060,"po_number":"HB\/AM20200914-D","po_date":"2020-10-19 00:00:00","account_id":"QWNjb3VudDoxMTU3","vendor_id":"VmVuZG9yOjE0NTk3Mg==","created_at":"2020-09-14 13:36:58","fulfillment_status":"pending","po_note":"9\/14 Paid 6,651.00 Deposit\n10\/9 Paid 20,055.00 Balance","description":null,"subtotal":"22170","shipping_price":"4536","total_price":"26706","line_items":[{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc2NzgyMjk=","price":"5.06","po_id":"UHVyY2hhc2VPcmRlcjo1NzEwNjA=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE0NTk3Mg==","po_number":null,"sku":"SL-SLVR-VS","barcode":"SL-SLVR-VS","note":null,"quantity":1000,"quantity_received":0,"quantity_rejected":0,"product_name":"Silver Moonstone Helmet Eye-Shield Color Tinted Visor Silver","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE0NTk3Mg==","name":"Hubo Sports Products","email":"hubosports01@hubo-sports.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc2NzgyMzA=","price":"4.74","po_id":"UHVyY2hhc2VPcmRlcjo1NzEwNjA=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE0NTk3Mg==","po_number":null,"sku":"SL-BLK-VS","barcode":"SL-BLK-VS","note":null,"quantity":1000,"quantity_received":0,"quantity_rejected":0,"product_name":"Black Diamond Helmet Eye-Shield Color Tinted Visor Black","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE0NTk3Mg==","name":"Hubo Sports Products","email":"hubosports01@hubo-sports.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc2NzgyMzE=","price":"4.74","po_id":"UHVyY2hhc2VPcmRlcjo1NzEwNjA=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE0NTk3Mg==","po_number":null,"sku":"SL-REDRGCLR-VS","barcode":"SL-REDRGCLR-VS","note":null,"quantity":1000,"quantity_received":0,"quantity_rejected":0,"product_name":"Red Rage Clear Helmet Eye-Shield Visor Red","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE0NTk3Mg==","name":"Hubo Sports Products","email":"hubosports01@hubo-sports.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc2NzgyMzI=","price":"5.23","po_id":"UHVyY2hhc2VPcmRlcjo1NzEwNjA=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE0NTk3Mg==","po_number":null,"sku":"SL-BIFRST-VS","barcode":"SL-BIFRST-VS","note":null,"quantity":1000,"quantity_received":0,"quantity_rejected":0,"product_name":"Bifrost Clear Rainbow Helmet Eye-Shield Visor Multicolor","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE0NTk3Mg==","name":"Hubo Sports Products","email":"hubosports01@hubo-sports.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc2NzgyMzM=","price":"0.60","po_id":"UHVyY2hhc2VPcmRlcjo1NzEwNjA=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE0NTk3Mg==","po_number":null,"sku":"SL-BLK-CLP","barcode":"SL-BLK-CLP","note":null,"quantity":4000,"quantity_received":0,"quantity_rejected":0,"product_name":"Visor Clips","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE0NTk3Mg==","name":"Hubo Sports Products","email":"hubosports01@hubo-sports.com","account_id":"QWNjb3VudDoxMTU3","account_number":null}}}],"vendor_name":"Hubo Sports Products"}'));
 
 
         array_push($this->pos, new PurchaseOrder());
-        $this->pos[6]->po_id = 1178;
-        $this->pos[6]->po_number = '1901-12 SW1255';
-        $this->pos[6]->po_date = '2019-01-06 01:00:00';
+        $this->pos[6]->po_id = 2219;
+        $this->pos[6]->po_number = '2009-18 SW1888';
+        $this->pos[6]->po_date = '2020-09-29 00:00:00';
         $this->pos[6]->fulfillment_status = 'pending';
         $this->pos[6]->save();
-        array_push($this->extendedPos,json_decode('{"Message":"success","code":"200","po":{"results":{"shipping_name":null,"shipping_method":null,"payment_method":"credit","tax":0,"vendor_id":0,"po_id":1178,"shipping_carrier":null,"items":[{"sku":"CUSTOM-SP","created_at":"2019-01-06 16:47:39","sell_ahead":0,"price":"2.50","fulfillment_status":"closed","vendor_sku":"CUSTOM-SP","product_name":"Custom Spats","quantity_received":15,"quantity":15},{"sku":"CUSTOM-SL-1","created_at":"2019-08-19 16:47:39","sell_ahead":0,"price":"1.00","fulfillment_status":"closed","vendor_sku":"","product_name":"Custom Arm Sleeves (Single)","quantity_received":18,"quantity":18}],"discount":"0.00","warehouse_country":null,"vendor_address2":"","vendor_address1":"","packing_note":null,"warehouse_zip":null,"warehouse_name":null,"subtotal":"55.5","warehouse_phone":null,"shipping_price":"0.00","vendor_email":"xxx","payment_due_by":"net30","po_date":"2019-01-06 01:00:00","total_price":"55.5","warehouse_state":null,"vendor_city":"","po_number":"1901-12 SW1255","description":null,"warehouse_city":null,"updated_shop_with_data":0,"warehouse_email":null,"vendor_phone":"","warehouse":"Primary","vendor_state":"","tracking_number":"","vendor_account_number":"","warehouse_address2":null,"warehouse_address1":null,"fulfillment_status":"closed","vendor_zip":"","po_note":"","vendor_name":"DX Sporting Goods","created_at":"2019-08-19 16:47:39","vendor_country":""}}}'));
+        array_push($this->extendedPos,json_decode('{"id":"UHVyY2hhc2VPcmRlcjo1NzIzMjg=","legacy_id":572328,"po_number":"2009-18 SW1888","po_date":"2020-09-29 00:00:00","account_id":"QWNjb3VudDoxMTU3","vendor_id":"VmVuZG9yOjE4Mzg1","created_at":"2020-09-15 14:56:25","fulfillment_status":"pending","po_note":null,"description":null,"subtotal":"712.5","shipping_price":"0.00","total_price":"712.5","line_items":[{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc2OTI3NTg=","price":"1.25","po_id":"UHVyY2hhc2VPcmRlcjo1NzIzMjg=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE4Mzg1","po_number":null,"sku":"CUSTOM-SL-1","barcode":"CUSTOM-SL-1","note":null,"quantity":570,"quantity_received":0,"quantity_rejected":0,"product_name":"Custom Arm Sleeves (Single)","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE4Mzg1","name":"DX Sporting Goods","email":"xxx","account_id":"QWNjb3VudDoxMTU3","account_number":null}}}],"vendor_name":"DX Sporting Goods"}'));
 
         //Pulses
         //Pulse #1
         array_push($this->pulses, new Pulse());
-        $this->pulses[0]->idpo = $this->pos[1]->id;
-        $this->pulses[0]->idmonday = 322181434;
-        $this->pulses[0]->name = '1909-05';
+        $this->pulses[0]->idpo = $this->pos[0]->id;
+        $this->pulses[0]->idmonday = 807861772;
+        $this->pulses[0]->name = '2010-20';
         $this->pulses[0]->mon_board = $this->mondayBoard;
-        $this->pulses[0]->mon_group = 'po';
+        $this->pulses[0]->mon_group = 'po_october_2020';
         $this->pulses[0]->save();
 
     }

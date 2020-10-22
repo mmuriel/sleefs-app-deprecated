@@ -6,84 +6,85 @@ namespace Sleefs\Helpers\Monday;
 /* This class returns the value of a column in an object like this:
 
 [pulse] => stdClass Object
+(
+    [id] => 792303653
+    [board] => stdClass Object
         (
-            [url] => https://sleefs.monday.com/projects/322181434
-            [id] => 322181434
-            [name] => 1909-05
-            [updates_count] => 0
-            [board_id] => 322181342
-            [created_at] => 2019-09-12T16:22:17Z
-            [updated_at] => 2019-09-19T00:19:57Z
+            [id] => 670700889
+            [name] => CPPendingPOs-MMA-DEV
         )
 
-    [board_meta] => stdClass Object
+    [group] => stdClass Object
         (
-            [position] => 393216
-            [group_id] => po
+            [id] => po_october_2020
+            [title] => POOctober2020
         )
 
+    [name] => 2010-04
+    [state] => active
     [column_values] => Array
         (
             [0] => stdClass Object
                 (
-                    [cid] => name
-                    [title] => Name
-                    [name] => 1909-05
+                    [id] => title6
+                    [text] => USAReOrder
+                    [title] => Title
+                    [type] => text
+                    [value] => "USAReOrder"
                 )
 
             [1] => stdClass Object
                 (
-                    [cid] => title6
-                    [title] => Title
-                    [value] => sw1759
+                    [id] => vendor2
+                    [text] => GoodPeopleSports
+                    [title] => Vendor
+                    [type] => text
+                    [value] => "GoodPeopleSports"
                 )
 
             [2] => stdClass Object
                 (
-                    [cid] => vendor2
-                    [title] => Vendor
-                    [value] => 
+                    [id] => created_date8
+                    [text] => 2020-10-07
+                    [title] => CreatedDate
+                    [type] => date
+                    [value] => {"date":"2020-10-07","icon":""}
                 )
 
             [3] => stdClass Object
                 (
-                    [cid] => created_date8
-                    [title] => Created Date
-                    [value] => 2019-09-25
+                    [id] => expected_date3
+                    [text] => 2020-10-26
+                    [title] => ExpectedDate
+                    [type] => date
+                    [value] => {"date":"2020-10-26","icon":""}
                 )
 
             [4] => stdClass Object
                 (
-                    [cid] => expected_date3
-                    [title] => Expected Date
-                    [value] => 2019-09-29
+                    [id] => pay
+                    [text] => Paid
+                    [title] => Pay
+                    [type] => color
+                    [value] => {"index":7,"post_id":null,"changed_at":"2020-10-21T04:35:17.182Z"}
                 )
 
             [5] => stdClass Object
                 (
-                    [cid] => pay
-                    [title] => Pay
-                    [value] => 
+                    [id] => received
+                    [text] => No
+                    [title] => Received
+                    [type] => color
+                    [value] => {"index":2,"post_id":null}
                 )
 
             [6] => stdClass Object
                 (
-                    [cid] => received
-                    [title] => Received
-                    [value] => stdClass Object
-                        (
-                            [index] => 5
-                            [changed_at] => 2019-09-18T22:11:40.122Z
-                            [update_id] => 
-                        )
-
-                )
-
-            [7] => stdClass Object
-                (
-                    [cid] => total_cost0
-                    [title] => Total Cost
-                    [value] => 67.50
+                    [id] => total_cost0
+                    [text] => 3349.5
+                    [title] => TotalCost
+                    [type] => numeric
+                    [value] => "3349.5"
                 )
 
         )
@@ -96,20 +97,31 @@ class MondayFullPulseColumnGetter{
 	public function getValue ($idField,\stdClass $fullPulse){
 
 		$valueToRet = null;
+
+        if ($idField == 'name'){
+            return $fullPulse->name;
+        }
+
 		for ($i=0;$i<count($fullPulse->column_values);$i++){
 
-			if ($fullPulse->column_values[$i]->cid == $idField){
+			if ($fullPulse->column_values[$i]->id == $idField){
 
-				$typeColumn = $this->getColumnType($fullPulse->column_values[$i]);
-				switch($typeColumn){
-					case 'name':
-						return $fullPulse->column_values[$i]->name;
+				switch($fullPulse->column_values[$i]->type){
+					case 'color':
+
+                        if ($fullPulse->column_values[$i]->value !='' && $fullPulse->column_values[$i]->value != null)
+                        {
+                            $tmpVal = json_decode($fullPulse->column_values[$i]->value); 
+                            return $tmpVal->index;
+                        }
+                        else
+                        {
+                            return $fullPulse->column_values[$i]->text;
+                        }
+						
 						break;
-					case 'status':
-						return $fullPulse->column_values[$i]->value->index;
-						break;
-					case 'other':
-						return $fullPulse->column_values[$i]->value;
+					default:
+						return $fullPulse->column_values[$i]->text;
 						break;
 				}
 				break;
@@ -117,29 +129,6 @@ class MondayFullPulseColumnGetter{
 
 		}
 		return $valueToRet;
-	}
-
-
-	private function getColumnType($valueField){
-
-		if(isset($valueField->name)){
-			return 'name';
-		}
-
-		if (isset($valueField->value)){
-
-			if (gettype($valueField->value)=='object'){
-				return 'status';
-			}
-			else{
-				return 'other';
-			}
-
-		}
-		else{
-			return null;
-		}
-
 	}
 
 }
