@@ -11,7 +11,7 @@ class SleefsPdfStickerGenerator {
         $res = new Response();
         //return 1;
         //New PDF file to copy
-        $pdf->SetFont('Helvetica','',22);
+        $pdf->SetFont('Helvetica','',24);
 
         // set the source file
         //echo "\n[MMA]: ".$pathToPdfFile;
@@ -24,9 +24,9 @@ class SleefsPdfStickerGenerator {
                 // import a page
                 $templateId = $pdf->importPage($pageNo);
 
-                $pdf->AddPage();
+                $pdf->AddPage("L",'A3');
                 // use the imported page and adjust the page size
-                $pdf->useTemplate($templateId, ['adjustPageSize' => true]);
+                $pdf->useTemplate($templateId, ['x' => 5,'y' => 12,'adjustPageSize' => false]);
                 //$pdf->SetXY(5, 128);
                 $pdf->SetXY(5,6);
                 $pdf->Write(1,$orderId);
@@ -34,7 +34,7 @@ class SleefsPdfStickerGenerator {
         }
         else
         {
-            $pdf->AddPage();
+            $pdf->AddPage("L",'A3');
             $pdf->SetXY(5,6);
             $pdf->Write(1,$orderId);
         }
