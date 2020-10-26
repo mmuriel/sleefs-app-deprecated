@@ -62,12 +62,12 @@ class SyncerPoItemWarehousePostion extends Command
             //echo $upItem->sku."\n";
             $params = array(
                 'sku' => $upItem->sku,
+                'qtyProducts' => 5,
             );
             //$product = Shiphero::getProduct($params);
             $product = $shipHeroApi->getProducts($params);
             //print_r($product->products->results[0]->warehouses[0]);
             //echo "\n------------------------------\n";
-            sleep(5);
             try {
                 if (isset($product->products->results))
                 {
