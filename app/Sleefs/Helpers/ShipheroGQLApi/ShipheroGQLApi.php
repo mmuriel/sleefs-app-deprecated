@@ -74,11 +74,88 @@ class ShipheroGQLApi {
 
     /**
     *
+    * Recupera los productos existentes en el sistema shiphero
     *
+    * @param    Array   $options (opcional) Arreglo asociativo (diccionario, tablahash) que puede integrar
+    *                   los siguientes elementos:
+    *                   
+    *
+    *                   $options['qtyProducts']: (opcional) Cantidad de productos por página
+    *                   $options['afterForPagination']: (opcional) ID para "siguiente página"
+    *                   $options['sku']: (opcional) SKU para realizar una búsqueda
+    *                   $options['createdFrom']: (opcional) YYYY-MM-DD productos creados "desde"
+    *                   $options['createdTo']: (opcional) YYYY-MM-DD productos creados "hasta"
+    *                   $options['updatedFrom']: (opcional) YYYY-MM-DD productos actualizados "desde"
+    *                   $options['updatedTo']: (opcional) YYYY-MM-DD productos actualizados "hasta"
+    *
+    * @return   stdClass $objectToRet Objeto generico con la siguiente estructura:
+    *           
+    *
+                $objectToRet = stdClass Object
+                (
+                    [products] => stdClass Object
+                        (
+                            [results] => Array
+                                (
+                                    [0] => stdClass Object
+                                        (
+                                            [id] => UHJvZHVjdEluZm86MjU4MzYyNzAw
+                                            [legacy_id] => 258362700
+                                            [name] => Custom Head N Nek
+                                            [sku] => 12321
+                                            [barcode] => 321123
+                                            [vendors] => Array
+                                                (
+                                                    [0] => stdClass Object
+                                                        (
+                                                            [vendor_id] => VmVuZG9yOjE5NTUw
+                                                            [vendor_sku] => 
+                                                        )
+
+                                                    [1] => stdClass Object
+                                                        (
+                                                            [vendor_id] => VmVuZG9yOjMxOTg1MA==
+                                                            [vendor_sku] => 
+                                                        )
+
+                                                )
+
+                                            [warehouse_products] => Array
+                                                (
+                                                    [0] => stdClass Object
+                                                        (
+                                                            [id] => UHJvZHVjdDoyNTg3MTQ4NDI=
+                                                            [legacy_id] => 258714842
+                                                            [account_id] => QWNjb3VudDoxMTU3
+                                                            [price] => 0.0000
+                                                            [value] => 0.3800
+                                                            [inventory_bin] =>  
+                                                            [on_hand] => 0
+                                                        )
+
+                                                )
+
+                                            [warehouses] => Array
+                                                (
+                                                    [0] => stdClass Object
+                                                        (
+                                                            [id] => UHJvZHVjdDoyNTg3MTQ4NDI=
+                                                            [legacy_id] => 258714842
+                                                            [account_id] => QWNjb3VudDoxMTU3
+                                                            [price] => 0.0000
+                                                            [value] => 0.3800
+                                                            [inventory_bin] =>  
+                                                            [on_hand] => 0
+                                                        )
+
+                                                )
+
+                                        )
+
     *
     */
 
-    public function getProducts($options)
+    public function getProducts($options = array())
     {
         $ctrlNextPage = 0;
         $paramsData = '';
@@ -146,7 +223,7 @@ class ShipheroGQLApi {
             $paramsProducts = '('.$paramsProducts.')';
 
         //===================================================================
-        $postContent = array('query' => '{products'.$paramsProducts.'{complexity, request_id, data'.$paramsData.'{pageInfo{hasNextPage,startCursor,endCursor}edges{node{id,legacy_id,name,sku,barcode,vendors{vendor_id,vendor_sku}, warehouse_products{id,legacy_id,account_id,price,value,inventory_bin,available}}}}}}');
+        $postContent = array('query' => '{products'.$paramsProducts.'{complexity,request_id,data'.$paramsData.'{pageInfo{hasNextPage,startCursor,endCursor}edges{node{id,legacy_id,name,sku,barcode,vendors{vendor_id,vendor_sku}, warehouse_products{id,legacy_id,account_id,price,value,inventory_bin,on_hand}}}}}}');
 
         $resp = $this->graphqlClient->query($postContent,array("Authorization: Bearer ".$this->accesToken,"Content-type: application/json"));
 
@@ -167,6 +244,39 @@ class ShipheroGQLApi {
         }
         return false;
         //===================================================================
+    }
+
+
+    public function getProductsByWareHouse($wareHouseId,$options=null)
+    {
+        $productsQueryParam = '';
+        if (isset($options['after']) && $options['after'] != '')
+        {
+            $productsQueryParam .=', after: "'.$options['after'].'"';
+        }
+
+        if (isset($options['qtyProducts']) && $options['qtyProducts'] != '')
+        {
+            $qtyProducts = $options['qtyProducts'];
+        }
+        else
+        {
+            $qtyProducts = 900;
+        }
+
+        $postContent = array('query' => '{warehouse_products(warehouse_id:"'.$wareHouseId.'"){complexity request_id data(first:'.$qtyProducts.''.$productsQueryParam.'){pageInfo{endCursor,startCursor hasNextPage}edges{node{id,legacy_id,account_id,price,value,inventory_bin,on_hand}}}}}');
+
+        $resp = $this->graphqlClient->query($postContent,array("Authorization: Bearer ".$this->accesToken,"Content-type: application/json"));
+
+        if (isset($resp->data->warehouse_products) && isset($resp->data->warehouse_products->data))
+        {
+            return $resp->data->warehouse_products->data;
+        }
+        else
+        {
+            return $resp;
+        }
+        
     }
 
 

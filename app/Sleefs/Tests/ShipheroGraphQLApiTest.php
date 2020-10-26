@@ -87,6 +87,30 @@ class ShipheroGraphQLApiTest extends TestCase {
     {
     	$gqlClient = new GraphQLClient('https://public-api.shiphero.com/graphql');
     	$shipHeroApi = new ShipheroGQLApi($gqlClient,'https://public-api.shiphero.com/graphql','https://public-api.shiphero.com/auth',env('SHIPHERO_ACCESSTOKEN'),env('SHIPHERO_REFRESHTOKEN'));
+
+        $resp = $shipHeroApi->getProducts();
+        $this->assertEquals(100,count($resp->products->results)); 
+    }
+
+
+    public function testGetProductsFromWarehouse()
+    {
+        $gqlClient = new GraphQLClient('https://public-api.shiphero.com/graphql');
+        $shipHeroApi = new ShipheroGQLApi($gqlClient,'https://public-api.shiphero.com/graphql','https://public-api.shiphero.com/auth',env('SHIPHERO_ACCESSTOKEN'),env('SHIPHERO_REFRESHTOKEN'));
+
+        $resp = $shipHeroApi->getProductsByWareHouse('V2FyZWhvdXNlOjE2ODQ=',["qtyProducts" => 5]);
+        //print_r($resp);
+        $this->assertEquals(1,$resp->pageInfo->hasNextPage);
+        $this->assertEquals(5,count($resp->edges));
+    }
+
+    public function testGetProductsFromWarehouseError()
+    {
+        $gqlClient = new GraphQLClient('https://public-api.shiphero.com/graphql');
+        $shipHeroApi = new ShipheroGQLApi($gqlClient,'https://public-api.shiphero.com/graphql','https://public-api.shiphero.com/auth',env('SHIPHERO_ACCESSTOKEN'),env('SHIPHERO_REFRESHTOKEN'));
+
+        $resp = $shipHeroApi->getProductsByWareHouse('MMMV2FyZWhvdXNlOjE2ODQ=');
+        $this->assertTrue(isset($resp->errors));
     }
 
 	/* Preparing the Test */

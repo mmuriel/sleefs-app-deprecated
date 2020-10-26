@@ -4,7 +4,10 @@ namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
 use \mdeschermeier\shiphero\Shiphero;
+use Sleefs\Helpers\ShipheroGQLApi\ShipheroGQLApi;
+use Sleefs\Helpers\GraphQL\GraphQLClient;
 use Sleefs\Models\Shiphero\PurchaseOrderUpdateItem;
+
 
 class SyncerPoItemWarehousePostion extends Command
 {
@@ -38,9 +41,13 @@ class SyncerPoItemWarehousePostion extends Command
      * @return mixed
      */
     public function handle(){
-        //
-        Shiphero::setKey(env('SHIPHERO_APIKEY'));
+
+        //Default warehouse ID: V2FyZWhvdXNlOjE2ODQ=
+
+        //Shiphero::setKey(env('SHIPHERO_APIKEY'));
         $clogger = new \Sleefs\Helpers\CustomLogger("sleefs.log");
+        $gqlClt = new GraphQLClient('https://public-api.shiphero.com/graphql');
+        $shipHeroApi = new ShipheroGQLApi($gqlClt,'https://public-api.shiphero.com/graphql','https://public-api.shiphero.com/auth',env('SHIPHERO_ACCESSTOKEN'),env('SHIPHERO_REFRESHTOKEN'));
         
 
 
@@ -56,38 +63,71 @@ class SyncerPoItemWarehousePostion extends Command
             $params = array(
                 'sku' => $upItem->sku,
             );
-            $product = Shiphero::getProduct($params);
+            //$product = Shiphero::getProduct($params);
+            $product = $shipHeroApi->getProducts($params);
             //print_r($product->products->results[0]->warehouses[0]);
-            //print_r($product);
             //echo "\n------------------------------\n";
-
+            sleep(5);
             try {
-                if (is_array($product->products->results)){
-                    try{
-                        if (isset($product->products->results[0]->warehouses[0]->inventory_bin) && preg_match("/[A-Z0-9a-z]{2,15}/",$product->products->results[0]->warehouses[0]->inventory_bin)){
-                            $clogger->writeToLog ("Se define la posición en bodega para el item: ".$upItem->sku.", UpdateOrder: ".$upItem->idpoupdate."","INFO");
-                            $upItem->position = $product->products->results[0]->warehouses[0]->inventory_bin;
-                            $upItem->save();
+                if (isset($product->products->results))
+                {
+                    if (is_array($product->products->results) && count($product->products->results)>0)
+                    {
+                        try{
+                            if (isset($product->products->results[0]->warehouses[0]->inventory_bin) && preg_match("/[A-Z0-9a-z]{2,15}/",$product->products->results[0]->warehouses[0]->inventory_bin)){
+                                $clogger->writeToLog ("Se define la posición en bodega para el item: ".$upItem->sku.", UpdateOrder: ".$upItem->idpoupdate."","INFO");
+                                $upItem->position = $product->products->results[0]->warehouses[0]->inventory_bin;
+                                $upItem->save();
 
-
-                            $clogger->writeToLog ("Se define la posición en bodega para el item: ".$upItem->sku.", UpdateOrder: ".$upItem->idpoupdate."","INFO");
-
+                            }
+                            else{
+                                
+                                $upItem->tries++;
+                                $upItem->save();
+                                $clogger->writeToLog ("No se define aún la posición en bodega para el item: ".$upItem->sku.", UpdateOrder: ".$upItem->idpoupdate.", intento No. ".$upItem->tries,"INFO");
+                            }
                         }
-                        else{
-                            
-                            $upItem->tries++;
-                            $upItem->save();
-                            $clogger->writeToLog ("No se define aún la posición en bodega para el item: ".$upItem->sku.", UpdateOrder: ".$upItem->idpoupdate.", intento No. ".$upItem->tries,"INFO");
+                        catch(\Exception $e){
+                            echo "Error trying to update inventory position: \n".$e->getMessage()."\n\n";
+                            $clogger->writeToLog ("Error trying to update inventory position: ".$e->getMessage()."\n\n","ERROR");
                         }
                     }
-                    catch(\Exception $e){
-                        echo "Error trying to update inventory position: \n".$e->getMessage()."\n\n";
+                    else
+                    {
+                        $upItem->tries = $upItem->tries + 10;
+                        $upItem->save();
+                        $clogger->writeToLog ("No se encontró un item con SKU: ".$upItem->sku.", en el sistema shiphero.com, por favor verificar la razón en el panel de administración","WARNING");
 
+                        echo "No se encontró un item con SKU: ".$upItem->sku.", en el sistema shiphero.com, por favor verificar la razón en el panel de administración\n";
+                    }
+                }
+                else
+                {
+                    $error = '';
+                    if (isset($product->errors) && isset($product->errors[0]))
+                    {
+                        $error = $product->errors[0];
+                    }
+
+                    if (isset($product->error))
+                    {
+                        $error = $product->error;
+                    }
+
+                    if ($error != '')
+                    {
+                        echo "Error trying to update inventory position, message: \n".$error->message."\n\n";
+                        $clogger->writeToLog ("Error trying to update inventory position, message: ".$error->message."\n\n","ERROR");
+                    }
+                    else
+                    {
+                        echo "Error trying to update inventory position, message: Error desconocido";
+                        $clogger->writeToLog ("Error trying to update inventory position, message: Error desconocido \n\n","ERROR");
                     }
                 }
             }catch (\Exception $e){
                 echo "Error trying to update inventory position to SKU: {$upItem->sku} \n".$e->getMessage()."\n\n";
-                $clogger->writeToLog ("Error trying to update inventory position to SKU: {$upItem->sku} \n".$e->getMessage()."\n\n","ERROR");
+                $clogger->writeToLog ("Error trying to update inventory position to SKU: {$upItem->sku} ".$e->getMessage()."\n\n","ERROR");
             }
         }
     }
