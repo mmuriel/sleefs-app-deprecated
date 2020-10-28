@@ -118,6 +118,10 @@ class SyncerPoItemWarehousePostion extends Command
                     {
                         echo "Error trying to update inventory position, message: \n".$error->message."\n\n";
                         $clogger->writeToLog ("Error trying to update inventory position, message: ".$error->message."\n\n","ERROR");
+                        if (preg_match("/^There are not enough credits to perfom the requested operation/",$error->message))
+                        {
+                            sleep(15);    
+                        }
                     }
                     else
                     {

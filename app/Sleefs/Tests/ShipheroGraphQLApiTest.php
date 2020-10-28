@@ -93,6 +93,37 @@ class ShipheroGraphQLApiTest extends TestCase {
     }
 
 
+    public function testHandleNoCreditsError()
+    {
+        $gqlClient = new GraphQLClient('https://public-api.shiphero.com/graphql');
+        $shipHeroApi = new ShipheroGQLApi($gqlClient,'https://public-api.shiphero.com/graphql','https://public-api.shiphero.com/auth',env('SHIPHERO_ACCESSTOKEN'),env('SHIPHERO_REFRESHTOKEN'));
+
+        $resp = $shipHeroApi->getProducts(['qtyProducts'=>2000]);
+        $this->assertRegExp("/^There are not enough credits to perfom the requested operation/",$resp->errors[0]->message);
+    }
+
+
+    public function testGetProductWithAvailableField()
+    {
+        $gqlClient = new GraphQLClient('https://public-api.shiphero.com/graphql');
+        $shipHeroApi = new ShipheroGQLApi($gqlClient,'https://public-api.shiphero.com/graphql','https://public-api.shiphero.com/auth',env('SHIPHERO_ACCESSTOKEN'),env('SHIPHERO_REFRESHTOKEN'));
+
+        $resp = $shipHeroApi->getProducts(['available' => true,'qtyProducts' => 3]);
+        $this->assertEquals(3,count($resp->products->results));
+
+        $isAvailable = false;
+        foreach ($resp->products->results as $prd)
+        {
+            if (isset($prd->warehouses[0]) && isset($prd->warehouses[0]->available))
+            {
+                $isAvailable = true;
+                break;
+            }
+        }
+        $this->assertTrue($isAvailable);
+    }
+
+
     public function testGetProductsFromWarehouse()
     {
         $gqlClient = new GraphQLClient('https://public-api.shiphero.com/graphql');

@@ -87,6 +87,11 @@ class ShipheroGQLApi {
     *                   $options['createdTo']: (opcional) YYYY-MM-DD productos creados "hasta"
     *                   $options['updatedFrom']: (opcional) YYYY-MM-DD productos actualizados "desde"
     *                   $options['updatedTo']: (opcional) YYYY-MM-DD productos actualizados "hasta"
+    *                   $options['available']: (opcional) Boolean, indica si se requiere la definición
+    *                                          de inventario con precisión "available" o no, para mayor
+    *                                          información sobre la diferencia entre los campos
+    *                                          "available" y "on_hand" verificar la documentación del API
+    *                                          de shiphero.
     *
     * @return   stdClass $objectToRet Objeto generico con la siguiente estructura:
     *           
@@ -223,7 +228,17 @@ class ShipheroGQLApi {
             $paramsProducts = '('.$paramsProducts.')';
 
         //===================================================================
-        $postContent = array('query' => '{products'.$paramsProducts.'{complexity,request_id,data'.$paramsData.'{pageInfo{hasNextPage,startCursor,endCursor}edges{node{id,legacy_id,name,sku,barcode,vendors{vendor_id,vendor_sku}, warehouse_products{id,legacy_id,account_id,price,value,inventory_bin,on_hand}}}}}}');
+
+        if (isset($options['available']) && ($options['available'] == true || $options['available'] == 1))
+        {
+            $queryString = '{products'.$paramsProducts.'{complexity,request_id,data'.$paramsData.'{pageInfo{hasNextPage,startCursor,endCursor}edges{node{id,legacy_id,name,sku,barcode,vendors{vendor_id,vendor_sku}, warehouse_products{id,legacy_id,account_id,price,value,inventory_bin,on_hand,available}}}}}}';
+        }
+        else
+        {
+            $queryString = '{products'.$paramsProducts.'{complexity,request_id,data'.$paramsData.'{pageInfo{hasNextPage,startCursor,endCursor}edges{node{id,legacy_id,name,sku,barcode,vendors{vendor_id,vendor_sku}, warehouse_products{id,legacy_id,account_id,price,value,inventory_bin,on_hand}}}}}}';
+        }
+
+        $postContent = array('query' => $queryString);
 
         $resp = $this->graphqlClient->query($postContent,array("Authorization: Bearer ".$this->accesToken,"Content-type: application/json"));
 

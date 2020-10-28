@@ -23,8 +23,14 @@ class ShipheroDailyInventoryReport {
     /**
     * This method creates 
     *
-    * @param mixed $shipHeroParams, an associative array with at leats next two params $shipHeroParams['apikey'] and
-    * $shipHeroParams['qtyperpage']
+    * @param    mixed   $shipHeroParams, an associative array with at least 
+    *                   next two params:
+    *
+    *                   $shipHeroParams['qtyProducts']
+    *                   $shipHeroParams['tries']
+    *                   $shipHeroParams['graphqlUrl']
+    *                   $shipHeroParams['authUrl']
+    *                   $shipHeroParams['available']
     */
 
     public function createReport($shipHeroParams){

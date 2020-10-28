@@ -40,11 +40,11 @@ class InventoryReport extends Command
     public function handle()
     {
         //
-        $clogger = new \Sleefs\Helpers\CustomLogger("sleefs.log");
+        $clogger = new \Sleefs\Helpers\CustomLogger("sleefs.inventoryreport.log");
         
 
         $reportCreator = new ShipheroDailyInventoryReport();
-        $report = $reportCreator->createReport(['apikey'=>env('SHIPHERO_APIKEY'),'qtyperpage'=>1000]);
+        $report = $reportCreator->createReport(['graphqlUrl'=>'https://public-api.shiphero.com/graphql','authUrl'=>'https://public-api.shiphero.com/auth','qtyProducts'=>985,'tries' => 150]);
 
         echo "\nSe ha creado un nuevo reporte con ID ".$report->id." para la fecha: ".$report->created_at."\n";
         $clogger->writeToLog ("Se ha creado un nuevo reporte con ID ".$report->id." para la fecha: ".$report->created_at,"INFO");

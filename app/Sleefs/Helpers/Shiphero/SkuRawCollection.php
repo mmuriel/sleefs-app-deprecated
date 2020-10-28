@@ -65,22 +65,44 @@ class SkuRawCollection extends \Illuminate\Support\Collection {
     *
     */
 
-    public function addElementsFromShipheroApi($jsonRawProducts){
+    public function addElementsFromShipheroApi($jsonRawProducts,$options = array()){
+
+        //Valida si los productos definen el valor available u on_hand
+        $inventoryValueAvailable = false;
+        if (isset($options['available']) && ($options['available']==1 || $options['available']==true))
+            $inventoryValueAvailable = true;
 
         foreach ($jsonRawProducts as $rawProduct){
-            if (! $this->get($rawProduct->sku)){
-                $tmpData = array('qty'=>0);
-                foreach ($rawProduct->warehouses as $inventory){
-                    $tmpData['qty'] = ($tmpData['qty'] + (int)($inventory->available));
+
+            if ($rawProduct->sku != '' && is_array($rawProduct->warehouses))
+            {
+
+                if (! $this->get($rawProduct->sku)){
+                    $tmpData = array('qty'=>0);
+                    foreach ($rawProduct->warehouses as $inventory)
+                    {
+                        if ($inventoryValueAvailable == true)
+                        {
+                            $tmpData['qty'] = ($tmpData['qty'] + (int)($inventory->available));
+                        }
+                        else
+                        {
+                            $tmpData['qty'] = ($tmpData['qty'] + (int)($inventory->on_hand));
+                        }
+                    }       
                 }
-            }
-            else{
-                $tmpData = $this->get($rawProduct->sku);
-                foreach ($rawProduct->warehouses as $inventory){
-                    $tmpData['qty'] = ($tmpData['qty'] + (int)($inventory->available));
+                else{
+                    $tmpData = $this->get($rawProduct->sku);
+                    foreach ($rawProduct->warehouses as $inventory)
+                    {
+                        if ($inventoryValueAvailable == true)
+                            $tmpData['qty'] = ($tmpData['qty'] + (int)($inventory->available));
+                        else
+                            $tmpData['qty'] = ($tmpData['qty'] + (int)($inventory->on_hand));
+                    }
                 }
+                $this->put($rawProduct->sku,$tmpData);
             }
-            $this->put($rawProduct->sku,$tmpData);
         }
     }
 

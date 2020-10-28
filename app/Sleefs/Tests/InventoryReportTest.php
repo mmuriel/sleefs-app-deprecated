@@ -55,9 +55,9 @@ class InventoryReportTest extends TestCase {
  	public function testGettingAllShipheroProducts(){
  		$shProductsGetter = new ShipheroAllProductsGetter();
  		$prdsCollection = new SkuRawCollection();
- 		$prdsCollection = $shProductsGetter->getAllProducts(['graphqlUrl'=>'https://public-api.shiphero.com/graphql','authUrl'=>'https://public-api.shiphero.com/auth','qtyProductsPerPage'=>31],$prdsCollection);
- 		$this->assertGreaterThan(12000,$prdsCollection->count());
- 		//print_r($prdsCollection->get('SL-WROWPP-AS-Y')); 		
+ 		
+ 		$prdsCollection = $shProductsGetter->getAllProducts(['graphqlUrl'=>'https://public-api.shiphero.com/graphql','authUrl'=>'https://public-api.shiphero.com/auth','qtyProducts'=>980,'tries' => 2],$prdsCollection);
+ 		$this->assertGreaterThan(1700,$prdsCollection->count());
  	}
 
 
@@ -113,7 +113,7 @@ class InventoryReportTest extends TestCase {
 
  	public function testCreateInventoryReport(){
         $reportCreator = new ShipheroDailyInventoryReport();
-        $report = $reportCreator->createReport(['apikey'=>env('SHIPHERO_APIKEY'),'qtyperpage'=>1000]);
+        $report = $reportCreator->createReport(['graphqlUrl'=>'https://public-api.shiphero.com/graphql','authUrl'=>'https://public-api.shiphero.com/auth','qtyProducts'=>980,'tries' => 4,'available'=>false]);
 
         //print_r($report->inventoryReportItems);
         $this->assertEquals(2,$report->inventoryReportItems->count());

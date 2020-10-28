@@ -5,9 +5,7 @@ namespace Sleefs\Test;
 use Illuminate\Foundation\Testing\TestCase ;
 use Illuminate\Contracts\Console\Kernel;
 
-//use \mdeschermeier\shiphero\Shiphero;
 use Sleefs\Helpers\GraphQL\GraphQLClient;
-use Sleefs\Helpers\Shiphero\SkuRawCollection;
 use Sleefs\Helpers\Shiphero\ShipheroAllProductsGetter;
 use Sleefs\Models\Shopify\Variant;
 use Sleefs\Models\Shopify\Product;
