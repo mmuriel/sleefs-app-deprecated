@@ -15,6 +15,7 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         //
         Commands\ShipheroApiGetPOCommand::Class,
+        Commands\ShipheroRefreshAPIToken::Class,
         Commands\GoogleSpreadSheetApiCommand::Class,
         Commands\ShopifyGetProducts::Class,
         Commands\SyncerPoItemWarehousePostion::Class,
