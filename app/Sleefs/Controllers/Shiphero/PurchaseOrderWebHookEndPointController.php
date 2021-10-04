@@ -124,10 +124,10 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
 			Recupera la hoja de calculo para 
 			determinar si es una PO nueva o vieja.
 		
-            Note: 
             Made by: @maomuriel
-            Se elimina la vinculación con Google Sheets por cambio de API de autenticación
+            Note: Se elimina la vinculación con Google Sheets por cambio de API de autenticación
             y compljidad en la adaptación, pero sobre todo, porque ya no se necesita más.
+            Fecha: 2021-10-03
 
 		$pathGoogleDriveApiKey = app_path('Sleefs/client_secret.json');
         putenv('GOOGLE_APPLICATION_CREDENTIALS=' .$pathGoogleDriveApiKey);
