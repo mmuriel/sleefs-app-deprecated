@@ -47,7 +47,13 @@ class MondayGroupChecker{
 				break;
 		}
 
-		$groupName .= ' '.date("Y");
+		$yearInName = substr($pulseName,0,2);
+		$yearInName = 2000 + ((int)$yearInName);
+		//$groupName .= ' '.date("Y");
+
+
+		$groupName .= ' '.$yearInName;
+		//echo $yearInName."\n";
 		return $groupName;
 
 	}

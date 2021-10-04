@@ -26,7 +26,7 @@ class MondayGqlApiTest extends TestCase {
 	public function testGetAllBoards(){
 
 		$allBoards = $this->mondayGqlApi->getAllBoards();
-		$this->assertEquals(2,count($allBoards->data->boards));
+		$this->assertEquals(3,count($allBoards->data->boards));
 		$this->assertEquals('CP Pending POs - MMA -DEV',$allBoards->data->boards[1]->name);
 
 	}
@@ -153,15 +153,16 @@ class MondayGqlApiTest extends TestCase {
 		$data = array(
 			'group_name' => $groupTitle
 		);
+
 		$newGroup = $this->mondayGqlApi->addGroupToBoard($idBoard,$data);
 		//Asserting the add action
-		$this->assertRegExp("/^po_october/",$newGroup->data->create_group->id);
+		$groupTitleNormalized = preg_replace("/\ /","_",strtolower($groupTitle));
+		$this->assertRegExp("/^".$groupTitleNormalized."/",$newGroup->data->create_group->id);
 
 
 		$delResponse = $this->mondayGqlApi->delBoardGroup($idBoard,$newGroup->data->create_group->id);
 		//Asserting the delete action
-		$this->assertRegExp("/^po_october([0-9]{2,6})/",$delResponse->data->delete_group->id);
-
+		$this->assertRegExp("/^".$groupTitleNormalized."([0-9]{2,6})/",$delResponse->data->delete_group->id);
 
 	}
 

@@ -56,7 +56,7 @@ class InventoryReportTest extends TestCase {
  		$shProductsGetter = new ShipheroAllProductsGetter();
  		$prdsCollection = new SkuRawCollection();
  		
- 		$prdsCollection = $shProductsGetter->getAllProducts(['graphqlUrl'=>'https://public-api.shiphero.com/graphql','authUrl'=>'https://public-api.shiphero.com/auth','qtyProducts'=>980,'tries' => 2],$prdsCollection);
+ 		$prdsCollection = $shProductsGetter->getAllProducts(['graphqlUrl'=>'https://public-api.shiphero.com/graphql','authUrl'=>'https://public-api.shiphero.com/auth','qtyProducts'=>980,'tries' => 3],$prdsCollection);
  		$this->assertGreaterThan(1700,$prdsCollection->count());
  	}
 

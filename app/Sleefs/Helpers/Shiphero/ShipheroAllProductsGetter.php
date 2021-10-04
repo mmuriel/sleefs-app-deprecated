@@ -27,7 +27,7 @@ class ShipheroAllProductsGetter {
         do {
             $tries++;
             $products = $shipHeroApi->getProducts($options);
-            if (isset($products->errors) && preg_match("/^There are not enough credits to perfom the requested operation/",$products->errors[0]->message))
+            if (isset($products->errors) && preg_match("/There\ are\ not\ enough\ credits/",$products->errors[0]->message))
             {
                 //echo "[Error] iteration {$tries}, ".$products->errors[0]->message."\n";
                 $clogger->writeToLog ("iteration {$tries}, ".$products->errors[0]->message,"ERROR");

@@ -173,7 +173,7 @@ class MondayIntegrationTest extends TestCase {
 
         $mondayGroupChecker = new MondayGroupChecker();
         $groupName = $mondayGroupChecker->getCorrectGroupName($this->extendedPos[6]->po_number);
-        $this->assertEquals('PO September '.date("Y"),$groupName);
+        $this->assertEquals('PO September 2020',$groupName);
 
     }
 

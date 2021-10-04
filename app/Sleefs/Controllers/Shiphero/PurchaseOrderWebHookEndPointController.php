@@ -86,7 +86,7 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
         */
 
         //$debug = array(false,true,true,true,false,true);//Define que funciones se ejecutan y cuales no. - Produccion
-        $debug = array(false,true,true,true,false,true);//Define que funciones se ejecutan y cuales no. - Test
+        $debug = array(false,false,true,true,false,true);//Define que funciones se ejecutan y cuales no. - Test
 
 
 		$po = json_decode(file_get_contents('php://input'));
@@ -123,7 +123,11 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
 		/* 
 			Recupera la hoja de calculo para 
 			determinar si es una PO nueva o vieja.
-		*/
+		
+            Note: 
+            Made by: @maomuriel
+            Se elimina la vinculación con Google Sheets por cambio de API de autenticación
+            y compljidad en la adaptación, pero sobre todo, porque ya no se necesita más.
 
 		$pathGoogleDriveApiKey = app_path('Sleefs/client_secret.json');
         putenv('GOOGLE_APPLICATION_CREDENTIALS=' .$pathGoogleDriveApiKey);
@@ -148,11 +152,7 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
         ->getByTitle(env('GOOGLE_SPREADSHEET_DOC'));
 
 
-        /*
-
-            Determina si la hoja de cáculo está siendo modificada
-
-        */
+        //Determina si la hoja de cáculo está siendo modificada
 
         $wsCtrlIndex = new GoogleSpreadsheetGetWorkSheetIndex();
         $wsCtrlLocker =  new GoogleSpreadsheetFileLocker();
@@ -169,6 +169,8 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
             return response()->json(["code"=>204,"Message" => "Not available system"]);
 
         }
+
+        */
         /*
 
             1. Almacena los registros el libro "Line Items" del documento en google spreadsheets
@@ -185,8 +187,8 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
 
         if ($debug[0] == true){
 
-            $worksheets = $spreadsheet->getWorksheetFeed()->getEntries();
-            $worksheet = $worksheets[0];
+            $worksheets = $spreadsheet->getWorksheetFeed()->getEntries();// Selecciona el objeto que toma todos los libros de la hoja de cálculo.
+            $worksheet = $worksheets[0];//Toma el primer libro de la hoja de cáculo.
             $listFeed = $worksheet->getListFeed(); // Trae los registros con indice asociativo (nombre la columna)
             // @var ListEntry
             $alreadyAdded = false;
@@ -858,8 +860,8 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
 
         */
 
-        //Realiza el desbloqueo del documento
-        $resUnLock = $wsCtrlUnLocker->unLockFile($spreadsheet,$index);
+        
+        //$resUnLock = $wsCtrlUnLocker->unLockFile($spreadsheet,$index);//Realiza el desbloqueo del documento
 		return response()->json(["code"=>200,"Message" => "Success"]);
 
 

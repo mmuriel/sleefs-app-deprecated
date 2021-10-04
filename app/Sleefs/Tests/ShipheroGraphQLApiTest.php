@@ -99,7 +99,7 @@ class ShipheroGraphQLApiTest extends TestCase {
         $shipHeroApi = new ShipheroGQLApi($gqlClient,'https://public-api.shiphero.com/graphql','https://public-api.shiphero.com/auth',env('SHIPHERO_ACCESSTOKEN'),env('SHIPHERO_REFRESHTOKEN'));
 
         $resp = $shipHeroApi->getProducts(['qtyProducts'=>2000]);
-        $this->assertRegExp("/^There are not enough credits to perfom the requested operation/",$resp->errors[0]->message);
+        $this->assertRegExp("/^There are not enough credits/",$resp->errors[0]->message);
     }
 
 
