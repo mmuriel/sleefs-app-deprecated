@@ -68,6 +68,123 @@ $("#btn__updatepics").on("click",function(e){
 });
 
 
+
+
+
+
+var selectAllModule = (function($){
+	let _selectedAll = false;
+
+	function _allSelected(){
+		this._selectedAll = true;
+	}
+
+	function _allUnSelected(){
+		this._selectedAll = false;	
+	}
+
+	function _getStatus(){
+		return this._selectedAll;
+	}
+	return {
+		setAllSelected: function(){
+			return _allSelected()
+		},
+		setAllUnSelected: function(){
+			return _allUnSelected()
+		},
+		getStatus: function(){
+			return _getStatus();
+		}
+	}
+})(jQuery);
+
+$(".btn__select-all").on("click",function(e){
+	e.preventDefault();
+	if (selectAllModule.getStatus()){
+		
+		selectAllModule.setAllUnSelected();
+		$(".deleted-product-checkbox").prop("checked", false);
+	}
+	else {
+		selectAllModule.setAllSelected();
+		$(".deleted-product-checkbox").prop("checked", true);
+	}
+});
+
+var renderProductDeletedResponse = (data) => {
+
+	console.log(data);
+	if (data.error == true){
+		$("tr#tr_product_"+data.id).removeClass("product-deleted--processing");
+		$("tr#tr_product_"+data.id).addClass("product-deleted--error");
+		$("tr#tr_product_"+data.id+" > td.status").html(data.data.msg);
+		return 1;
+	}
+	//Deshabilita el botón 
+	if (data.data.status == 1){
+		$("tr#tr_product_"+data.id).removeClass("product-deleted--processing");
+		$("tr#tr_product_"+data.id).addClass("product-deleted--ok");
+		$("tr#tr_product_"+data.id+" > td.status").html(data.data.msg);
+		$("tr#tr_product_"+data.id).fadeOut(8000,()=>{});
+	}
+
+	if (data.data.status == 2){
+		$("tr#tr_product_"+data.id).removeClass("product-deleted--processing");
+		$("tr#tr_product_"+data.id).addClass("product-deleted--parcial");
+		$("tr#tr_product_"+data.id+" > td.status").html(data.data.msg);
+		$("tr#tr_product_"+data.id).fadeOut(12000,()=>{});
+	}
+
+
+	return 1;
+}
+
+
+var sendProductDeletedRequest = (idPrd) => {
+
+	let secToken = $("#csrf-token").prop("value");
+	var data = {
+		"_token": secToken,
+		"id": idPrd,
+	};
+
+	$.ajax({
+		data: data,
+		type: "POST",
+		url: '/products/deleted',
+		success: function (result) {
+			renderProductDeletedResponse(result);
+		},
+		error: function (xhr, status, error) {
+			var err = eval("(" + xhr.responseText + ")");
+			console.log(err.error);
+		}
+	});
+
+}
+
+$("button.btn-delete-one").on("click",function(e){
+	e.preventDefault(e);
+	let idPrd = this.getAttribute('data-id');
+	$("tr#tr_product_"+idPrd).addClass("product-deleted--processing");
+	$("tr#tr_product_"+idPrd+" > td.status").html("Procesando...");
+	sendProductDeletedRequest(idPrd);
+});
+
+
+$("button.btn-delete-all").on("click",function(e){
+	e.preventDefault(e);
+	
+	$("input.deleted-product-checkbox:checked").each(function(){
+		$("tr#tr_product_"+this.getAttribute('value')).addClass("product-deleted--processing");
+		$("tr#tr_product_"+this.getAttribute('value')+" > td.status").html("Procesando...");
+		sendProductDeletedRequest(this.getAttribute('value'));
+	});
+});
+
+
+
 var updatePicModule = (function($){
 
 	var updatePicsSkuArr = [];

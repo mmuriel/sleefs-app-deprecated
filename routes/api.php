@@ -41,6 +41,7 @@ Route::post('/sh','\Sleefs\Controllers\Shiphero\PurchaseOrderWebHookEndPointCont
 
 //Route::post('/sp/products/add','\Sleefs\Controllers\Shopify\ProductAddController');
 Route::post('/sp/products/update','\Sleefs\Controllers\Shopify\ProductUpdateController');
+Route::post('/sp/products/delete','\Sleefs\Controllers\Shopify\ProductDeleteController');
 Route::post('/sp/orders','\Sleefs\Controllers\Shopify\OrderCreateController');
 /*
 

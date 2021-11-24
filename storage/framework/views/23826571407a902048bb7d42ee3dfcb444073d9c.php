@@ -39,6 +39,6 @@
                 <br />
             <?php echo $__env->renderComponent(); ?>
         </div>
-        <script src="js/app-sleefs.js"></script>
+        <script src="<?php echo e($app['url']->to('/')); ?>/js/app-sleefs.js"></script>
     </body>
 </html>

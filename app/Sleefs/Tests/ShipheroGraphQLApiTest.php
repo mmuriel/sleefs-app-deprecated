@@ -9,6 +9,9 @@ use Sleefs\Models\Shiphero\PurchaseOrder;
 use Sleefs\Models\Shiphero\PurchaseOrderItem;
 use Sleefs\Helpers\ShipheroGQLApi\ShipheroGQLApi;
 use Sleefs\Helpers\GraphQL\GraphQLClient;
+use Sleefs\Helpers\Shiphero\ShipheroProductDeleter;
+use Sleefs\Models\Shopify\Product;
+use Sleefs\Models\Shopify\Variant;
 
 
 class ShipheroGraphQLApiTest extends TestCase {
@@ -46,6 +49,34 @@ class ShipheroGraphQLApiTest extends TestCase {
 		$this->item2->name = 'USA America Flag / Black Compression Tights / Leggings XL / Red/White/Blue/Black';
 		$this->item2->idmd5 = md5('SL-USA-BLK-CL-XL'.'-'.'515');
 		$this->item2->save();
+
+        /*
+        
+            It creates the Products and Variants to test creation and deletion
+            on Shiphero's side
+
+        */
+
+        $this->prd1 = new Product();
+        $this->prd1->idsp = 'shpfy_6640080715869';
+        $this->prd1->title = 'MMA Test to Shirt - 100';
+        $this->prd1->vendor = 'SLEEFS';
+        $this->prd1->product_type = 'Test';
+        $this->prd1->handle = 'mma-test-to-shirt-100';
+        $this->prd1->delete_status = 1;
+        $this->prd1->save();
+
+        $this->variant1 = new Variant();
+        $this->variant1->idsp = 'shpfy_395628303';
+        $this->variant1->sku = 'MMA-PRD-TEST-TO-DEL-100';
+        $this->variant1->title = 'Default Title';
+        $this->variant1->idproduct = $this->prd1->id;
+        $this->variant1->price = 0.0;
+        $this->variant1->save();
+
+
+
+
     }
  
     public function testRefreshToken()
@@ -142,6 +173,79 @@ class ShipheroGraphQLApiTest extends TestCase {
 
         $resp = $shipHeroApi->getProductsByWareHouse('MMMV2FyZWhvdXNlOjE2ODQ=');
         $this->assertTrue(isset($resp->errors));
+    }
+
+
+    public function testCreateAndDeleteProduct(){
+        $gqlClient = new GraphQLClient('https://public-api.shiphero.com/graphql');
+        $shipHeroApi = new ShipheroGQLApi($gqlClient,'https://public-api.shiphero.com/graphql','https://public-api.shiphero.com/auth',env('SHIPHERO_ACCESSTOKEN'),env('SHIPHERO_REFRESHTOKEN'));
+        $createProductData = array(
+            'name'=>'MMA - SLEEFS SYNC APP TEST',
+            'sku' => 'MMA-SLEEFS-SYNC-APP-TEST',
+            'price'=>'100.23',
+            'warehouse_products'=>array(
+                'warehouse_id'=>'1684',
+                'on_hand'=>0,
+            ),
+            'value'=> '39.00'
+        );
+        $createProductResponse = $shipHeroApi->createProduct($createProductData);
+        if (isset($createProductResponse->data->product_create->product)){
+            $this->assertEquals($createProductData['name'],$createProductResponse->data->product_create->product->name);
+            //It deletes the product just created
+            $deleteProductResponse = $shipHeroApi->deleteProduct($createProductData['sku']);
+            $this->assertEquals(10,$deleteProductResponse->data->product_delete->complexity);
+        }
+        else{
+            print_r($createProductResponse);
+            $this->assertFalse(true);
+        }
+    }
+
+
+    public function testDeleteAProductInShipheroByLocalProductID(){
+
+        $gqlClient = new GraphQLClient('https://public-api.shiphero.com/graphql');
+        $shipHeroApi = new ShipheroGQLApi($gqlClient,'https://public-api.shiphero.com/graphql','https://public-api.shiphero.com/auth',env('SHIPHERO_ACCESSTOKEN'),env('SHIPHERO_REFRESHTOKEN'));
+
+        //It creates a new product in shiphero platform required to run this test.
+        $createProductData = array(
+            'name'=>'MMA Test to Shirt - 100',
+            'sku' => 'MMA-PRD-TEST-TO-DEL-100',
+            'price'=>'100.28',
+            'warehouse_products'=>array(
+                'warehouse_id'=>'1684',
+                'on_hand'=>0,
+            ),
+            'value'=> '39.00'
+        );
+        
+        //It looks for the product's sku to run the delete RPC in shiphero.
+        $shphroProductDeleter = new ShipheroProductDeleter($shipHeroApi);
+
+        //Assertion #1: Asserting to error=true, for an unknown product ID (1298 is not a valid product ID)
+        $deleteActionResponse = $shphroProductDeleter->deleteProductInShiphero(1298);
+        $this->assertTrue($deleteActionResponse->error);
+        $this->assertEquals("No product found for ID: 1298",$deleteActionResponse->msg);
+
+        //Assertion #2: Asserting to error=true, for not available product (identifyed by sku)
+        //              in shiphero's side, it means, there is no product in shiphero
+        //              associated to sku: MMA-PRD-TEST-TO-DEL-100
+
+        $deleteActionResponse = $shphroProductDeleter->deleteProductInShiphero($this->prd1->id);
+        $this->assertTrue($deleteActionResponse->variants[0]->error);//Yes, there must be an error
+        $this->assertEquals("Not product with sku MMA-PRD-TEST-TO-DEL-100 exists",$deleteActionResponse->variants[0]->msg);
+
+        //Assertion #3: It first creates, over the GraphQL API, a product (associated to sku: MMA-PRD-TEST-TO-DEL-100)
+        //              in shiphero platform.   
+        $createProductResponse = $shipHeroApi->createProduct($createProductData);
+        $this->assertEquals('MMA-PRD-TEST-TO-DEL-100',$createProductResponse->data->product_create->product->sku);
+
+        //Assertion #4: It deletes the product in shiphero platform, now, it should delete product smoothless.
+        $deleteActionResponse = $shphroProductDeleter->deleteProductInShiphero($this->prd1->id);
+        $this->assertFalse($deleteActionResponse->variants[0]->error);//Correct, no error deleting product by sku.
+        $this->assertRegExp("/([a-f0-9]{24})\ \-\ ([0-9]{2,3})$/",$deleteActionResponse->variants[0]->msg);
+
     }
 
 	/* Preparing the Test */

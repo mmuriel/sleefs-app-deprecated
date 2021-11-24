@@ -35,6 +35,9 @@ Route::get('/pos/{poid}', "\Sleefs\Controllers\Web\ShowPosController@showPo");
 
 Route::put('/products/updatepic', "\Sleefs\Controllers\Web\ProductsController@updateProductPic");
 
+Route::get('/products/deleted', "\Sleefs\Controllers\Web\ProductsController@ShowRemoteDeletedProducts");
+Route::post('/products/deleted', "\Sleefs\Controllers\Web\ProductsController@DeleteRemoteProducts");	
+
 Route::post('/report', "\Sleefs\Controllers\Web\WebController@report");
 Route::get('/inventoryreport',"\Sleefs\Controllers\Web\InventoryReportController@index");
 Route::get('/inventoryreport/{irid}',"\Sleefs\Controllers\Web\InventoryReportController@showInventoryReport");

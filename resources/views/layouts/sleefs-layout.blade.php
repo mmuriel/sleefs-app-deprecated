@@ -38,6 +38,6 @@
                 <br />
             @endcomponent
         </div>
-        <script src="js/app-sleefs.js"></script>
+        <script src="{{ $app['url']->to('/') }}/js/app-sleefs.js"></script>
     </body>
 </html>

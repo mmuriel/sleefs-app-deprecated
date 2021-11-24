@@ -763,3 +763,38 @@ table.po_items th, table.po_items td, table.po_details th, table.po_details td{
 	max-width: 670px;
 
 }
+
+
+/*
+
+	Product Deleted Module
+
+*/
+
+.product-deleted--processing{
+
+	background-color:  yellow;
+
+}
+
+.product-deleted--ok{
+	background-color:  green;
+	color:  white;
+}
+
+.product-deleted--error{
+	background-color:  red;
+	color:  white;	
+}
+
+
+.product-deleted--parcial{
+	background-color:  orange;
+	color:  white;	
+}
+
+
+a.btn__select-all {
+	color: white;
+	text-decoration:  none;
+}

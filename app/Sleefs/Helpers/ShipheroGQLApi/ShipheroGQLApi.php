@@ -295,11 +295,66 @@ class ShipheroGQLApi {
     }
 
 
-    /*
-
-        
-
+    /**          
+    *
+    * This method creates a new product in shiphero platform
+    * 
+    * @param    mixed[] $productOptions         Arreglo asociativo con los valores que se deben suministrar para 
+    *                                           crear un nuevo producto.
+    * @return   mixed   $product                Arreglo asociativo con los datos del producto creado, o una estructura de error.          
+    * 
     */
+
+    public function createProduct($productOptions){
+
+        //It starts the string:
+        $createOptionsString = 'name: "'.$productOptions['name'].'" sku:"'.$productOptions['sku'].'" ';
+
+
+        if (isset($productOptions['price']))
+            $createOptionsString .= 'price: "'.$productOptions['price'].'" ';
+
+        if (isset($productOptions['warehouse_products'])){
+            $createOptionsString .= 'warehouse_products: {';
+
+            if (isset($productOptions['warehouse_products']['warehouse_id']))
+                $createOptionsString .= 'warehouse_id: "'.$productOptions['warehouse_products']['warehouse_id'].'" ';
+
+            if (isset($productOptions['warehouse_products']['on_hand']))
+                $createOptionsString .= 'on_hand: '.$productOptions['warehouse_products']['on_hand'].' ';
+
+            if (isset($productOptions['warehouse_products']['custom']))
+                $createOptionsString .= 'custom: "'.$productOptions['warehouse_products']['custom'].'" ';
+
+            $createOptionsString .= '} ';
+        }
+
+        if (isset($productOptions['value']))
+            $createOptionsString .= 'value: "'.$productOptions['value'].'" ';
+
+        if (isset($productOptions['country_of_manufacture']))
+            $createOptionsString .= 'country_of_manufacture: "'.$productOptions['country_of_manufacture'].'" ';
+
+        if (isset($productOptions['barcode']))
+            $createOptionsString .= 'barcode: "'.$productOptions['barcode'].'" ';
+
+        //Defines the payload of the mutation request
+        $postContent = array('query' => 'mutation{product_create(data:{'.$createOptionsString.'}){request_id complexity product{id legacy_id name sku price value}}}');
+        //It dispatch the HTTP Request
+        $resp = $this->graphqlClient->query($postContent,array("Authorization: Bearer ".$this->accesToken,"Content-type: application/json"));
+        return $resp;
+
+    }
+
+    public function deleteProduct($productSku){
+
+        //Defines the payload of the mutation request
+        $postContent = array('query' => 'mutation{product_delete(data:{sku:"'.$productSku.'"}){request_id complexity}}');
+        //It dispatch the HTTP Request
+        $resp = $this->graphqlClient->query($postContent,array("Authorization: Bearer ".$this->accesToken,"Content-type: application/json"));
+        return $resp;
+        
+    }
 
 
     public function refreshAccessToken ()

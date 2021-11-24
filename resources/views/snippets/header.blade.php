@@ -14,6 +14,9 @@
 				<a href="{{ env("APP_URL") }}/inventoryreport">Inventory Reports</a>
 			</li>
 			<li>
+				<a href="{{ env("APP_URL") }}/products/deleted">Deleted Products</a>
+			</li>
+			<li>
 				<a href="{{ route('logout') }}" id="logout-link">
                                             Logout
 				</a>
