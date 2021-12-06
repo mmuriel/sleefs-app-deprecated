@@ -86,7 +86,36 @@ class ProductsController extends BaseController{
 		}
 		$poUpdateItems = PurchaseOrderUpdateItem::whereRaw($query)->get();
 		*/
-		$products = Product::whereRaw("(delete_status = '2' || delete_status = '3')")->get();
+
+
+		$iniDate = $request->input("search-ini-date","now");
+		$iniDateRaw = '';
+		if ($iniDate == '' || $iniDate=='now'){
+			$iniDate = 'now';
+			$iniDateRaw = 'now';
+		}
+
+		$iniTime = strtotime($iniDate);
+		if ($iniDate=='now'){
+			$iniTime = $iniTime - (60 * 60 * 24 * 5);//Initime is: now time - 5 days (default value)
+			$iniDate = date("Y-m-d 00:00:00",$iniTime);
+		}
+
+
+		$endDate = $request->input("search-end-date","nd");	
+		$endDateRaw = '';
+		if ($endDate == '' || $endDate=='nd'){
+
+			$endDate = 'nd';
+			$endDateRaw = 'nd';
+
+		}
+		if ($endDate == 'nd'){
+			$endTime = $iniTime + (60 * 60 * 24 * 10);//Endtime is: Initime + 5 days (default value)
+			$endDate = date("Y-m-d 23:59:59",$endTime);
+		}
+
+		$products = Product::whereRaw("(delete_status = '2' || delete_status = '3') && (updated_at >= '".$iniDate."' && updated_at <= '".$endDate."')")->get();
 
 		//print_r($products);
 
@@ -108,7 +137,7 @@ class ProductsController extends BaseController{
 	</tr>';
 		}
 
-		return view("deleted-remote-products",['htmlToPrint' => $htmlToPrint]);
+		return view("deleted-remote-products",['htmlToPrint' => $htmlToPrint,'searchIniDate'=>$request->input("search-ini-date",""),'searchEndDate'=>$request->input("search-end-date","")]);
 
 	}
 
