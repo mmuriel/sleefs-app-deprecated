@@ -248,6 +248,18 @@ class ShipheroGraphQLApiTest extends TestCase {
 
     }
 
+
+    public function testGetPoByPoNumber(){
+
+        $gqlClient = new GraphQLClient('https://public-api.shiphero.com/graphql');
+        $shipHeroApi = new ShipheroGQLApi($gqlClient,'https://public-api.shiphero.com/graphql','https://public-api.shiphero.com/auth',env('SHIPHERO_ACCESSTOKEN'),env('SHIPHERO_REFRESHTOKEN'));
+
+        $resp = $shipHeroApi->getExtendedPOCustomQuery('po_number:"1904-25 remake elite shorts"');
+        //print_r($resp);
+        $this->assertEquals(3,count($resp->data->purchase_order->data->line_items->edges));
+
+    }
+
 	/* Preparing the Test */
 
 	public function createApplication()

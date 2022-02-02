@@ -1,0 +1,37 @@
+version: '3.8'
+services:
+  sleefs: 
+    image: maomuriel/centos610-php73:0.1.2
+    container_name: sleefs-app
+    ports:
+      - "80:80"
+    volumes: 
+      - "/path/to/project/app/directory:/home/admin/app"
+    command: "httpd-foreground"
+    depends_on: 
+      - "sleefs-db"
+    links: 
+      - "sleefs-db"
+  sleefs-db:
+    image: mariadb:10.2
+    container_name: sleefs-db
+    environment:
+      - "MYSQL_ROOT_PASSWORD=xxxxxxxx"
+    volumes:
+      - "/path/to/mysql/files:/var/lib/mysql"
+    ports:
+      - "3306"
+  sleefs-phpmia:
+    image: "phpmyadmin/phpmyadmin"
+    environment:
+      - "PMA_HOST=sleefs-db"
+    ports:
+      - "8090:80"
+    depends_on: 
+      - "sleefs-db"
+    links: 
+      - "sleefs-db"
+
+
+    
+

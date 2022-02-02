@@ -18,6 +18,7 @@ yarn-error.log
 /.env
 .env-prd
 comandos.txt
+docker-compose.yml
 app.log
 php_errors.log
 /.phpintel

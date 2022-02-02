@@ -24,6 +24,7 @@ class Kernel extends ConsoleKernel
         Commands\SleefsTestCreateInventoryReport::Class,
         Commands\CreateBlankPdfFilesFromVariantsName::Class,
         Commands\SyncShipheroVendors::Class,
+        Commands\ShipheroPOsSyncer::Class,
     ];
 
     /**

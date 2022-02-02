@@ -21,6 +21,59 @@ class ShipheroGQLApi {
     }
 
 
+    public function getExtendedPOCustomQuery($customQuery, $qtyLineItemsPerPage = 250, $afterForPagination = null){
+
+        if ($customQuery == ''){
+            return false;
+        }
+
+        $ctrlNextPage = 0;
+        if ($afterForPagination == null)
+
+            $postContent = array('query' => '{purchase_order('.$customQuery.'){request_id,complexity,data{id,legacy_id,po_number,po_date,account_id,vendor_id,created_at,fulfillment_status,po_note,description,subtotal,shipping_price,total_price,line_items(first:'.$qtyLineItemsPerPage.'){pageInfo{hasNextPage,startCursor,endCursor,}edges{node{id,price,po_id,account_id,warehouse_id,vendor_id,po_number,sku,barcode,note,quantity,quantity_received,quantity_rejected,product_name,fulfillment_status,vendor{id,name,email,account_id,account_number}}}}}}}');
+        else 
+            $postContent = array('query' => '{purchase_order('.$customQuery.'){request_id,complexity,data{id,legacy_id,po_number,po_date,account_id,vendor_id,created_at,fulfillment_status,po_note,description,subtotal,shipping_price,total_price,line_items(after:"'.$afterForPagination.'",first:'.$qtyLineItemsPerPage.'){pageInfo{hasNextPage,startCursor,endCursor}edges{node{id,price,legacy_id,po_id,account_id,warehouse_id,vendor_id,po_number,sku,barcode,note,quantity,quantity_received,quantity_rejected,product_name,fulfillment_status,vendor{id,name,email,account_id,account_number}}}}}}}');
+
+
+
+        $resp = $this->graphqlClient->query($postContent,array("Authorization: Bearer ".$this->accesToken,"Content-type: application/json"));
+        if (isset($resp->data->purchase_order->data->line_items->pageInfo->hasNextPage))
+        {
+            if ($resp->data->purchase_order->data->line_items->pageInfo->hasNextPage == 1)
+            { 
+                $ctrlNextPage = $resp->data->purchase_order->data->line_items->pageInfo->hasNextPage;
+                $afterForPagination = $resp->data->purchase_order->data->line_items->pageInfo->endCursor;
+
+                while ($ctrlNextPage == 1)
+                {
+                    $postContent = array('query' => '{purchase_order('.$customQuery.'){request_id,complexity,data{id,legacy_id,po_number,po_date,account_id,vendor_id,created_at,fulfillment_status,po_note,description,subtotal,shipping_price,total_price,line_items(after:"'.$afterForPagination.'",first:'.$qtyLineItemsPerPage.'){pageInfo{hasNextPage,startCursor,endCursor}edges{node{id,price,legacy_id,po_id,account_id,warehouse_id,vendor_id,po_number,sku,barcode,note,quantity,quantity_received,quantity_rejected,product_name,fulfillment_status,vendor{id,name,email,account_id,account_number}}}}}}}');
+                    $nextCall = $this->graphqlClient->query($postContent,array("Authorization: Bearer ".$this->accesToken,"Content-type: application/json"));
+                    if (isset($nextCall->data->purchase_order->data->line_items->pageInfo->hasNextPage))
+                    {
+                        $ctrlNextPage = $nextCall->data->purchase_order->data->line_items->pageInfo->hasNextPage;
+                        $afterForPagination = $nextCall->data->purchase_order->data->line_items->pageInfo->endCursor;
+                        $resp->data->purchase_order->data->line_items->edges = array_merge($resp->data->purchase_order->data->line_items->edges,$nextCall->data->purchase_order->data->line_items->edges);
+                    }
+                    else
+                    {
+                        $ctrlNextPage = 0;
+                    }
+                }
+                return $resp;
+            }
+            else
+            {
+                return $resp;
+            }
+        }
+        else
+        {
+            return false;
+        }
+
+    }
+
+
     public function getExtendedPO ($poId, $qtyLineItemsPerPage = 250, $afterForPagination = null)
     {
     	if ($poId == ''){
