@@ -1,7 +1,7 @@
 <?php
 namespace Sleefs\Helpers\Shiphero;
 
-use Sleefs\Helpers\Misc\Interfaces\ISyncedDataChecker;
+use \Sleefs\Helpers\Misc\Interfaces\ISyncedDataChecker;
 
 
 class ShipheroFulfillmentStatusSyncedDataChecker implements ISyncedDataChecker{
