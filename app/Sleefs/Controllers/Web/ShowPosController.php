@@ -32,8 +32,14 @@ class ShowPosController extends BaseController{
         $poextended = $poextended->data->purchase_order->data;
         $poextended->line_items = $poextended->line_items->edges;
         if (isset($poextended->line_items[0])){
-            $poextended->vendor_name = $poextended->line_items[0]->node->vendor->name;
-            $poextended->vendor_id = $poextended->line_items[0]->node->vendor->id;
+            if (isset($poextended->line_items[0]->node->vendor->name) && isset($poextended->line_items[0]->node->vendor->id)){
+                $poextended->vendor_name = $poextended->line_items[0]->node->vendor->name;
+                $poextended->vendor_id = $poextended->line_items[0]->node->vendor->id;
+            }
+            else {
+                $poextended->vendor_name = "ND";
+                $poextended->vendor_id = "ND";   
+            }
         }
         else
         {
