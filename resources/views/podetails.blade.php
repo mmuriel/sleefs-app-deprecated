@@ -50,6 +50,7 @@
                     <td>PO Expected Date</td>
                     <td>{{ $poextended->po_date}}</td>
                 </tr>
+                @if (isset($poextended->line_items[0]->node->vendor->name) && isset($poextended->line_items[0]->node->vendor->id))
                 <tr>
                     <td>Vendor Name</td>
                     <td>{{ $poextended->line_items[0]->node->vendor->name}}</td>
@@ -62,6 +63,20 @@
                     <td>Vendor Account Number</td>
                     <td>{{ $poextended->line_items[0]->node->vendor->account_number }}</td>
                 </tr>
+                @else
+                <tr>
+                    <td>Vendor Name</td>
+                    <td>ND</td>
+                </tr>
+                <tr>
+                    <td>Vendor Email</td>
+                    <td>ND</td>
+                </tr>
+                <tr>
+                    <td>Vendor Account Number</td>
+                    <td>ND</td>
+                </tr>
+                @endif
             </table>
             <h2>PO Items</h2>
             <button id="btn__updatepics">Update Pics</button>
