@@ -146,6 +146,7 @@ class ProductsController extends BaseController{
 
 		$gqlClient = new GraphQLClient('https://public-api.shiphero.com/graphql');
         $shipHeroApi = new ShipheroGQLApi($gqlClient,'https://public-api.shiphero.com/graphql','https://public-api.shiphero.com/auth',env('SHIPHERO_ACCESSTOKEN'),env('SHIPHERO_REFRESHTOKEN'));
+        $clogger = new CustomLogger("sleefs.log");
 
         $productDeleter = new ShipheroProductDeleter($shipHeroApi);
         $responsePrdDel = $productDeleter->deleteProductInShiphero($request->input('id'));
@@ -153,6 +154,7 @@ class ProductsController extends BaseController{
         if ($responsePrdDel->error){
         	//Something went wrong
         	$dataResponse = ["error"=>true,"id"=>$request->input('id'),"data"=>["msg"=>$responsePrdDel->msg,"status"=>0]];
+        	$clogger->writeToLog ("Falló general en el intento de borrado en shiphero: ".$responsePrdDel->msg,"ERROR");
         	return response($dataResponse,200);
         }
 
@@ -161,8 +163,16 @@ class ProductsController extends BaseController{
 
         foreach ($responsePrdDel->variants as $variant){
         	if ($variant->error){
-        		$errorInVarinatsDeletion = true;
-        		$finalMsg .= "Sku: ".$variant->sku." - Error!<br />\n";
+        		if (preg_match("/^Not product with sku ".$variant->sku."/",trim($variant->msg))){
+        			$finalMsg .= "Sku: ".$variant->sku." - Doesn't exist in shiphero!<br />\n";
+        			$clogger->writeToLog ("La variante con SKU: ".$variant->sku." ya no existe en shiphero. ".$variant->msg,"INFO");
+        		}	
+        		else{
+
+        			$errorInVarinatsDeletion = true;
+	        		$finalMsg .= "Sku: ".$variant->sku." - Error!<br />\n";
+	        		$clogger->writeToLog ("Falló el intento de borrado en shiphero para la variante: ".$variant->sku.". ".$variant->msg,"ERROR");	
+        		}
         	}
         	else{
         		$finalMsg .= "Sku: ".$variant->sku." - Ok<br />\n";	
@@ -174,7 +184,10 @@ class ProductsController extends BaseController{
         	$product = Product::where("id",$request->input('id'))->first();        	
         	$product->delete_status = 4;
         	$product->save();
-        	$finalMsg = "Product deleted!";
+        	if (preg_match("/Error!|exist in shiphero!/",$finalMsg))
+        		$finalMsg = "Product deleted! But...<br />".$finalMsg;
+        	else
+        		$finalMsg = "Product deleted!";
         	$responseStatus = 1;//Completamente borrado
         }
 
