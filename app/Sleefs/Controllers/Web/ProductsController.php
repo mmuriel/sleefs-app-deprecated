@@ -110,12 +110,15 @@ class ProductsController extends BaseController{
 			$endDateRaw = 'nd';
 
 		}
+		else{
+			$endDate = $endDate." 23:59:59";
+		}
 		if ($endDate == 'nd'){
 			$endTime = $iniTime + (60 * 60 * 24 * 10);//Endtime is: Initime + 5 days (default value)
 			$endDate = date("Y-m-d 23:59:59",$endTime);
 		}
 
-		$products = Product::whereRaw("(delete_status = '2' || delete_status = '3') && (updated_at >= '".$iniDate."' && updated_at <= '".$endDate."')")->get();
+		$products = Product::whereRaw("(delete_status = '2' || delete_status = '3' || delete_status = '5') && (updated_at >= '".$iniDate."' && updated_at <= '".$endDate."')")->get();
 
 		//print_r($products);
 
@@ -127,14 +130,27 @@ class ProductsController extends BaseController{
 				$htmlSkus .= "<p>".$variant->sku."</p>";
 			}
 
-			$htmlToPrint .= '	<tr id="tr_product_'.$product->id.'">
-		<td>
-			<input type="checkbox" name="deleted-product-checkbox[]" id="" class="deleted-product-checkbox" value="'.$product->id.'" />
-		</td>
-		<td class="title">'.$product->title.'</td>
-		<td class="skus">'.$htmlSkus.'</td>
-		<td class="status"><button data-id="'.$product->id.'" class="btn-delete-one">Borrar</button></td>
-	</tr>';
+			if ($product->delete_status == '5'){
+
+				$htmlToPrint .= '	<tr id="tr_product_'.$product->id.'" class="product-deleted--processing">
+			<td>
+				
+			</td>
+			<td class="title">'.$product->title.'</td>
+			<td class="skus">'.$htmlSkus.'</td>
+			<td class="status">Esperando para ser borrado por el backend</td>
+		</tr>';
+			}
+			else{
+				$htmlToPrint .= '	<tr id="tr_product_'.$product->id.'">
+			<td>
+				<input type="checkbox" name="deleted-product-checkbox[]" id="" class="deleted-product-checkbox" value="'.$product->id.'" />
+			</td>
+			<td class="title">'.$product->title.'</td>
+			<td class="skus">'.$htmlSkus.'</td>
+			<td class="status"><button data-id="'.$product->id.'" class="btn-delete-one">Borrar</button></td>
+		</tr>';
+			}
 		}
 
 		return view("deleted-remote-products",['htmlToPrint' => $htmlToPrint,'searchIniDate'=>$request->input("search-ini-date",""),'searchEndDate'=>$request->input("search-end-date","")]);
@@ -143,6 +159,16 @@ class ProductsController extends BaseController{
 
 
 	function DeleteRemoteProducts (Request $request){
+
+
+		if ($request->input('delete_type') == 'async'){
+			$product = Product::find($request->input('id'));
+			$product->delete_status = 5;
+        	$product->save();
+
+        	$dataResponse = ["error"=>false,"id"=>$request->input('id'),"data"=>["msg"=>"Esperando para ser borrado por el backend","variants"=>[],"status"=>"5"]];
+			return response($dataResponse,200);
+		}
 
 		$gqlClient = new GraphQLClient('https://public-api.shiphero.com/graphql');
         $shipHeroApi = new ShipheroGQLApi($gqlClient,'https://public-api.shiphero.com/graphql','https://public-api.shiphero.com/auth',env('SHIPHERO_ACCESSTOKEN'),env('SHIPHERO_REFRESHTOKEN'));
@@ -154,7 +180,7 @@ class ProductsController extends BaseController{
         if ($responsePrdDel->error){
         	//Something went wrong
         	$dataResponse = ["error"=>true,"id"=>$request->input('id'),"data"=>["msg"=>$responsePrdDel->msg,"status"=>0]];
-        	$clogger->writeToLog ("Falló general en el intento de borrado en shiphero: ".$responsePrdDel->msg,"ERROR");
+        	$clogger->writeToLog ("Fallo general en el intento de borrado en shiphero: ".$responsePrdDel->msg,"ERROR");
         	return response($dataResponse,200);
         }
 

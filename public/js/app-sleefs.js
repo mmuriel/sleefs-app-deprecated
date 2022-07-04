@@ -136,17 +136,21 @@ var renderProductDeletedResponse = (data) => {
 		$("tr#tr_product_"+data.id).fadeOut(12000,()=>{});
 	}
 
+	if (data.data.status == 5){
+		$("tr#tr_product_"+data.id+" > td.status").html(data.data.msg);
+	}
 
 	return 1;
 }
 
 
-var sendProductDeletedRequest = (idPrd) => {
+var sendProductDeletedRequest = (idPrd,deleteType) => {
 
 	let secToken = $("#csrf-token").prop("value");
 	var data = {
 		"_token": secToken,
 		"id": idPrd,
+		"delete_type":deleteType
 	};
 
 	$.ajax({
@@ -169,7 +173,7 @@ $("button.btn-delete-one").on("click",function(e){
 	let idPrd = this.getAttribute('data-id');
 	$("tr#tr_product_"+idPrd).addClass("product-deleted--processing");
 	$("tr#tr_product_"+idPrd+" > td.status").html("Procesando...");
-	sendProductDeletedRequest(idPrd);
+	sendProductDeletedRequest(idPrd,'sync');
 });
 
 
@@ -179,7 +183,7 @@ $("button.btn-delete-all").on("click",function(e){
 	$("input.deleted-product-checkbox:checked").each(function(){
 		$("tr#tr_product_"+this.getAttribute('value')).addClass("product-deleted--processing");
 		$("tr#tr_product_"+this.getAttribute('value')+" > td.status").html("Procesando...");
-		sendProductDeletedRequest(this.getAttribute('value'));
+		sendProductDeletedRequest(this.getAttribute('value'),'async');
 	});
 });
 

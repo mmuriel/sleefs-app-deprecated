@@ -25,6 +25,7 @@ class Kernel extends ConsoleKernel
         Commands\CreateBlankPdfFilesFromVariantsName::Class,
         Commands\SyncShipheroVendors::Class,
         Commands\ShipheroPOsSyncer::Class,
+        Commands\DeleteAuthorizedShipheroProducts::Class,
     ];
 
     /**

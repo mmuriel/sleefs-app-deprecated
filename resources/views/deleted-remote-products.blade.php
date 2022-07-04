@@ -19,9 +19,12 @@
                             </div>
                         </form>
                     </div>
+                    <p></p>
+                    <h2>Listado de Productos Para Ser Borrados en Shiphero</h2>
                     <div class="pos-updates__list">
                         <form action="{{ env('APP_URL') }}/products/deleted" method="post" target="_blank" name="f-report">
                         <input type="hidden" name="_token" id="csrf-token" value="{{ Session::token() }}" />
+                        <button class="btn-delete-all">Borrar Todos</button>
                         <table class="pos-updates__list__maintable">
                             <thead>
                                 <tr>
