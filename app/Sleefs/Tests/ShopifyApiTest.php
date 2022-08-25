@@ -72,7 +72,7 @@ class ShopifyApiTest extends TestCase {
 		$data = $spClient->getAllProducts($options);
 
 		$this->assertEquals("Baseball Lace USA Arm Sleeve",$data->products[0]->title,"El nombre del producto no es: Baseball Lace USA Arm Sleeve, ahora es: ".$data->products[0]->title);
-		$this->assertEquals(2,count($data->products),"La cantidad de productos recuperada no es 2, es: ".count($data->products));
+		$this->assertEquals(1,count($data->products),"La cantidad de productos recuperada no es 2, es: ".count($data->products));
 		$this->assertEquals("Sleeve",$data->products[0]->product_type);
 		//count($data->products);
 
