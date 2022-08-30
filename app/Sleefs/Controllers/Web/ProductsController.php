@@ -38,7 +38,7 @@ class ProductsController extends BaseController{
 		}
 		//return response()->json(['data1' => 'MMMA','data2'=>'NNNNNA']);
 		$product = Product::find($variant->idproduct);
-		$shopifyApi = new Shopify(env('SHPFY_APIKEY'),env('SHPFY_APIPWD'),env('SHPFY_BASEURL'));
+		$shopifyApi = new Shopify(getenv('SHPFY_BASEURL'),getenv('SHPFY_ACCESSTOKEN'));
 
 
 		$productImages = $shopifyApi->getAllImagesProduct($product->idsp);

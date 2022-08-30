@@ -13,8 +13,9 @@ use Sleefs\Helpers\curl\Curl;
 class Shopify {
 
     private $url;
+    private $httpHeaders;
 
-    public function __construct($apiToken,$apiPwd,$apiUrl) {
+    public function __construct($apiUrl,$apiAccessToken) {
 
         /*
         $this->url = "https://" . Base::getConfigApp()->params['shopifyws']['SHP_TOKEN'];
@@ -22,9 +23,8 @@ class Shopify {
         $this->url .= "@" . Base::getConfigApp()->params['shopifyws']['SHP_APIURLBASE'];
          * 
          */
-        $this->url = "https://" . $apiToken;
-        $this->url .= ":" .$apiPwd;
-        $this->url .= "@" .$apiUrl;
+        $this->url = "https://" . $apiUrl;
+        $this->httpHeaders = array('Content-Type: application/json','X-Shopify-Access-Token: '.$apiAccessToken);
     }
 
     public function getSingleOrder($id) {
@@ -35,7 +35,7 @@ class Shopify {
 
 
         $url = $this->url . "orders/{$id}.json";
-        $contents = Curl::urlGet($url);
+        $contents = Curl::urlGet($url,$this->httpHeaders);
         return json_decode($contents);
     }
 
@@ -46,7 +46,7 @@ class Shopify {
             $url = $this->url . "orders.json?".$options;
 
         //echo $url;
-        $contents = Curl::urlGet($url);
+        $contents = Curl::urlGet($url,$this->httpHeaders);
         //print_r($contents);
         return json_decode($contents);
     }
@@ -58,7 +58,7 @@ class Shopify {
         else
             $url = $this->url . "products.json?".$options;
 
-        $contents = Curl::urlGet($url);
+        $contents = Curl::urlGet($url,$this->httpHeaders);
         return json_decode($contents);
     }
 
@@ -69,7 +69,7 @@ class Shopify {
         }
 
         $url = $this->url . "products.json?collection_id={$id}";
-        $contents = Curl::urlGet($url);
+        $contents = Curl::urlGet($url,$this->httpHeaders);
         return json_decode($contents);
     }
 
@@ -87,7 +87,7 @@ class Shopify {
         else
             $url = $this->url . "products/count.json?".$filter;
 
-        $contents = Curl::urlGet($url);
+        $contents = Curl::urlGet($url,$this->httpHeaders);
         return json_decode($contents);
     }
 
@@ -98,7 +98,7 @@ class Shopify {
             $id = preg_replace("/^shpfy_/","",$id);
         }
         $url = $this->url . "products/{$id}.json";
-        $contents = Curl::urlGet($url);
+        $contents = Curl::urlGet($url,$this->httpHeaders);
         return json_decode($contents);
     }
 
@@ -109,7 +109,7 @@ class Shopify {
         }
 
         $url = $this->url . "products/{$id}/images.json";
-        $contents = Curl::urlGet($url);
+        $contents = Curl::urlGet($url,$this->httpHeaders);
         return json_decode($contents);
     }
 
@@ -124,7 +124,7 @@ class Shopify {
         }
 
         $url = $this->url . "products/{$id_product}/images/{$id_image}.json";
-        $contents = Curl::urlGet($url);
+        $contents = Curl::urlGet($url,$this->httpHeaders);
         return json_decode($contents);
     }
 
@@ -135,7 +135,7 @@ class Shopify {
         }
 
         $url = $this->url . "/variants/{$id_variant}.json";
-        $contents = Curl::urlGet($url);
+        $contents = Curl::urlGet($url,$this->httpHeaders);
         return json_decode($contents);
     }
 
@@ -145,13 +145,13 @@ class Shopify {
             $id_product = preg_replace("/^shpfy_/","",$id_product);
         }
         $url = $this->url . "/products/{$id_product}/variants.json";
-        $contents = Curl::urlGet($url);
+        $contents = Curl::urlGet($url,$this->httpHeaders);
         return json_decode($contents);
     }
 
     public function getWebHook() {
         $url = $this->url . "webhooks.json";
-        $contents = Curl::urlGet($url);
+        $contents = Curl::urlGet($url,$this->httpHeaders);
         return $contents;
     }
 
@@ -163,7 +163,7 @@ class Shopify {
         }
         $data['order'] = array('id' => $id, 'note' => $note);
         $url = $this->url . "orders/{$id}.json";
-        $contents = Curl::urlPUT($url, $data);
+        $contents = Curl::urlPUT($url, $data, $this->httpHeaders);
         return ($contents);
     }
 
@@ -175,8 +175,18 @@ class Shopify {
         $data= array();
         $data['product'] = array('id' => $productId, 'variants' => $variants);
         $url = $this->url . "products/{$productId}.json";
-        $contents = Curl::urlPUT($url,$data);
+        $contents = Curl::urlPUT($url,$data, $this->httpHeaders);
         return ($contents);
+    }
+
+
+
+    public function createAProduct($product){
+
+        $url = $this->url . "products.json";
+        //echo json_encode(["product" => (array)$product]);
+        $contents = Curl::urlPost($url,["product" => (array)$product] ,$this->httpHeaders);
+        return json_decode($contents);
     }
 
 
@@ -200,7 +210,7 @@ class Shopify {
             $productId = preg_replace("/^shpfy_/","",$productId);
         }
         $url = $this->url . "products/{$productId}.json";
-        $contents = Curl::urlPUT($url,$data);
+        $contents = Curl::urlPUT($url,$data ,$this->httpHeaders);
         return json_decode($contents);
     }
 
@@ -319,5 +329,4 @@ class Shopify {
     }
 
 }
-
 ?>

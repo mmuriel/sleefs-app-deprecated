@@ -42,7 +42,7 @@ class ShopifyGetProducts extends Command
     public function handle()
     {
         //
-        $spClt = new Shopify(env('SHPFY_APIKEY'),env('SHPFY_APIPWD'),env('SHPFY_BASEURL'));
+        $shClt = new Shopify(getenv('SHPFY_BASEURL'),getenv('SHPFY_ACCESSTOKEN'));
         $opts = $this->options();
         $arguments = $this->arguments();
 

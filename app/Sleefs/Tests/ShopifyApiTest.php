@@ -67,10 +67,9 @@ class ShopifyApiTest extends TestCase {
 	
 	public function testGetProductsFromApi(){
 
-		$spClient = new Shopify('f7adb74791e9b142c7f6bc3a64bcc3b0','5486391dc27e857cfc1e8986b8094c12','sleefs-2.myshopify.com/admin/api/2020-01/');
+		$spClient = new Shopify(getenv('SHPFY_BASEURL'),getenv('SHPFY_ACCESSTOKEN'));
 		$options = "ids=431368941,10847934410";
 		$data = $spClient->getAllProducts($options);
-
 		$this->assertEquals("Baseball Lace USA Arm Sleeve",$data->products[0]->title,"El nombre del producto no es: Baseball Lace USA Arm Sleeve, ahora es: ".$data->products[0]->title);
 		$this->assertEquals(1,count($data->products),"La cantidad de productos recuperada no es 2, es: ".count($data->products));
 		$this->assertEquals("Sleeve",$data->products[0]->product_type);
@@ -81,7 +80,7 @@ class ShopifyApiTest extends TestCase {
 
 	public function testGetVariantsFromApi(){
 
-		$spClient = new Shopify('f7adb74791e9b142c7f6bc3a64bcc3b0','5486391dc27e857cfc1e8986b8094c12','sleefs-2.myshopify.com/admin/api/2020-01/');
+		$spClient = new Shopify(getenv('SHPFY_BASEURL'),getenv('SHPFY_ACCESSTOKEN'));
 		$options = "ids=431368941,10847934410";
 		$data = $spClient->getAllProducts($options);
 		//count($data->products);
@@ -94,7 +93,7 @@ class ShopifyApiTest extends TestCase {
 
 	public function testGetSingleProductFromApi(){
 
-		$spClient = new Shopify('f7adb74791e9b142c7f6bc3a64bcc3b0','5486391dc27e857cfc1e8986b8094c12','sleefs-2.myshopify.com/admin/api/2020-01/');
+		$spClient = new Shopify(getenv('SHPFY_BASEURL'),getenv('SHPFY_ACCESSTOKEN'));
 		$options = "ids=431368941,10847934410";
 		$data = $spClient->getSingleProduct('431368941');
 		$this->assertEquals('Baseball Lace USA Arm Sleeve',$data->product->title);

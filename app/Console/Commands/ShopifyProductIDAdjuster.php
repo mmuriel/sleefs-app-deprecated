@@ -65,7 +65,7 @@ class ShopifyProductIDAdjuster extends Command
         //===========================================================================================
 
 
-        $shopify = new Shopify(env('SHPFY_APIKEY'),env('SHPFY_APIPWD'),env('SHPFY_BASEURL'));
+        $shopify = new Shopify(getenv('SHPFY_BASEURL'),getenv('SHPFY_ACCESSTOKEN'));
         $shopifyQueryForProductsOptions = 'fields=id,vendor,product_type,created_at,title,sku,handle,images,variants&limit='.$qty.'&page='.$page;
         $remoteProducts = $shopify->getAllProducts($shopifyQueryForProductsOptions);
 
@@ -101,7 +101,7 @@ class ShopifyProductIDAdjuster extends Command
         echo "Total elements: ".$localProducts->count()."\n";
         echo "Query: ".$shopifyQueryForProductsOptions."\n";
         //Intancia un objecto tipo Shopify (API) para realizar queries a la tienda.
-        $shopify = new Shopify(env('SHPFY_APIKEY'),env('SHPFY_APIPWD'),env('SHPFY_BASEURL'));
+        $shopify = new Shopify(getenv('SHPFY_BASEURL'),getenv('SHPFY_ACCESSTOKEN'));
         $remoteProducts = $shopify->getAllProducts($shopifyQueryForProductsOptions);
         $totalRemoteProducts = count($remoteProducts->products);
 

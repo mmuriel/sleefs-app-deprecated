@@ -656,7 +656,7 @@ Class PurchaseOrderWebHookEndPointController extends Controller {
             //return false;
             
 
-            $shopifyApi = new Shopify(env('SHPFY_APIKEY'),env('SHPFY_APIPWD'),env('SHPFY_BASEURL'));
+            $shopifyApi = new Shopify(getenv('SHPFY_BASEURL'),getenv('SHPFY_ACCESSTOKEN'));
             $publishValidatorByImage = new ProductPublishValidatorByImage();
             $tagger = new ProductTaggerForNewResTag();
             $findifyApi = new Findify(env('FINDIFY_ENDPOINT'));
