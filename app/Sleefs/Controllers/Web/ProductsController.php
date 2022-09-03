@@ -53,8 +53,8 @@ class ProductsController extends BaseController{
 		$arrImagesToRet = [];
 
 		for ($i=0;$i<count($productImages->images);$i++){
-
-			if (ProductImage::where("idsp","=","shpfy_".$productImages->images[$i]->id)->first() == null){
+			$dbProductImg = ProductImage::where("idsp","=","shpfy_".$productImages->images[$i]->id)->first();
+			if ($dbProductImg == null){
                 $prdImg = new ProductImage();
                 $prdImg->idproducto = $product->id;
                 $prdImg->idsp = "shpfy_".$productImages->images[$i]->id;
@@ -62,6 +62,9 @@ class ProductsController extends BaseController{
                 $prdImg->url = $productImages->images[$i]->src;
                 $prdImg->save();
                 array_push($arrImagesToRet,$urlImageGenerator->createImgUrlWithSizeParam($productImages->images[$i]->src,150));
+            }
+            else{
+            	array_push($arrImagesToRet,$urlImageGenerator->createImgUrlWithSizeParam($dbProductImg->url,150));	
             }
 
 		}

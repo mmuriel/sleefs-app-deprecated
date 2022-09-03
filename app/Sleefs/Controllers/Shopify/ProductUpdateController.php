@@ -25,6 +25,7 @@ class ProductUpdateController extends Controller {
             $product->vendor = $prd->vendor;
             $product->product_type = $prd->product_type;
             $product->handle = $prd->handle;
+            $product->delete_status = 1;
             $product->save();
         }
         else{
@@ -33,6 +34,7 @@ class ProductUpdateController extends Controller {
             $product->vendor = $prd->vendor;
             $product->product_type = $prd->product_type;
             $product->handle = $prd->handle;
+            $product->delete_status = 1;
             //$product->idsp = $prd->id;
 			$product->save();
         }

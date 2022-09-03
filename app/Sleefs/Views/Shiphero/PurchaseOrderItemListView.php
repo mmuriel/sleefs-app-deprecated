@@ -34,8 +34,7 @@ class PurchaseOrderItemListView {
 						->leftJoin('products', 'product_images.idproducto', '=', 'products.id')
 						->leftJoin('variants','products.id','=','variants.idproduct')
 						->select('product_images.url')
-						->where('variants.sku','=',$this->poItem->sku)
-						->where('products.delete_status','=','1')
+						->whereRaw(" variants.sku ='".$this->poItem->sku."' && (products.delete_status = '1' || products.delete_status is NULL)")
 						->orderBy('product_images.position','ASC')
 						->get();
 
