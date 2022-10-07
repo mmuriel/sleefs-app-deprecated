@@ -26,8 +26,8 @@ class MondayGqlApiTest extends TestCase {
 	public function testGetAllBoards(){
 
 		$allBoards = $this->mondayGqlApi->getAllBoards();
-		$this->assertEquals(3,count($allBoards->data->boards));
-		$this->assertEquals('CP Pending POs - MMA -DEV',$allBoards->data->boards[1]->name);
+		$this->assertEquals(5,count($allBoards->data->boards));
+		$this->assertEquals('CP Pending POs - MMA -DEV',$allBoards->data->boards[3]->name);
 
 	}
 

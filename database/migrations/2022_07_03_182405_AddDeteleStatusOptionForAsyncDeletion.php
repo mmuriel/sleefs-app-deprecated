@@ -18,7 +18,9 @@ class AddDeteleStatusOptionForAsyncDeletion extends Migration
             //
         });
         */
-        DB::statement("ALTER TABLE products MODIFY COLUMN delete_status ENUM('1', '2', '3', '4', '5') COMMENT 'Este valor define el borrado logico de un producto, recibe los siguientes valores posibles: 1. Ok; 2. Borrado en shopify; 3. Borrado en shiphero; 4. Borrado en todos; 5. Aprobado para borrado asincrónico' ");
+        if (\App::environment() != 'testing'){
+            DB::statement("ALTER TABLE products MODIFY COLUMN delete_status ENUM('1', '2', '3', '4', '5') COMMENT 'Este valor define el borrado logico de un producto, recibe los siguientes valores posibles: 1. Ok; 2. Borrado en shopify; 3. Borrado en shiphero; 4. Borrado en todos; 5. Aprobado para borrado asincrónico' ");
+        }
     }
 
     /**
@@ -33,6 +35,8 @@ class AddDeteleStatusOptionForAsyncDeletion extends Migration
             //
         });
         */
-        DB::statement("ALTER TABLE products MODIFY COLUMN delete_status ENUM('1', '2', '3', '4') COMMENT 'Este valor define el borrado logico de un producto, recibe los siguientes valores posibles: 1. Ok; 2. Borrado en shopify; 3. Borrado en shiphero; 4. Borrado en todos' ");
+        if (\App::environment() != 'testing'){
+            DB::statement("ALTER TABLE products MODIFY COLUMN delete_status ENUM('1', '2', '3', '4') COMMENT 'Este valor define el borrado logico de un producto, recibe los siguientes valores posibles: 1. Ok; 2. Borrado en shopify; 3. Borrado en shiphero; 4. Borrado en todos' ");
+        }
     }
 }

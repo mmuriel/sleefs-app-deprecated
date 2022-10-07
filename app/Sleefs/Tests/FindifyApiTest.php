@@ -16,7 +16,7 @@ class FindifyApiTest extends TestCase {
         $this->prepareForTests();
     }
 
-    /* TESTs */
+    /*
     public function testLoginToFindifyApi(){
 
     	$findifyApi = new Findify('https://admin.findify.io/v1/');
@@ -77,6 +77,8 @@ class FindifyApiTest extends TestCase {
     	$response = $findifyApi->updateCollection($response,250,250);
     	$this->assertEquals($indexLastAddedItem,count($response->query->filters[0]->values));
     }
+
+    */
 
 	/* Preparing the Test */
 

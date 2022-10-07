@@ -4,9 +4,9 @@ namespace Sleefs\Helpers\Monday;
 
 class MondayGroupChecker{
 
-	public function getCorrectGroupName ($pulseName){
+	public function getCorrectGroupName ($poDate){
 
-		$monthInName = substr($pulseName,2,2);
+		$monthInName = substr($poDate,5,2);
 		$groupName = 'PO ';
 		switch($monthInName){
 			case '01':
@@ -47,8 +47,8 @@ class MondayGroupChecker{
 				break;
 		}
 
-		$yearInName = substr($pulseName,0,2);
-		$yearInName = 2000 + ((int)$yearInName);
+		$yearInName = substr($poDate,0,4);
+		//$yearInName = 2000 + ((int)$yearInName);
 		//$groupName .= ' '.date("Y");
 
 
@@ -65,8 +65,7 @@ class MondayGroupChecker{
 	*	Recupera a partir del API de monday.com el grupo al que pertenece un pulse,
 	*	se utilize el atributo Pulse.name para deducir el nombre del grupo en el tablero.
 	*
-	*	@param 	string $pulseName Valor del atributo Pulse.name de un objeto del tipo
-	*			Sleefs\Models\Monday\Pulse
+	*	@param 	string $poDate Fecha de creación de la PO en formato YYYY-MM-DD
 	*	@param 	integer $boardId ID en el sistema de monday.com del board sobre el que se
 	*			realizará la búsqueda.
 	*	@param 	\Sleefs\Helpers\MondayApi\MondayGqlApi $mondayApi Objeto que sirve de interfaz
@@ -83,9 +82,9 @@ class MondayGroupChecker{
 	*
 	*
 	*/
-	public function getGroup($pulseName,$boardId,\Sleefs\Helpers\MondayApi\MondayGqlApi $mondayApi){
+	public function getGroup($poDate,$boardId,\Sleefs\Helpers\MondayApi\MondayGqlApi $mondayApi){
 
-		$groupName = $this->getCorrectGroupName($pulseName);
+		$groupName = $this->getCorrectGroupName($poDate);
 		$groups = $mondayApi->getAllBoardGroups($boardId);
 		$group = '';
 		for($i=0;$i<count($groups);$i++){

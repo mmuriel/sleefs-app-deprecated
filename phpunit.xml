@@ -32,5 +32,7 @@
         <env name="CACHE_DRIVER" value="array"/>
         <env name="SESSION_DRIVER" value="array"/>
         <env name="QUEUE_DRIVER" value="sync"/>
+        <!-- <env name="MONDAY_BOARD" value="332327453" />Production -->
+        <env name="MONDAY_BOARD" value="670700889" />
     </php>
 </phpunit>

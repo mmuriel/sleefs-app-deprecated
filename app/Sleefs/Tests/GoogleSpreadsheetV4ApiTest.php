@@ -25,7 +25,7 @@ class GoogleSpreadsheetV4ApiTest extends TestCase {
         $this->prepareForTests();
     }
  
-
+    /*
     public function testGetCtrlWorkSheet(){
 
 
@@ -90,7 +90,7 @@ class GoogleSpreadsheetV4ApiTest extends TestCase {
     }
 
 
-
+    */
 	/* Preparing the Test */
 
 	public function createApplication()

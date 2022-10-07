@@ -1,6 +1,6 @@
 <?php
 
-namespace Sleefs\Test;
+namespace Sleefs\Test\integration;
 
 use Illuminate\Foundation\Testing\TestCase ;
 use Illuminate\Contracts\Console\Kernel;
@@ -27,6 +27,7 @@ class MondayIntegrationTest extends TestCase {
     private $extendedPos = array();
 	private $mondayUserId = '5277993';
     private $mondayBoard = '670700889';
+    private $mondayValidVendors = array('DX Sporting Goods','Good People Sports');
 	public $mondayApi;
 
 	public function setUp(){
@@ -142,14 +143,55 @@ class MondayIntegrationTest extends TestCase {
     public function testGetPulseNameFromPONumber(){
 
         $nameExtractor = new MondayPulseNameExtractor();
-        $this->assertRegExp('/^[0-9]{4,4}\-{1}[0-9]{1,2}/',$nameExtractor->extractPulseName($this->extendedPos[0]->po_number));
+        $this->assertRegExp('/^[0-9]{4,4}\-{1}[0-9]{1,2}/',$nameExtractor->extractPulseName($this->extendedPos[0]->po_number,$this->extendedPos[0]->vendor_name,$this->mondayValidVendors));
     }
 
+    public function testGetPulseNameFromPONumberAltern1(){
+
+        $nameExtractor = new MondayPulseNameExtractor();
+        $this->assertEquals('2209-01',$nameExtractor->extractPulseName($this->extendedPos[7]->po_number,$this->extendedPos[7]->vendor_name,$this->mondayValidVendors));
+    }
+
+
+    public function testGetPulseNameFromPONumberAltern2(){
+
+        $nameExtractor = new MondayPulseNameExtractor();
+        $this->assertEquals('122416758501025491',$nameExtractor->extractPulseName($this->extendedPos[8]->po_number,$this->extendedPos[8]->vendor_name,$this->mondayValidVendors));
+    }
+
+
+
+    public function testGetPulseNameFromPONumberAltern3(){
+
+        $nameExtractor = new MondayPulseNameExtractor();
+        $this->assertEquals('PO 31',$nameExtractor->extractPulseName($this->extendedPos[9]->po_number,$this->extendedPos[9]->vendor_name,$this->mondayValidVendors));
+    }
+
+    public function testGetPulseNameFromPONumberAltern4(){
+
+        $nameExtractor = new MondayPulseNameExtractor();
+        $this->assertEquals('PI 32',$nameExtractor->extractPulseName('PI 32 Wristbands','Rocky',$this->mondayValidVendors));
+    }
+
+    public function testGetPulseNameFromPONumberAltern5(){
+        $nameExtractor = new MondayPulseNameExtractor();
+        $this->assertEquals('153527058501025491',$nameExtractor->extractPulseName('153527058501025491 Tape / Clips','Wuxi Jieyu Microfiber Fabric Manufacturing',$this->mondayValidVendors));
+    }
+
+    public function testGetPulseNameFromPONumberAltern6(){
+        $nameExtractor = new MondayPulseNameExtractor();
+        $this->assertEquals('122416758501025491',$nameExtractor->extractPulseName('Shin guards 122416758501025491','Hebei Chongfeng Science & technology Co',$this->mondayValidVendors));
+    }
+
+    public function testGetPulseNameFromPONumberAltern7(){
+        $nameExtractor = new MondayPulseNameExtractor();
+        $this->assertEquals('HB/AM20220803-D',$nameExtractor->extractPulseName('HB/AM20220803-D Visor Re Order','Hubo Sports Products',$this->mondayValidVendors));
+    }
 
     public function testGetPulseSuccessFromPONumber(){
 
         $nameExtractor = new MondayPulseNameExtractor();
-        $pulseName = $nameExtractor->extractPulseName($this->extendedPos[0]->po_number);
+        $pulseName = $nameExtractor->extractPulseName($this->extendedPos[0]->po_number,$this->extendedPos[0]->vendor_name,$this->mondayValidVendors);
         $pulsesOk = Pulse::whereRaw(" (name='{$pulseName}') ")->get();
         $pulse = $pulsesOk->get(0);
         $this->assertEquals(1,$pulsesOk->count());
@@ -162,7 +204,7 @@ class MondayIntegrationTest extends TestCase {
     public function testTryTOGetPulseFromPONumberError(){
 
         $nameExtractor = new MondayPulseNameExtractor();
-        $pulseName = $nameExtractor->extractPulseName($this->extendedPos[1]->po_number);
+        $pulseName = $nameExtractor->extractPulseName($this->extendedPos[1]->po_number,$this->extendedPos[1]->vendor_name,$this->mondayValidVendors);
         $pulsesOk = Pulse::whereRaw(" (name='{$pulseName}') ")->get();
         $this->assertEquals(0,$pulsesOk->count());
 
@@ -172,7 +214,7 @@ class MondayIntegrationTest extends TestCase {
     public function testGetCorrectGroupNameFromPulse(){
 
         $mondayGroupChecker = new MondayGroupChecker();
-        $groupName = $mondayGroupChecker->getCorrectGroupName($this->extendedPos[6]->po_number);
+        $groupName = $mondayGroupChecker->getCorrectGroupName($this->extendedPos[6]->created_at);
         $this->assertEquals('PO September 2020',$groupName);
 
     }
@@ -180,9 +222,7 @@ class MondayIntegrationTest extends TestCase {
     public function testCheckCorrectGroup(){
 
         $mondayGroupChecker = new MondayGroupChecker();
-        $nameExtractor = new MondayPulseNameExtractor();
-        $pulseName = $nameExtractor->extractPulseName($this->extendedPos[0]->po_number);
-        $group = $mondayGroupChecker->getGroup($pulseName,$this->mondayBoard,$this->mondayApi);
+        $group = $mondayGroupChecker->getGroup($this->extendedPos[0]->created_at,$this->mondayBoard,$this->mondayApi);
         $this->assertRegExp("/^(Po\ October\ 2020)/i",$group->title);
     }
 
@@ -190,9 +230,7 @@ class MondayIntegrationTest extends TestCase {
     public function testCheckNotFoundGroup(){
 
         $mondayGroupChecker = new MondayGroupChecker();
-        $nameExtractor = new MondayPulseNameExtractor();
-        $pulseName = $nameExtractor->extractPulseName($this->extendedPos[6]->po_number);
-        $group = $mondayGroupChecker->getGroup($pulseName,$this->mondayBoard,$this->mondayApi);
+        $group = $mondayGroupChecker->getGroup($this->extendedPos[6]->created_at,$this->mondayBoard,$this->mondayApi);
         $this->assertEquals(null,$group);
     }
 
@@ -222,9 +260,40 @@ class MondayIntegrationTest extends TestCase {
     }
 
 
+
+
+    public function testPulsesGroupFor20220907PoMustBePOSeptembre2022(){
+
+
+
+    }
+
+
+
+    /*
+    ========================================================
+    ========================================================
+    ========================================================
+    ========================================================
+    ========================================================
+    ========================================================
+
+
+    Preparación de datos para ejecutar los tests
+
+    ========================================================
+    ========================================================
+    ========================================================
+    ========================================================
+    ========================================================
+    ========================================================
+    */
+
+
+
 	/* Preparing the Test */
 	public function createApplication(){
-        $app = require __DIR__.'/../../../bootstrap/app.php';
+        $app = require __DIR__.'/../../../../bootstrap/app.php';
         $app->make(Kernel::class)->bootstrap();
         return $app;
     }
@@ -297,6 +366,36 @@ class MondayIntegrationTest extends TestCase {
         $this->pos[6]->fulfillment_status = 'pending';
         $this->pos[6]->save();
         array_push($this->extendedPos,json_decode('{"id":"UHVyY2hhc2VPcmRlcjo1NzIzMjg=","legacy_id":572328,"po_number":"2009-18 SW1888","po_date":"2020-09-29 00:00:00","account_id":"QWNjb3VudDoxMTU3","vendor_id":"VmVuZG9yOjE4Mzg1","created_at":"2020-09-15 14:56:25","fulfillment_status":"pending","po_note":null,"description":null,"subtotal":"712.5","shipping_price":"0.00","total_price":"712.5","line_items":[{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjc2OTI3NTg=","price":"1.25","po_id":"UHVyY2hhc2VPcmRlcjo1NzIzMjg=","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE4Mzg1","po_number":null,"sku":"CUSTOM-SL-1","barcode":"CUSTOM-SL-1","note":null,"quantity":570,"quantity_received":0,"quantity_rejected":0,"product_name":"Custom Arm Sleeves (Single)","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE4Mzg1","name":"DX Sporting Goods","email":"xxx","account_id":"QWNjb3VudDoxMTU3","account_number":null}}}],"vendor_name":"DX Sporting Goods"}'));
+
+        array_push($this->pos,new PurchaseOrder());
+        $this->pos[7]->po_id = 2723;
+        $this->pos[7]->po_number = 'PO 2209-01 Knitted Pink Socks';
+        $this->pos[7]->po_date = '2022-10-05 00:00:00';
+        $this->pos[7]->fulfillment_status = 'pending';
+        $this->pos[7]->save();
+        array_push($this->extendedPos,json_decode('
+        {"id":"UHVyY2hhc2VPcmRlcjoxMjAxNzQw","legacy_id":1201740,"po_number":"PO 2209-01 Knitted Pink Socks","po_date":"2022-10-10 00:00:00","account_id":"QWNjb3VudDoxMTU3","vendor_id":"VmVuZG9yOjY5NDQy","created_at":"2022-09-30 12:32:35","fulfillment_status":"pending","po_note":"","description":"","subtotal":"600","shipping_price":"0.00","total_price":"600","line_items":[{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjE1NzY3NzE5","price":"1.2000","po_id":"1201740","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjY5NDQy","po_number":"PO 2723","sku":"SL-PNK-SS","barcode":"SL-PNK-SS","note":"","quantity":500,"quantity_received":0,"quantity_rejected":0,"product_name":"Hue Pink  Long Scrunchie Socks Pink","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjY5NDQy","name":"Good People Sports","email":"953440032@qq.com","account_id":"QWNjb3VudDoxMTU3","account_number":""}}}],"vendor_name":"Good People Sports"}'));
+
+
+
+        array_push($this->pos,new PurchaseOrder());
+        $this->pos[8]->po_id = 2468;
+        $this->pos[8]->po_number = 'Shin guards 122416758501025491';
+        $this->pos[8]->po_date = '2022-10-05 04:00:00';
+        $this->pos[8]->fulfillment_status = 'pending';
+        $this->pos[8]->save();
+        array_push($this->extendedPos,json_decode('{"id":"UHVyY2hhc2VPcmRlcjo4NTI0MzQ=","legacy_id":852434,"po_number":"Shin guards 122416758501025491","po_date":"2021-11-15 00:00:00","account_id":"QWNjb3VudDoxMTU3","vendor_id":"ND","created_at":"2021-10-15 14:47:21","fulfillment_status":"pending","po_note":"10\/15 Deposit $2,341.00\n11\/9 Balance $2,341.00","description":null,"subtotal":"7264","shipping_price":"1549.00","total_price":"8813","line_items":[{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjExMzUzMjM1","price":"2.6400","po_id":"852434","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"0","po_number":"Shin guards 1224167585010254","sku":"SL-BLU-SG-SM","barcode":"SL-BLU-SG-SM","note":"","quantity":100,"quantity_received":100,"quantity_rejected":0,"product_name":"Hue Blue Soccer Shin Guards Small \/ Blue","fulfillment_status":"pending","vendor":null}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjExMzUzMjQy","price":"2.7400","po_id":"852434","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"0","po_number":"Shin guards 1224167585010254","sku":"SL-WHT-SG-LG","barcode":"SL-WHT-SG-LG","note":"","quantity":250,"quantity_received":250,"quantity_rejected":0,"product_name":"Basic Black Soccer Shin Guards Large \/ Black","fulfillment_status":"pending","vendor":null}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjExMzUzMjMw","price":"2.7400","po_id":"852434","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"0","po_number":"Shin guards 1224167585010254","sku":"SL-YEL-SG-LG","barcode":"SL-YEL-SG-LG","note":"","quantity":100,"quantity_received":100,"quantity_rejected":0,"product_name":"Hue Yellow Soccer Shin Guards Large \/ Yellow","fulfillment_status":"pending","vendor":null}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjExMzUzMjM4","price":"2.7400","po_id":"852434","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"0","po_number":"Shin guards 1224167585010254","sku":"SL-RED-SG-LG","barcode":"SL-RED-SG-LG","note":"","quantity":100,"quantity_received":100,"quantity_rejected":0,"product_name":"Hue Red Soccer Shin Guards Large \/ Red","fulfillment_status":"pending","vendor":null}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjExMzUzMjI3","price":"2.6400","po_id":"852434","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"0","po_number":"Shin guards 1224167585010254","sku":"SL-PNK-SG-SM","barcode":"SL-PNK-SG-SM","note":"","quantity":100,"quantity_received":100,"quantity_rejected":0,"product_name":"Hue Pink Soccer Shin Guards Small \/ Pink","fulfillment_status":"pending","vendor":null}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjEyODIwODkz","price":"2.6400","po_id":"852434","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE4Mzg5","po_number":"","sku":"SL-SAFYEL-SG-SM","barcode":"SL-SAFYEL-SG-SM","note":"","quantity":100,"quantity_received":100,"quantity_rejected":0,"product_name":"Safety Yellow Soccer Shin Guards Small \/ Yellow","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE4Mzg5","name":"Sleefs","email":"","account_id":"QWNjb3VudDoxMTU3","account_number":""}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjEyODIwODk0","price":"2.7400","po_id":"852434","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE4Mzg5","po_number":"","sku":"SL-SAFYEL-SG-LG","barcode":"SL-SAFYEL-SG-LG","note":"","quantity":100,"quantity_received":100,"quantity_rejected":0,"product_name":"Safety Yellow Soccer Shin Guards Large \/ Yellow","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE4Mzg5","name":"Sleefs","email":"","account_id":"QWNjb3VudDoxMTU3","account_number":""}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjExMzUzMjI4","price":"2.7400","po_id":"852434","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"0","po_number":"Shin guards 1224167585010254","sku":"SL-PNK-SG-LG","barcode":"SL-PNK-SG-LG","note":"","quantity":100,"quantity_received":100,"quantity_rejected":0,"product_name":"Hue Pink Soccer Shin Guards Large \/ Pink","fulfillment_status":"pending","vendor":null}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjExMzUzMjM2","price":"2.7400","po_id":"852434","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"0","po_number":"Shin guards 1224167585010254","sku":"SL-BLU-SG-LG","barcode":"SL-BLU-SG-LG","note":"","quantity":100,"quantity_received":100,"quantity_rejected":0,"product_name":"Hue Blue Soccer Shin Guards Large \/ Blue","fulfillment_status":"pending","vendor":null}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjExMzUzMjQw","price":"2.7400","po_id":"852434","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"0","po_number":"Shin guards 1224167585010254","sku":"SL-BLK-SG-LG","barcode":"SL-BLK-SG-LG","note":"","quantity":500,"quantity_received":500,"quantity_rejected":0,"product_name":"Basic White Soccer Shin Guards Large \/ White","fulfillment_status":"pending","vendor":null}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjExMzUzMjM0","price":"2.7400","po_id":"852434","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"0","po_number":"Shin guards 1224167585010254","sku":"SL-GRN-SG-LG","barcode":"SL-GRN-SG-LG","note":"","quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Hue Green Soccer Shin Guards Large \/ Green","fulfillment_status":"pending","vendor":null}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjExMzUzMjQx","price":"2.6400","po_id":"852434","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"0","po_number":"Shin guards 1224167585010254","sku":"SL-WHT-SG-SM","barcode":"SL-WHT-SG-SM","note":"","quantity":250,"quantity_received":250,"quantity_rejected":0,"product_name":"Basic Black Soccer Shin Guards Small \/ Black","fulfillment_status":"pending","vendor":null}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjExMzUzMjMz","price":"2.6400","po_id":"852434","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"0","po_number":"Shin guards 1224167585010254","sku":"SL-GRN-SG-SM","barcode":"SL-GRN-SG-SM","note":"","quantity":100,"quantity_received":100,"quantity_rejected":0,"product_name":"Hue Green Soccer Shin Guards Small \/ Green","fulfillment_status":"pending","vendor":null}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjExMzUzMjM3","price":"2.6400","po_id":"852434","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"0","po_number":"Shin guards 1224167585010254","sku":"SL-RED-SG-SM","barcode":"SL-RED-SG-SM","note":"","quantity":100,"quantity_received":100,"quantity_rejected":0,"product_name":"Hue Red Soccer Shin Guards Small \/ Red","fulfillment_status":"pending","vendor":null}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjExMzUzMjM5","price":"2.6400","po_id":"852434","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"0","po_number":"Shin guards 1224167585010254","sku":"SL-BLK-SG-SM","barcode":"SL-BLK-SG-SM","note":"","quantity":500,"quantity_received":500,"quantity_rejected":0,"product_name":"Basic White Soccer Shin Guards Small \/ White","fulfillment_status":"pending","vendor":null}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjExMzUzMjI5","price":"2.6500","po_id":"852434","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"0","po_number":"Shin guards 1224167585010254","sku":"SL-YEL-SG-SM","barcode":"SL-YEL-SG-SM","note":"","quantity":100,"quantity_received":100,"quantity_rejected":0,"product_name":"Hue Yellow Soccer Shin Guards Small \/ Yellow","fulfillment_status":"pending","vendor":null}}],"vendor_name":"ND"}'));
+
+
+         array_push($this->pos,new PurchaseOrder());
+        $this->pos[9]->po_id = 2699;
+        $this->pos[9]->po_number = 'PO 31 Wristband Re Order';
+        $this->pos[9]->po_date = '2022-10-05 04:10:00';
+        $this->pos[9]->fulfillment_status = 'pending';
+        $this->pos[9]->save();
+        array_push($this->extendedPos,json_decode('{"id":"UHVyY2hhc2VPcmRlcjoxMTczNDc2","legacy_id":1173476,"po_number":"PO 31 Wristband Re Order","po_date":"2022-09-26 00:00:00","account_id":"QWNjb3VudDoxMTU3","vendor_id":"VmVuZG9yOjE2MTkyMA==","created_at":"2022-09-07 18:50:07","fulfillment_status":"pending","po_note":"9\/30 Paid $915.00 with Paypal","description":null,"subtotal":"630","shipping_price":"285","total_price":"915","line_items":[{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjE1NDAzMjQ5","price":"0.1800","po_id":"1173476","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE2MTkyMA==","po_number":"Wristband Re Order","sku":"SL-KAMI-WB","barcode":"SL-KAMI-WB","note":"","quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Kami \/ God Motivational Wristband one size \/ White\/Black","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE2MTkyMA==","name":"Rocky","email":"18665357361@163.com","account_id":"QWNjb3VudDoxMTU3","account_number":""}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjE1NDAzMjQ1","price":"0.1800","po_id":"1173476","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE2MTkyMA==","po_number":"Wristband Re Order","sku":"SL-WR-WB","barcode":"SL-WR-WB","note":"","quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Wide Receiver Motivational Wristband Regular (8\") \/ Black\/White","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE2MTkyMA==","name":"Rocky","email":"18665357361@163.com","account_id":"QWNjb3VudDoxMTU3","account_number":""}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjE1NDAzMjM4","price":"0.1800","po_id":"1173476","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE2MTkyMA==","po_number":"Wristband Re Order","sku":"SL-OUTTHE-WB","barcode":"SL-OUTTHE-WB","note":"","quantity":200,"quantity_received":0,"quantity_rejected":0,"product_name":"Outwork Them Motivational Wristband one size \/ Black\/White","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE2MTkyMA==","name":"Rocky","email":"18665357361@163.com","account_id":"QWNjb3VudDoxMTU3","account_number":""}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjE1NDAzMjUx","price":"0.1800","po_id":"1173476","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE2MTkyMA==","po_number":"Wristband Re Order","sku":"SL-BB-CRSS-BLK-WHT-WB","barcode":"SL-BB-CRSS-BLK-WHT-WB","note":"","quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Baseball Cross Black and White Wristband Black\/White","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE2MTkyMA==","name":"Rocky","email":"18665357361@163.com","account_id":"QWNjb3VudDoxMTU3","account_number":""}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjE1NDAzMjU0","price":"0.1800","po_id":"1173476","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE2MTkyMA==","po_number":"Wristband Re Order","sku":"SL-VILYELGRN-WB","barcode":"SL-VILYELGRN-WB","note":"","quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Villain Green Motivational Wristband one size \/ Yellow Green","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE2MTkyMA==","name":"Rocky","email":"18665357361@163.com","account_id":"QWNjb3VudDoxMTU3","account_number":""}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjE1NDAzMjQ3","price":"0.1800","po_id":"1173476","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE2MTkyMA==","po_number":"Wristband Re Order","sku":"SL-GOPLBLK-WB-L","barcode":"SL-GOPLBLK-WB-L","note":"","quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"God\'s Plan Motivational Wristband Large (8\") \/ Black\/White","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE2MTkyMA==","name":"Rocky","email":"18665357361@163.com","account_id":"QWNjb3VudDoxMTU3","account_number":""}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjE1NDAzMjMz","price":"0.1800","po_id":"1173476","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE2MTkyMA==","po_number":"Wristband Re Order","sku":"SL-OUTTHE-WB-Y","barcode":"SL-OUTTHE-WB-Y","note":"","quantity":200,"quantity_received":0,"quantity_rejected":0,"product_name":"Outwork Them Motivational Wristband Youth (6\") \/ Black\/White","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE2MTkyMA==","name":"Rocky","email":"18665357361@163.com","account_id":"QWNjb3VudDoxMTU3","account_number":""}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjE1NDAzMjUw","price":"0.1800","po_id":"1173476","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE2MTkyMA==","po_number":"Wristband Re Order","sku":"SL-BBSSLLCW-WB-L","barcode":"SL-BBSSLLCW-WB-L","note":"","quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Baseball Laces Motivational Wristband Large (8\") \/ White","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE2MTkyMA==","name":"Rocky","email":"18665357361@163.com","account_id":"QWNjb3VudDoxMTU3","account_number":""}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjE1NDAzMjMy","price":"0.1800","po_id":"1173476","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE2MTkyMA==","po_number":"Wristband Re Order","sku":"SL-STHUBL-WB","barcode":"SL-STHUBL-WB","note":"","quantity":200,"quantity_received":0,"quantity_rejected":0,"product_name":"Stay Hungry Motivational Wristband one size \/ Black","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE2MTkyMA==","name":"Rocky","email":"18665357361@163.com","account_id":"QWNjb3VudDoxMTU3","account_number":""}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjE1NDAzMjQx","price":"0.1800","po_id":"1173476","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE2MTkyMA==","po_number":"Wristband Re Order","sku":"SL-STAFOC-WB","barcode":"SL-STAFOC-WB","note":"","quantity":200,"quantity_received":0,"quantity_rejected":0,"product_name":"Stay Focused Motivational Wristband Regular (8\") \/ Gray\/Black","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE2MTkyMA==","name":"Rocky","email":"18665357361@163.com","account_id":"QWNjb3VudDoxMTU3","account_number":""}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjE1NDAzMjQ0","price":"0.1800","po_id":"1173476","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE2MTkyMA==","po_number":"Wristband Re Order","sku":"SL-DWFIWFI-WB","barcode":"SL-DWFIWFI-WB","note":"","quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Don\'t Wish For It. Work For It. Motivational Wristband one size \/ Black\/White","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE2MTkyMA==","name":"Rocky","email":"18665357361@163.com","account_id":"QWNjb3VudDoxMTU3","account_number":""}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjE1NDAzMjUz","price":"0.1800","po_id":"1173476","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE2MTkyMA==","po_number":"Wristband Re Order","sku":"SL-PSA544-WB","barcode":"SL-PSA544-WB","note":"","quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Psalm 54:4 Motivational Wristband one size \/ Gray\/White","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE2MTkyMA==","name":"Rocky","email":"18665357361@163.com","account_id":"QWNjb3VudDoxMTU3","account_number":""}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjE1NDAzMjUy","price":"0.1800","po_id":"1173476","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE2MTkyMA==","po_number":"Wristband Re Order","sku":"SL-SAVMEA-WB-Y","barcode":"SL-SAVMEA-WB-Y","note":"","quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Savage Meaning Motivational Wristband Youth (6\") \/ Black\/White","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE2MTkyMA==","name":"Rocky","email":"18665357361@163.com","account_id":"QWNjb3VudDoxMTU3","account_number":""}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjE1NDAzMjM2","price":"0.1800","po_id":"1173476","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE2MTkyMA==","po_number":"Wristband Re Order","sku":"SL-SL-SCBLK-WB-WB","barcode":"SL-SL-SCBLK-WB-WB","note":"","quantity":200,"quantity_received":0,"quantity_rejected":0,"product_name":"Icarus Pink Motivational Wristband one size \/ Pink","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE2MTkyMA==","name":"Rocky","email":"18665357361@163.com","account_id":"QWNjb3VudDoxMTU3","account_number":""}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjE1NDAzMjM5","price":"0.1800","po_id":"1173476","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE2MTkyMA==","po_number":"Wristband Re Order","sku":"SL-SEDISU-WB-L","barcode":"SL-SEDISU-WB-L","note":"","quantity":200,"quantity_received":0,"quantity_rejected":0,"product_name":"Self-Discipline = Success Motivational Wristband Large (8\") \/ Black\/White","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE2MTkyMA==","name":"Rocky","email":"18665357361@163.com","account_id":"QWNjb3VudDoxMTU3","account_number":""}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjE1NDAzMjQ4","price":"0.1800","po_id":"1173476","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE2MTkyMA==","po_number":"Wristband Re Order","sku":"SL-UNLVD-WB","barcode":"SL-UNLVD-WB","note":"","quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"BRKN Black Motivational Wristband Regular (8\") \/ Black\/White","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE2MTkyMA==","name":"Rocky","email":"18665357361@163.com","account_id":"QWNjb3VudDoxMTU3","account_number":""}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjE1NDAzMjM3","price":"0.1800","po_id":"1173476","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE2MTkyMA==","po_number":"Wristband Re Order","sku":"SL-FBVFIED-WB","barcode":"SL-FBVFIED-WB","note":"","quantity":200,"quantity_received":0,"quantity_rejected":0,"product_name":"Football Verified Motivational Wristband one size \/ White\/Black\/Blue","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE2MTkyMA==","name":"Rocky","email":"18665357361@163.com","account_id":"QWNjb3VudDoxMTU3","account_number":""}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjE1NDAzMjQy","price":"0.1800","po_id":"1173476","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE2MTkyMA==","po_number":"Wristband Re Order","sku":"SL-NOEXBLSTWHT-WB","barcode":"SL-NOEXBLSTWHT-WB","note":"","quantity":200,"quantity_received":0,"quantity_rejected":0,"product_name":"No Excuses Motivational Wristband one size \/ Black\/White","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE2MTkyMA==","name":"Rocky","email":"18665357361@163.com","account_id":"QWNjb3VudDoxMTU3","account_number":""}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjE1NDAzMjQw","price":"0.1800","po_id":"1173476","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE2MTkyMA==","po_number":"Wristband Re Order","sku":"SL-SSSS-WB","barcode":"SL-SSSS-WB","note":"","quantity":200,"quantity_received":0,"quantity_rejected":0,"product_name":"Sweat + Suffer + Sacrifices = Success Motivational Wristband Regular (8\") \/ Gray\/Black","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE2MTkyMA==","name":"Rocky","email":"18665357361@163.com","account_id":"QWNjb3VudDoxMTU3","account_number":""}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjE1NDAzMjM1","price":"0.1800","po_id":"1173476","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE2MTkyMA==","po_number":"Wristband Re Order","sku":"SL-ROWHGO-WB","barcode":"SL-ROWHGO-WB","note":"","quantity":200,"quantity_received":0,"quantity_rejected":0,"product_name":"Rosary Motivational Wristband one size \/ White\/Gold","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE2MTkyMA==","name":"Rocky","email":"18665357361@163.com","account_id":"QWNjb3VudDoxMTU3","account_number":""}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjE1NDAzMjQz","price":"0.1800","po_id":"1173476","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE2MTkyMA==","po_number":"Wristband Re Order","sku":"SL-FREAK-WB","barcode":"SL-FREAK-WB","note":"","quantity":200,"quantity_received":0,"quantity_rejected":0,"product_name":"Freak Motivational Wristband one size \/ Black\/White","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE2MTkyMA==","name":"Rocky","email":"18665357361@163.com","account_id":"QWNjb3VudDoxMTU3","account_number":""}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjE1NDAzMjM0","price":"0.1800","po_id":"1173476","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE2MTkyMA==","po_number":"Wristband Re Order","sku":"SL-GOPLBLK-WB-Y","barcode":"SL-GOPLBLK-WB-Y","note":"","quantity":200,"quantity_received":0,"quantity_rejected":0,"product_name":"God\'s Plan Motivational Wristband Youth (6\") \/ Black\/White","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE2MTkyMA==","name":"Rocky","email":"18665357361@163.com","account_id":"QWNjb3VudDoxMTU3","account_number":""}}},{"node":{"id":"UHVyY2hhc2VPcmRlckxpbmVJdGVtOjE1NDAzMjQ2","price":"0.1800","po_id":"1173476","account_id":"QWNjb3VudDoxMTU3","warehouse_id":"V2FyZWhvdXNlOjE2ODQ=","vendor_id":"VmVuZG9yOjE2MTkyMA==","po_number":"Wristband Re Order","sku":"SL-FB2016-WB","barcode":"SL-FB2016-WB","note":"","quantity":100,"quantity_received":0,"quantity_rejected":0,"product_name":"Football Lace Motivational Wristband Default \/ Brown","fulfillment_status":"pending","vendor":{"id":"VmVuZG9yOjE2MTkyMA==","name":"Rocky","email":"18665357361@163.com","account_id":"QWNjb3VudDoxMTU3","account_number":""}}}],"vendor_name":"Rocky"}'));
+
+
 
         //Pulses
         //Pulse #1
